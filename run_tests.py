@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+# FROM MINIGRID REPO
+# #!/usr/bin/env python3
 
 import random
 import numpy as np
