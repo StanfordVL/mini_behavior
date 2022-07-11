@@ -1,5 +1,7 @@
+# FROM MINIGRID REPO
 import math
 import numpy as np
+
 
 def downsample(img, factor):
     """
@@ -16,6 +18,7 @@ def downsample(img, factor):
 
     return img
 
+
 def fill_coords(img, fn, color):
     """
     Fill pixels of an image with coordinates matching a filter function
@@ -30,6 +33,7 @@ def fill_coords(img, fn, color):
 
     return img
 
+
 def rotate_fn(fin, cx, cy, theta):
     def fout(x, y):
         x = x - cx
@@ -41,6 +45,7 @@ def rotate_fn(fin, cx, cy, theta):
         return fin(x2, y2)
 
     return fout
+
 
 def point_in_line(x0, y0, x1, y1, r):
     p0 = np.array([x0, y0])
@@ -72,15 +77,18 @@ def point_in_line(x0, y0, x1, y1, r):
 
     return fn
 
+
 def point_in_circle(cx, cy, r):
     def fn(x, y):
         return (x-cx)*(x-cx) + (y-cy)*(y-cy) <= r * r
     return fn
 
+
 def point_in_rect(xmin, xmax, ymin, ymax):
     def fn(x, y):
         return x >= xmin and x <= xmax and y >= ymin and y <= ymax
     return fn
+
 
 def point_in_triangle(a, b, c):
     a = np.array(a)
@@ -108,6 +116,7 @@ def point_in_triangle(a, b, c):
         return (u >= 0) and (v >= 0) and (u + v) < 1
 
     return fn
+
 
 def highlight_img(img, color=(255, 255, 255), alpha=0.30):
     """

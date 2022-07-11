@@ -1,6 +1,7 @@
 _ACTIONS = set('pickup', 'drop')
 _STATES = set('on_top', 'onfloor')
 
+# FROM BEHAVIOR
 # _ALL_STATES = frozenset(
 #     [
 #         # AABB,
