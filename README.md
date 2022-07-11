@@ -1,2 +1,2 @@
-# mini-behavior
+# Mini-BEHAVIOR
 MiniGrid Implementation of BEHAVIOR Tasks
