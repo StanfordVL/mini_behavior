@@ -4,6 +4,8 @@ import numpy as np
 
 # Only ask users to install matplotlib if they actually need it
 try:
+    # import matplotlib
+    # matplotlib.use('TKAgg')
     import matplotlib.pyplot as plt
 except:
     print('To display the environment in a window, please install matplotlib, eg:')
