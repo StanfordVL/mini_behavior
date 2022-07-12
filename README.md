@@ -18,8 +18,7 @@ To run in interactive mode: ./manual_control.py --env MiniGrid-ThrowLeftoversMul
 │   ├── __init__.py
 │   ├── actions.py (new)
 │   ├── bddl.py (new)
-│   ├── bddl_utils.py (new)
-│   ├── global_variables.py (new)
+│   ├── globals.py (new)
 │   ├── mappings.py (new)
 │   ├── minigrid.py (modified)
 │   ├── objects.py (new)

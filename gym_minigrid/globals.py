@@ -1,4 +1,4 @@
-import numpy as np
+from .actions import *
 
 # Map of color names to RGB values
 COLORS = {

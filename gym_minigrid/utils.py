@@ -1,13 +1,35 @@
-def get_obj_env_cell(self):
-    obj = self.obj
-    env = self.env
-    cell = env.grid.get(*obj.cur_pos)
+from .states import *
 
-    return obj, env, cell
+_STATE_FUNC_MAPPING = {
+    'onfloor': Onfloor,
+    'agentcarrying': Agentcarrying,
+    'ontop': Ontop,
+    'inside': Inside,
+    # 'inroom': Inroom,
+    'contains': Contains,
+    'overlap': Overlap,
+    'seebehind': Seebehind,
+}
+
+# _ACTION_FUNC_MAPPING = {
+#     'pickup': Pickup,
+#     'drop': Drop
+# }
 
 
-def get_obj_cell(self, env):
-    obj = self.obj
-    cell = env.grid.get(*obj.cur_pos)
+def check_abs_state(env, obj, state):
+    return state in obj.state_keys and obj.states[state].get_value(env)
 
-    return obj, cell
+
+def check_static_state(env, obj, state):
+    return state in obj.state_keys and obj.states[state].get_value()
+
+
+def check_rel_state(env, obj1, obj2, state):
+    return state in obj1.state_keys and obj1.states[state].get_value(obj2, env)
+
+
+def check_action(obj, action):
+    return action in obj.action_keys and obj._ACTION_FUNC_MAPPING[action].can()
+
+# obj._ACTION_FUNC_MAPPING[action].do() # perform action

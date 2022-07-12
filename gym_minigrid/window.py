@@ -1,3 +1,4 @@
+# FROM MINIGRID REPO
 import sys
 import numpy as np
 
@@ -8,6 +9,7 @@ except:
     print('To display the environment in a window, please install matplotlib, eg:')
     print('pip3 install --user matplotlib')
     sys.exit(-1)
+
 
 class Window:
     """

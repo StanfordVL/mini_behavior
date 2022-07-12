@@ -1,10 +1,12 @@
+# MODIFIED FROM MINIGRID REPO
+
 import hashlib
 import gym
 from enum import IntEnum
 from gym import spaces
 from gym.utils import seeding
 from .objects import *
-from .global_variables import COLORS, COLOR_NAMES, OBJECT_TO_IDX, DIR_TO_VEC
+from .globals import COLORS, COLOR_NAMES, OBJECT_TO_IDX, DIR_TO_VEC
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32

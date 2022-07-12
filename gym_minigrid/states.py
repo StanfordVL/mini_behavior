@@ -1,6 +1,4 @@
 from .states_base import *
-from .utils import get_obj_cell
-import numpy as np
 
 # ABSOLUTE
 # broken
@@ -25,6 +23,13 @@ import numpy as np
 
 # list of all objects at the current position: env.grid.get(*obj.cur_pos)
 #   order of elements in list = order of vertical object placement
+
+
+def get_obj_cell(self, env):
+    obj = self.obj
+    cell = env.grid.get(*obj.cur_pos)
+
+    return obj, cell
 
 
 class Onfloor(AbsoluteObjectState):

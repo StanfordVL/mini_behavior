@@ -1,3 +1,4 @@
+# FROM MINIGRID REPO
 import math
 import operator
 from functools import reduce
@@ -5,8 +6,9 @@ from functools import reduce
 import numpy as np
 import gym
 from gym import error, spaces, utils
-from .global_variables import OBJECT_TO_IDX, COLOR_TO_IDX
+from .globals import OBJECT_TO_IDX, COLOR_TO_IDX
 from .objects import Goal
+
 
 class ReseedWrapper(gym.core.Wrapper):
     """

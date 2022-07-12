@@ -1,7 +1,7 @@
 from .rendering import *
-from .mappings import *
+from .bddl import *
 import numpy as np
-from .global_variables import COLOR_TO_IDX, IDX_TO_COLOR, OBJECT_TO_IDX, IDX_TO_OBJECT, COLORS
+from .globals import COLOR_TO_IDX, IDX_TO_COLOR, OBJECT_TO_IDX, IDX_TO_OBJECT, COLORS
 
 _DEFAULT_STATES = ['onfloor', 'ontop', 'inside']  # , 'inroom']
 
