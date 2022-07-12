@@ -1,7 +1,7 @@
 import random
 from gym_minigrid.utils import *
-from .multiroom import *
 from gym_minigrid.roomgrid import *
+from gym_minigrid.register import register
 
 
 class ThrowLeftoversEnvMulti(RoomGrid):
