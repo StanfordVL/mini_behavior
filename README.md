@@ -6,7 +6,6 @@
 ├── gym_minigrid
 │   ├── envs
 │   │   ├── __init__.py
-│   │   ├── multiroom.py
 │   │   ├── throwleftovers.py (new)
 │   │   └── throwleftovers_multiroom.py (new)
 │   ├── __init__.py
