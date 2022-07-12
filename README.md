@@ -5,7 +5,7 @@
 * Follow setup instructions from: https://github.com/Farama-Foundation/gym-minigrid.
 * Downgrade gym to version 0.21.0: pip install gym==0.21.0
 
-### 
+### Run Code 
 To run in interactive mode: ./manual_control.py --env MiniGrid-ThrowLeftoversMulti-16x16-N2-v
 
 ### Directory 
