@@ -1,5 +1,4 @@
-# FROM MINIGRID REPO
-# from gym.envs.registration import register as gym_register
+from gym.envs.registration import register as gym_register
 
 env_list = []
 

@@ -1,4 +1,3 @@
-# FROM MINIGRID REPO
 import math
 import operator
 from functools import reduce

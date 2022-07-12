@@ -1,6 +1,7 @@
-# MODIFIED FROM IGIBSON REPO
 from abc import abstractmethod
 
+
+# copied from iGibson
 
 class BaseObjectState:
     """

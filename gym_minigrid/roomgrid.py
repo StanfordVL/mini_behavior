@@ -1,5 +1,3 @@
-# FROM MINIGRID REPO
-
 from .minigrid import *
 
 

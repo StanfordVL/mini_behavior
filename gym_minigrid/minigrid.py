@@ -1,5 +1,3 @@
-# MODIFIED FROM MINIGRID REPO
-
 import hashlib
 import gym
 from enum import IntEnum

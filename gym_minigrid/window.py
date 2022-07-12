@@ -1,4 +1,3 @@
-# FROM MINIGRID REPO
 import sys
 import numpy as np
 
