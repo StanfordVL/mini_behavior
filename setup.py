@@ -1,4 +1,3 @@
-# FROM MINIGRID REPO
 from setuptools import setup
 
 with open("README.md") as fh:
