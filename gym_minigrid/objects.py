@@ -1,26 +1,10 @@
 from .rendering import *
-from .bddl import *
 import numpy as np
+from .bddl import _DEFAULT_STATES, _DEFAULT_ACTIONS, _STATE_FUNC_MAPPING, _ACTION_FUNC_MAPPING
 from .globals import COLOR_TO_IDX, IDX_TO_COLOR, OBJECT_TO_IDX, IDX_TO_OBJECT, COLORS
 
-_DEFAULT_STATES = ['onfloor', 'ontop', 'inside']  # , 'inroom']
-
-_STATE_FUNC_MAPPING = {
-    'onfloor': Onfloor,
-    'agentcarrying': Agentcarrying,
-    'ontop': Ontop,
-    'inside': Inside,
-    # 'inroom': Inroom,
-    'contains': Contains,
-    'overlap': Overlap,
-    'seebehind': Seebehind,
-}
-_ACTION_FUNC_MAPPING = {
-    'pickup': Pickup,
-    'drop': Drop
-}
-
-_DEFAULT_ACTIONS = []
+global _OBJECT_CLASS
+global _OBJECT_COLOR
 
 
 class WorldObj:
@@ -73,6 +57,12 @@ class WorldObj:
 
     def check_rel_state(self, env, other, state):
         return state in self.state_keys and self.states[state].get_value(other, env)
+
+    def reachable(self, env):
+        # true if the agent can reach the object
+        carrying = self.check_abs_state(env, 'agentcarrying')
+        in_front = np.all(self.cur_pos == env.front_pos)
+        return carrying or in_front
 
     def toggle(self, env, pos):
         """Method to trigger/toggle an action this object performs"""
@@ -318,3 +308,20 @@ class Box(WorldObj):
         # Replace the box by its contents
         env.grid.set(*pos, self.contains)
         return True
+
+
+########################################################################################################################
+
+_OBJECT_CLASS = {
+    'counter': Counter,
+    'plate': Ball,
+    'ashcan': Ashcan,
+    'hamburger': S_ball
+}
+
+_OBJECT_COLOR = {
+    'counter': 'purple',
+    'plate': 'yellow',
+    'ashcan': 'green',
+    'hamburger': 'red'
+}

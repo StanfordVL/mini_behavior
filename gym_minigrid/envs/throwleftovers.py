@@ -1,5 +1,4 @@
 import random
-from gym_minigrid.utils import *
 from gym_minigrid.minigrid import *
 from gym_minigrid.register import register
 
@@ -28,6 +27,10 @@ class ThrowLeftoversEnv(MiniGridEnv):
             # Set this to True for maximum speed
             see_through_walls=True
         )
+
+    def action_space(self):
+        objs = self.objs
+        actions = self.actions
 
     def _gen_grid(self, width, height):
         self.grid = Grid(width, height)

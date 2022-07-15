@@ -4,10 +4,9 @@ import time
 import random
 import gym
 import gym_minigrid
-import gym_minigrid.envs.throwleftovers
 
 # Load the gym environment
-env = gym.make('MiniGrid-ThrowLeftovers-6x6-N2-v0')
+env = gym.make('MiniGrid-ThrowLeftoversMulti-16x16-N2-v0')
 print("Made gym environment")
 
 env.reset()

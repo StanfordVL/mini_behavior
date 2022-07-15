@@ -5,8 +5,10 @@ import gym
 from enum import IntEnum
 from gym import spaces
 from gym.utils import seeding
+from .objects import _OBJECT_CLASS, _OBJECT_COLOR
+from .globals import COLOR_NAMES, DIR_TO_VEC
 from .objects import *
-from .globals import COLORS, COLOR_NAMES, OBJECT_TO_IDX, DIR_TO_VEC
+from .bddl import _ALL_ACTIONS
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
@@ -57,8 +59,8 @@ class Grid:
         return deepcopy(self)
 
     def set(self, i, j, v):
-        assert i >= 0 and i < self.width
-        assert j >= 0 and j < self.height
+        assert 0 <= i < self.width
+        assert 0 <= j < self.height
         if self.grid[j * self.width + i] is None:
             self.grid[j * self.width + i] = v
         elif isinstance(self.grid[j * self.width + i], list):
@@ -67,8 +69,8 @@ class Grid:
             self.grid[j * self.width + i] = [self.grid[j * self.width + i], v]
 
     def remove(self, i, j, v):
-        assert i >= 0 and i < self.width
-        assert j >= 0 and j < self.height
+        assert 0 <= i < self.width
+        assert 0 <= j < self.height
         cur_objs = self.grid[j * self.width + i]
         if cur_objs:
             if isinstance(cur_objs, list):
@@ -80,8 +82,8 @@ class Grid:
                 self.grid[j * self.width + i] = None
 
     def get(self, i, j):
-        assert i >= 0 and i < self.width
-        assert j >= 0 and j < self.height
+        assert 0 <= i < self.width
+        assert 0 <= j < self.height
         return self.grid[j * self.width + i]
 
     def horz_wall(self, x, y, length=None, obj_type=Wall):
@@ -128,8 +130,7 @@ class Grid:
                 x = topX + i
                 y = topY + j
 
-                if x >= 0 and x < self.width and \
-                   y >= 0 and y < self.height:
+                if 0 <= x < self.width and 0 <= y < self.height:
                     v = self.get(x, y)
                 else:
                     v = Wall()
@@ -155,7 +156,6 @@ class Grid:
         key = (agent_dir, highlight, tile_size)
 
         if isinstance(objs, list):
-            # objs = [obj for obj in objs if obj is not None] # TODO: get rid of this. figure out why theres a none at the door
             keys = [obj.encode() for obj in objs]
             key = tuple(keys) + key
         elif objs:
@@ -352,47 +352,48 @@ class MiniGridEnv(gym.Env):
 
     metadata = {
         'render.modes': ['human', 'rgb_array'],
-        'video.frames_per_second' : 10
+        'video.frames_per_second': 10
     }
-
-    # Enumeration of possible actions
-    class Actions(IntEnum):
-        # Turn left, turn right, move forward
-        left = 0
-        right = 1
-        forward = 2
-
-        # Pick up an object
-        pickup = 3
-        # Drop an object
-        drop = 4
-        # Toggle/activate an object
-        toggle = 5
-
-        # Done completing task
-        done = 6
-
-        # NEW
-        choose = 7
 
     def __init__(
         self,
+        mode='not_human',
         grid_size=None,
         width=None,
         height=None,
+        num_objs=None,
         max_steps=100,
         see_through_walls=False,
         seed=1337,
-        agent_view_size=7
+        agent_view_size=7,
     ):
         # Can't set both grid_size and width/height
         if grid_size:
-            assert width == None and height == None
+            assert width is None and height is None
             width = grid_size
             height = grid_size
 
+        self.mode = mode
+
+        # NEW: initialize objects
+        if num_objs is None:
+            num_objs = {}
+        self.num_objs = num_objs
+
+        # TODO: get rid of self.objs
+        self.objs = {}
+        self.obj_instances = {}
+        for obj in num_objs.keys():
+            self.objs[obj] = []
+            for i in range(num_objs[obj]):
+                obj_name = '{}_{}'.format(obj, i)
+                obj_instance = _OBJECT_CLASS[obj](_OBJECT_COLOR[obj], obj_name)
+                self.objs[obj].append(obj_instance)
+                self.obj_instances[obj_name] = obj_instance
+
+        # TODO: change action space
         # Action enumeration for this environment
-        self.actions = MiniGridEnv.Actions
+        self.actions()
 
         # Actions are discrete integer values
         self.action_space = spaces.Discrete(len(self.actions))
@@ -438,6 +439,24 @@ class MiniGridEnv(gym.Env):
 
         # Initialize the state
         self.reset()
+
+    def actions(self):
+        # returns list of object actions, in the form: object/action
+        actions = {'left': 0,
+                   'right': 1,
+                   'forward': 2,
+                   'done': 3}
+
+        i = 4
+        for objs in self.objs.values():
+            for obj in objs:
+                for action in _ALL_ACTIONS:
+                    if action in obj.action_keys:
+                        obj_action = '{}/{}'.format(obj.name, action)
+                        actions[obj_action] = i
+                        i += 1
+
+        self.actions = IntEnum('Actions', actions)
 
     def reset(self):
         # Current position and direction of the agent
@@ -540,7 +559,7 @@ class MiniGridEnv(gym.Env):
 
                 c = self.grid.get(i, j)
 
-                if c == None:
+                if c is None:
                     str += '  '
                     continue
 
@@ -589,7 +608,7 @@ class MiniGridEnv(gym.Env):
         Generate random boolean value
         """
 
-        return (self.np_random.randint(0, 2) == 0)
+        return self.np_random.randint(0, 2) == 0
 
     def _rand_elem(self, iterable):
         """
@@ -635,11 +654,11 @@ class MiniGridEnv(gym.Env):
         )
 
     def place_obj(self,
-        obj,
-        top=None,
-        size=None,
-        reject_fn=None,
-        max_tries=math.inf
+                  obj,
+                  top=None,
+                  size=None,
+                  reject_fn=None,
+                  max_tries=math.inf
     ):
         """
         Place an object at an empty position in the grid
@@ -673,7 +692,7 @@ class MiniGridEnv(gym.Env):
             ))
 
             # Don't place the object on top of another object
-            if self.grid.get(*pos) != None:
+            if self.grid.get(*pos) is not None:
                 continue
 
             # Don't place the object where the agent is
@@ -730,7 +749,7 @@ class MiniGridEnv(gym.Env):
         of forward movement.
         """
 
-        assert self.agent_dir >= 0 and self.agent_dir < 4
+        assert 0 <= self.agent_dir < 4
         return DIR_TO_VEC[self.agent_dir]
 
     @property
@@ -805,7 +824,7 @@ class MiniGridEnv(gym.Env):
         botX = topX + self.agent_view_size
         botY = topY + self.agent_view_size
 
-        return (topX, topY, botX, botY)
+        return topX, topY, botX, botY
 
     def relative_coords(self, x, y):
         """
@@ -869,7 +888,6 @@ class MiniGridEnv(gym.Env):
         elif action == self.actions.forward:
             if isinstance(fwd_cell, list):
                 can_overlap = True
-                # fwd_cell = [obj for obj in fwd_cell if obj is not None] # TODO: get rid of this. figure out why theres a none at the door
                 obj_types = [obj.type for obj in fwd_cell]
                 # TODO: change door
                 if 'door' in obj_types:
@@ -882,90 +900,86 @@ class MiniGridEnv(gym.Env):
                 if can_overlap:
                     self.agent_pos = fwd_pos
             else:
-                if fwd_cell == None or fwd_cell.possible_state('overlap'):
+                if fwd_cell is None or fwd_cell.possible_state('overlap'):
                     self.agent_pos = fwd_pos
-                if fwd_cell != None and fwd_cell.type == 'goal':
+                if fwd_cell is not None and fwd_cell.type == 'goal':
                     done = True
                     reward = self._reward()
-                if fwd_cell != None and fwd_cell.type == 'lava':
+                if fwd_cell is not None and fwd_cell.type == 'lava':
                     done = True
 
         # Choose an object to interact with
-        elif action == self.actions.choose:
-            if fwd_cell is None and self.carrying == []:
-                print("No objects available")
-            else:
-                choices = []
-                if isinstance(fwd_cell, list):
-                    for obj in fwd_cell:
-                        choices.append(obj)
-                elif fwd_cell:
-                    choices = [fwd_cell]
-
-                if self.carrying:
-                    choices += self.carrying
-
-                text = ""
-                for i in range(len(choices)):
-                    text += "{}) {} \n".format(i, choices[i].name)
-
-                obj = input("Choose one of the following objects: \n{}".format(text))
-                obj = choices[int(obj)]
-                self.agent_object = obj
-                assert obj is not None, "No object chosen"
-
-                # decide what to do with the object
-                # actions = []
-
-                # if obj.possible_action('pickup'):
-                #     actions.append(self.actions.pickup)
-                #
-                # if obj.possible_action('drop'):
-                #     actions.append(self.actions.drop)
-
-                actions = []
-                for action in obj.actions:
-                    # if check_action(obj, action):
-                    if obj.possible_action(self, action):
-                        actions.append(action)
-
-                if len(actions) == 0:
-                    print("No actions available")
-                else:
-                    text = ""
-                    for i in range(len(actions)):
-                        text += "{}) {} \n".format(i, actions[i])
-
-                    action = int(input("Choose one of the following actions: \n{}".format(text)))
-                    action = actions[action]
-
-                    obj.actions[action].do(self) # perform action
-                    # # Carry an object
-                    # if action == self.actions.pickup:
-                    #     pickup(self, obj)
-                    #
-                    # # Drop an object
-                    # elif action == self.actions.drop:
-                    #     drop(self, obj)
-
-        # Toggle/activate an object
-        elif action == self.actions.toggle:
-            if fwd_cell:
-                fwd_cell.toggle(self, fwd_pos)
-
-        # Done action (not used by default)
+        # elif action == self.actions.choose:
         elif action == self.actions.done:
             pass
-
         else:
-            assert False, "unknown action"
+            if self.mode == 'human':
+                if action == 'choose':
+                    if fwd_cell is None and self.carrying == []:
+                        print("No objects available")
+                    else:
+                        print('Objects available')
+                        choices = []
+                        if isinstance(fwd_cell, list):
+                            for obj in fwd_cell:
+                                choices.append(obj)
+                        elif fwd_cell:
+                            choices = [fwd_cell]
+
+                        if self.carrying:
+                            choices += self.carrying
+
+                        text = ""
+                        for i in range(len(choices)):
+                            text += "{}) {} \n".format(i, choices[i].name)
+                        obj = input("Choose one of the following objects: \n{}".format(text))
+                        obj = choices[int(obj)]
+                        self.agent_object = obj
+                        assert obj is not None, "No object chosen"
+
+                        actions = []
+                        for action in obj.actions:
+                            if obj.possible_action(self, action):
+                                actions.append(action)
+
+                        if len(actions) == 0:
+                            print("No actions available")
+                        else:
+                            text = ""
+                            for i in range(len(actions)):
+                                text += "{}) {} \n".format(i, actions[i])
+
+                            action = int(input("Choose one of the following actions: \n{}".format(text)))
+                            action = actions[action] # action key
+                            obj.actions[action].do(self) # perform action
+                # Done action (not used by default)
+                else:
+                    assert False, "unknown action {}".format(action)
+            else:
+                # TODO: check that this works
+                obj_action = self.actions(action).name.split('/') # list: [obj, action]
+                # print("Chosen object: {}".format(obj_action[0]))
+                # print("Chosen action: {}".format(obj_action[1]))
+
+                # try to perform action
+                obj = self.obj_instances[obj_action[0]] # assert obj.name == obj_action[0]
+                if obj.reachable(self) and obj.possible_action(self, action):
+                    obj.actions[action].do(self)
+
+        # Toggle/activate an object
+        # elif action == self.actions.toggle:
+        #     if fwd_cell:
+        #         fwd_cell.toggle(self, fwd_pos)
 
         if self.step_count >= self.max_steps:
             done = True
 
-        obs = None # self.gen_obs()
+        obs = self.gen_obs()
 
         return obs, reward, done, {}
+
+    # def _end_condition(self):
+        # raise NotImplementedError()
 
     def gen_obs_grid(self):
         """

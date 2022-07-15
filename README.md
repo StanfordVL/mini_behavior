@@ -39,3 +39,29 @@ To run in interactive mode: ./manual_control.py --env MiniGrid-ThrowLeftoversMul
 ├── test_interactive_mode.py
 └── test_throwingleftovers.py (new)
  ```
+
+### File Descriptions 
+* **gym_minigrid/actions.py**
+    * Contains base class for actions 
+    * All action classes defined here
+
+* **gym_minigrid/bddl.py**
+    * Contains all implemented states, actions, and mappings based on original BEHAVIOR BDDL Code
+
+* **gym_minigrid/globals.py**
+    *  Defines colors, mappings, etc, used for rendering the grid environment
+
+* **gym_minigrid/minigrid.py**
+    * Contains base class for mini grid environment
+    * Modified to support multiple objects in a tile, generalizability to any actions / states / objects
+    * Significant changes made to: grid.set, grid.remove, grid.render_tile, grid.render, minigrid.ste
+
+* **gym_minigrid/objects.py**
+    * Contains base class for GridWorld objects
+    * All object classes defined here
+
+* **gym_minigrid/states.py**
+    * All states defined here, inherited from base classes in states_base.py
+
+* **gym_minigrid/states_base.py**
+    * Contains base classes for states (different classes for absolute and relative states)

@@ -73,6 +73,8 @@ class RoomGrid(MiniGridEnv):
 
     def __init__(
         self,
+        mode='not_human',
+        num_objs=None,
         room_size=10,
         num_rows=2,
         num_cols=2,
@@ -95,8 +97,10 @@ class RoomGrid(MiniGridEnv):
         self.mission = ''
 
         super().__init__(
+            mode=mode,
             width=width,
             height=height,
+            num_objs=num_objs,
             max_steps=max_steps,
             see_through_walls=False,
             seed=seed,

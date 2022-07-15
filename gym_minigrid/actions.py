@@ -1,13 +1,15 @@
 import numpy as np
-from .utils import *
+from .states import get_obj_cell
 # functions to check if agent has the ability to perform an action on a given object
 
 
 class BaseAction:
     def __init__(self, obj):
         super(BaseAction, self).__init__()
+        """
+        obj the action is performed on
+        """
         self.obj = obj
-        # self.env = env
 
     def can(self, env):
         """
@@ -41,10 +43,9 @@ class Pickup(BaseAction):
         assert self.can(env), 'Cannot perform action'
         obj, _ = get_obj_cell(self, env)
 
-        # env.grid.remove(*env.front_pos, obj)  # remove obj from the grid
         env.grid.remove(*obj.cur_pos, obj)  # remove obj from the grid
         obj.cur_pos = np.array([-1, -1]) # update cur_pos of obj
-        obj.states['agentcarrying'].set_value(True)
+        obj.states['agentcarrying'].set_value(True) # change carrying state of object
         env.carrying.append(obj) # update list of objects being carried by agent
 
         # check dependencies
