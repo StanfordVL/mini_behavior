@@ -1,8 +1,9 @@
 import torch
 
-import mini_behavior.utils as utils
-from .other import device
-from mini_behavior.model import ACModel
+# import mini_behavior.utils as utils
+import utils
+from utils.other import device
+from model import ACModel
 
 
 class Agent:

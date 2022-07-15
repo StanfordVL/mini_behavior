@@ -1,5 +1,7 @@
 import numpy
+import sys
 
+sys.path.append('../mini_behavior')
 import utils
 from utils import device
 

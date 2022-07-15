@@ -36,8 +36,6 @@ def step(action):
     else:
         redraw(obs)
 
-    window.set_inventory(env)
-
 
 def key_handler(event):
     print('pressed', event.key)

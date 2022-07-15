@@ -374,6 +374,7 @@ class MiniGridEnv(gym.Env):
             height = grid_size
 
         self.mode = mode
+        self.last_action = None
 
         # NEW: initialize objects
         if num_objs is None:
@@ -391,7 +392,6 @@ class MiniGridEnv(gym.Env):
                 self.objs[obj].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 
-        # TODO: change action space
         # Action enumeration for this environment
         self.actions()
 
@@ -441,7 +441,7 @@ class MiniGridEnv(gym.Env):
         self.reset()
 
     def actions(self):
-        # returns list of object actions, in the form: object/action
+        # creates Actions class
         actions = {'left': 0,
                    'right': 1,
                    'forward': 2,
@@ -551,7 +551,6 @@ class MiniGridEnv(gym.Env):
         str = ''
 
         for j in range(self.grid.height):
-
             for i in range(self.grid.width):
                 if i == self.agent_pos[0] and j == self.agent_pos[1]:
                     str += 2 * AGENT_DIR_TO_STR[self.agent_dir]
@@ -863,6 +862,11 @@ class MiniGridEnv(gym.Env):
         return obs_cell is not None and obs_cell.type == world_cell.type
 
     def step(self, action):
+        if self.mode == 'human':
+            self.last_action = action
+        else:
+            self.last_action = self.actions(action)
+
         self.step_count += 1
 
         reward = 0
@@ -914,6 +918,7 @@ class MiniGridEnv(gym.Env):
             pass
         else:
             if self.mode == 'human':
+                self.last_action = None
                 if action == 'choose':
                     if fwd_cell is None and self.carrying == []:
                         print("No objects available")
@@ -952,6 +957,8 @@ class MiniGridEnv(gym.Env):
                             action = int(input("Choose one of the following actions: \n{}".format(text)))
                             action = actions[action] # action key
                             obj.actions[action].do(self) # perform action
+
+                        self.last_action = self.actions['{}/{}'.format(obj.name, action)]
                 # Done action (not used by default)
                 else:
                     assert False, "unknown action {}".format(action)
@@ -1068,6 +1075,9 @@ class MiniGridEnv(gym.Env):
             import gym_minigrid.window
             self.window = gym_minigrid.window.Window('gym_minigrid')
             self.window.show(block=False)
+
+        if self.window:
+            self.window.set_inventory(self)
 
         # Compute which cells are visible to the agent
         _, vis_mask = self.gen_obs_grid()

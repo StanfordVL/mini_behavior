@@ -4,8 +4,8 @@ import torch
 import logging
 import sys
 
-import mini_behavior.utils as utils
-from .other import device
+import utils
+from utils.other import device
 
 
 def create_folders_if_necessary(path):

@@ -67,7 +67,6 @@ class Window:
         """
         Set/update the caption text below the image
         """
-
         plt.xlabel(text)
 
     # NEW
@@ -102,6 +101,11 @@ class Window:
         create_inv(self.ax_on, "ON_GRID", text_1)
         create_inv(self.ax_carry, "CARRYING", text_2)
 
+        # display last action
+        # if env.last_action:
+            # self.ax_on.text(3, 0.7, env.last_action.name, horizontalalignment='right', verticalalignment='top')
+                            # bbox=dict(width=1, height=0.5, boxstyle='square'))
+
         plt.tight_layout()
 
     def reg_key_handler(self, key_handler):
@@ -111,6 +115,7 @@ class Window:
 
         # Keyboard handler
         self.fig.canvas.mpl_connect('key_press_event', key_handler)
+
 
     def show(self, block=True):
         """

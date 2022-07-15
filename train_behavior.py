@@ -4,12 +4,10 @@ import torch_ac
 import tensorboardX
 import sys
 
-# sys.path.append('../mini_behavior')
-import mini_behavior.utils as utils
-from mini_behavior.model import ACModel
-from mini_behavior.utils import device
-import gym
-import gym_minigrid
+sys.path.append('../mini_behavior')
+import utils
+from model import ACModel
+from utils import device
 
 
 if __name__ == "__main__":
@@ -22,7 +20,7 @@ if __name__ == "__main__":
     procs = 1 # DEFAULT: 16
     frames = 1e7
 
-    epochs = 4
+    epochs = 1 #4
     batch_size = 256
     frames_per_proc = 128 # for ppo, 5 for a2c
     discount = 0.99
@@ -35,7 +33,7 @@ if __name__ == "__main__":
     optim_alpha = 0.99
     clip_eps = 0.2
     recurrence = 1
-    text = False,
+    text = False
     mem = False
 
     # Set run dir

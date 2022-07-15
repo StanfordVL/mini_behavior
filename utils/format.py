@@ -6,8 +6,6 @@ import torch
 import torch_ac
 import gym
 
-import mini_behavior.utils as utils
-
 
 def get_obss_preprocessor(obs_space):
     # Check if obs_space is an image space
