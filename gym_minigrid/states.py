@@ -14,12 +14,12 @@ from .states_base import *
 # soaked
 # timset
 # toggledon
-#
+
 # RELATIVE
-# inside
-# nextto
-# ontop x
-# under
+# inside -- done
+# nextto -- done
+# ontop -- done
+# under -- done
 
 # list of all objects at the current position: env.grid.get(*obj.cur_pos)
 #   order of elements in list = order of vertical object placement
@@ -46,12 +46,12 @@ class Onfloor(AbsoluteObjectState):
 
 
 # class Inroom(AbsoluteObjectState):
-#     def _get_value(self):
-#         obj, env, cell = init(self)
-#         agent_room = env.room_from_pos(*env.agent_pos)
-#         obj_room = env.room_from_pos(*obj.cur_pos)
-#
-#         return agent_room == obj_room
+    # def _get_value(self):
+        # obj, env, cell = init(self)
+        # agent_room = env.room_from_pos(*env.agent_pos)
+        # obj_room = env.room_from_pos(*obj.cur_pos)
+
+        # return agent_room == obj_room
 
 
 class Agentcarrying(AbsoluteObjectState):
@@ -99,19 +99,38 @@ class Seebehind(StaticObjectState):
 class Ontop(RelativeObjectState):
     # returns true if obj is ontop other
     def _get_value(self, other, env):
-        if self.obj.states['agentcarrying'].get_value(env):
+        if 'agentcarrying' in self.obj.state_keys \
+                and self.obj.states['agentcarrying'].get_value(env):
             return False
 
         obj, cell = get_obj_cell(self, env)
 
         # if obj and other are at the same pos
-        # if np.all(obj.cur_pos == other.cur_pos):
-        #     cell = env.grid.get(*obj.cur_pos)
         if isinstance(cell, list):
             if other in cell:
                 obj_index = cell.index(obj)
                 other_index = cell.index(other)
                 if obj_index > other_index:
+                    return True
+
+        return False
+
+
+class Under(RelativeObjectState):
+    # returns true if self.obj is under other
+    def _get_value(self, other, env):
+        if 'agentcarrying' in self.obj.state_keys \
+                and self.obj.states['agentcarrying'].get_value(env):
+            return False
+
+        obj, cell = get_obj_cell(self, env)
+
+        if isinstance(cell, list):
+            # if obj and other are at the same pos
+            if other in cell:
+                obj_index = cell.index(obj)
+                other_index = cell.index(other)
+                if obj_index < other_index:
                     return True
 
         return False
@@ -123,3 +142,18 @@ class Inside(RelativeObjectState):
     def _get_value(self, other, env):
         return self.obj.states['ontop'].get_value(other, env) and other.possible_state("contains")
 
+
+class NextTo(RelativeObjectState):
+    # return true if objs are next to each other
+    def _get_value(self, other, env):
+        pos_1 = self.obj.cur_pos
+        pos_2 = other.cur_pos
+
+        # above, below
+        if pos_1[0] == pos_2[0] and abs(pos_1[1] - pos_2[1]) == 1:
+            return True
+        # left, right
+        elif pos_1[1] == pos_2[1] and abs(pos_1[0] - pos_2[0]) == 1:
+            return True
+        else:
+            return False

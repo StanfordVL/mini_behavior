@@ -9,20 +9,23 @@ global _STATE_FUNC_MAPPING
 global _ABILITY_TO_STATE_MAPPING
 global _ACTION_FUNC_MAPPING
 
-_ALL_STATES = ['onfloor', 'agentcarrying', 'ontop', 'inside', 'contains', 'overlap', 'inroom', 'seebehind']
-_DEFAULT_STATES = ['onfloor', 'ontop', 'inside']  # , 'inroom']
+
+_ALL_STATES = ['onfloor', 'agentcarrying', 'contains', 'overlap', 'seebehind', 'ontop', 'under', 'inside', 'nextto'] #  'inroom'
+_DEFAULT_STATES = ['onfloor', 'ontop', 'under', 'nextto', 'inside']  # , 'inroom']
 
 # TODO: add door states -- 'open', 'locked'
 
 _STATE_FUNC_MAPPING = {
     'onfloor': Onfloor,
     'agentcarrying': Agentcarrying,
-    'ontop': Ontop,
-    'inside': Inside,
-    # 'inroom': Inroom,
     'contains': Contains,
     'overlap': Overlap,
     'seebehind': Seebehind,
+    'ontop': Ontop,
+    'under': Under,
+    'inside': Inside,
+    'nextto': NextTo,
+    # 'inroom': Inroom,
 }
 
 # ability (function) to state (function) mapping

@@ -982,7 +982,6 @@ class MiniGridEnv(gym.Env):
             done = True
 
         obs = self.gen_obs()
-
         return obs, reward, done, {}
 
     # def _end_condition(self):

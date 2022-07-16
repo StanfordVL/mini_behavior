@@ -68,6 +68,10 @@ class AbsoluteObjectState(BaseObjectState):
     """
     track object states that are absolute (require 1 object)
     """
+    def __init__(self, obj): # env
+        super(BaseObjectState, self).__init__()
+        self.obj = obj
+        self.type = 'absolute'
 
     @abstractmethod
     def _get_value(self, env):
@@ -97,6 +101,10 @@ class RelativeObjectState(BaseObjectState):
     This class is used to track object states that are relative, e.g. require two objects to compute a value.
     Note that subclasses will typically compute values on-the-fly.
     """
+    def __init__(self, obj): # env
+        super(BaseObjectState, self).__init__()
+        self.obj = obj
+        self.type = 'relative'
 
     @abstractmethod
     def _get_value(self, other, env):
@@ -114,6 +122,7 @@ class StaticObjectState(BaseObjectState):
     def __init__(self, obj): #, env):
         super(StaticObjectState, self).__init__(obj) #, env)
         self.value = True
+        self.type = 'static'
 
     def _get_value(self):
         return self.value

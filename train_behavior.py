@@ -13,7 +13,8 @@ from utils import device
 if __name__ == "__main__":
     ## General parameters
     algo = "ppo" # or a2c
-    env = 'MiniGrid-ThrowLeftoversMulti-16x16-N2-v0'
+    # env = 'MiniGrid-ThrowLeftoversMulti-16x16-N2-v0'
+    env = 'MiniGrid-ThrowLeftovers-8x8-N2-v0'
     seed = 1
     log_interval = 1
     save_interval = 10
@@ -40,7 +41,7 @@ if __name__ == "__main__":
     date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
     model_name = 'throw_leftovers_model'
 
-    model_dir = utils.get_model_dir(model_name)
+    model_dir = utils.get_model_dir('{}_{}'.format(model_name, date))
 
     # Load loggers and Tensorboard writer
     txt_logger = utils.get_txt_logger(model_dir)

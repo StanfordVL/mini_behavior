@@ -101,7 +101,7 @@ class Window:
         create_inv(self.ax_on, "ON_GRID", text_1)
         create_inv(self.ax_carry, "CARRYING", text_2)
 
-        # display last action
+        # TODO: display last action
         # if env.last_action:
             # self.ax_on.text(3, 0.7, env.last_action.name, horizontalalignment='right', verticalalignment='top')
                             # bbox=dict(width=1, height=0.5, boxstyle='square'))

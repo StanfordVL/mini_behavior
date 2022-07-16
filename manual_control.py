@@ -3,7 +3,7 @@
 import argparse
 from gym_minigrid.wrappers import *
 from gym_minigrid.window import Window
-
+from collect_demos import save_step, save_demo
 
 def redraw(img):
     if not args.agent_view:
@@ -30,8 +30,11 @@ def step(action):
     obs, reward, done, info = env.step(action)
     print('step=%s, reward=%.2f' % (env.step_count, reward))
 
+    save_step(all_steps, env)
+
     if done:
         print('done!')
+        save_demo(all_steps, args.env)
         reset()
     else:
         redraw(obs)
@@ -69,8 +72,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--env",
     help="gym environment to load",
-    # default='MiniGrid-ThrowLeftoversMulti-16x16-N2-v0'
-    default='MiniGrid-ThrowLeftoversMulti-16x16-N2-v1'
+    # default='MiniGrid-ThrowLeftoversMulti-16x16-N2-v1'
+    default='MiniGrid-ThrowLeftovers-8x8-N2-v0'
 )
 parser.add_argument(
     "--seed",
@@ -94,6 +97,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 env = gym.make(args.env)
+all_steps = {}
 
 if args.agent_view:
     env = RGBImgPartialObsWrapper(env)

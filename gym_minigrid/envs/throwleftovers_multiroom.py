@@ -42,7 +42,6 @@ class ThrowLeftoversEnvMulti(RoomGrid):
                     return True
             return False
 
-
         # # generate counter
         # place all objects
         counters = self.objs['counter']
@@ -147,6 +146,13 @@ class ThrowLeftoversMulti16x16_Human(ThrowLeftoversEnvMulti):
                          )
 
 
+class ThrowLeftovers8x8(ThrowLeftoversEnvMulti):
+    def __init__(self):
+        super().__init__(mode='human',
+                         room_size=8
+                         )
+
+
 # non human input env
 register(
     id='MiniGrid-ThrowLeftoversMulti-16x16-N2-v0',
@@ -157,4 +163,10 @@ register(
 register(
     id='MiniGrid-ThrowLeftoversMulti-16x16-N2-v1',
     entry_point='gym_minigrid.envs:ThrowLeftoversMulti16x16_Human'
+)
+
+# non human input env,
+register(
+    id='MiniGrid-ThrowLeftovers-8x8-N2-v0',
+    entry_point='gym_minigrid.envs:ThrowLeftovers8x8'
 )
