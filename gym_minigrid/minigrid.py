@@ -378,7 +378,6 @@ class MiniGridEnv(gym.Env):
         self.mode = mode
         self.last_action = None
 
-        # NEW: initialize objects
         if num_objs is None:
             num_objs = {}
         self.num_objs = num_objs

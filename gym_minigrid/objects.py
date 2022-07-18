@@ -142,26 +142,6 @@ class Counter(WorldObj):
         fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
 
 
-class Lava(WorldObj):
-    def __init__(self, state_keys=set('overlap')):
-        super().__init__('lava', 'red')
-
-    def render(self, img):
-        c = (255, 128, 0)
-
-        # Background color
-        fill_coords(img, point_in_rect(0, 1, 0, 1), c)
-
-        # Little waves
-        for i in range(3):
-            ylo = 0.3 + 0.2 * i
-            yhi = 0.4 + 0.2 * i
-            fill_coords(img, point_in_line(0.1, ylo, 0.3, yhi, r=0.03), (0,0,0))
-            fill_coords(img, point_in_line(0.3, yhi, 0.5, ylo, r=0.03), (0,0,0))
-            fill_coords(img, point_in_line(0.5, ylo, 0.7, yhi, r=0.03), (0,0,0))
-            fill_coords(img, point_in_line(0.7, yhi, 0.9, ylo, r=0.03), (0,0,0))
-
-
 class Wall(WorldObj):
     def __init__(self, color='grey'):
         super().__init__('wall', color=color, state_keys=['seebehind'])
@@ -199,7 +179,7 @@ class Door(WorldObj):
         elif not self.is_open:
             state = 1
 
-        return (OBJECT_TO_IDX[self.type], COLOR_TO_IDX[self.color], state)
+        return OBJECT_TO_IDX[self.type], COLOR_TO_IDX[self.color], state
 
     def render(self, img):
         c = COLORS[self.color]

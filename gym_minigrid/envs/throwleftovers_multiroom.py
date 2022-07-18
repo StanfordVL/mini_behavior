@@ -182,7 +182,7 @@ class ThrowLeftoversNavigation(ThrowLeftoversEnvMulti):
 
     def __init__(
             self,
-            mode='not_human',
+            mode='human',
             room_size=8,
             num_rows=1,
             num_cols=1,
