@@ -54,7 +54,7 @@ def save_step(all_steps, env):
 
 
 def save_demo(all_steps, env_name):
-    demo_dir = os.path.join('demos', env_name)
+    demo_dir = os.path.join('../demos', env_name)
     if not os.path.isdir(demo_dir):
         os.mkdir(demo_dir)
     all_files = os.listdir(demo_dir)
