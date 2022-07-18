@@ -73,7 +73,9 @@ parser.add_argument(
     "--env",
     help="gym environment to load",
     # default='MiniGrid-ThrowLeftoversMulti-16x16-N2-v1'
-    default='MiniGrid-ThrowLeftovers-8x8-N2-v0'
+    # default='MiniGrid-ThrowLeftovers-8x8-N2-v0'
+    default='MiniGrid-ThrowLeftoversNavigation-8x8-N2-v0'
+    # default='MiniGrid-ThrowLeftoversNavigation-16x16-N2-v0'
 )
 parser.add_argument(
     "--seed",

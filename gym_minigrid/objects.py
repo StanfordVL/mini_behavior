@@ -52,7 +52,7 @@ class WorldObj:
     def check_abs_state(self, env, state):
         return state in self.state_keys and self.states[state].get_value(env)
 
-    def check_static_state(self, env, state):
+    def check_static_state(self, state):
         return state in self.state_keys and self.states[state].get_value()
 
     def check_rel_state(self, env, other, state):
@@ -97,7 +97,8 @@ class WorldObj:
                 'goal': Goal,
                 'counter': Counter,
                 's_ball': S_ball,
-                'ashcan': Ashcan
+                'ashcan': Ashcan,
+                'agent': Agent
             }
 
             v = OBJ_TYPE_DICT[obj_type](color)
@@ -286,6 +287,16 @@ class Ashcan(WorldObj):
         # Outline
         fill_coords(img, point_in_rect(0.12, 0.88, 0.12, 0.88), c)
         fill_coords(img, point_in_rect(0.18, 0.82, 0.18, 0.82), (0,0,0))
+
+
+# NEW
+# TODO: remove
+class Agent(WorldObj):
+    def __init__(self, color='red', name='agent'):
+        super(Agent, self).__init__('agent', color, name)
+
+    def render(self, img):
+        pass
 
 
 class Box(WorldObj):

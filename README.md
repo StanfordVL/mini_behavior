@@ -6,7 +6,7 @@
 * Downgrade gym to version 0.21.0: pip install gym==0.21.0
 
 ### Run Code 
-To run in interactive mode: ./manual_control.py --env MiniGrid-ThrowLeftoversMulti-16x16-N2-v
+To run in interactive mode: ./manual_control.py
 
 ### Directory 
 ```.
@@ -19,7 +19,6 @@ To run in interactive mode: ./manual_control.py --env MiniGrid-ThrowLeftoversMul
 │   ├── actions.py (new)
 │   ├── bddl.py (new)
 │   ├── globals.py (new)
-│   ├── mappings.py (new)
 │   ├── minigrid.py (modified)
 │   ├── objects.py (new)
 │   ├── register.py 
@@ -27,17 +26,22 @@ To run in interactive mode: ./manual_control.py --env MiniGrid-ThrowLeftoversMul
 │   ├── roomgrid.py
 │   ├── states.py (new)
 │   ├── states_base.py (new)
-│   ├── utils.py (new)
 │   ├── window.py
 │   └── wrappers.py
 ├── __init__.py
 ├── benchmark.py
-├── gen_behavior.py (new)
+├── collect_demos.py (new)
+├── evaluate.py 
 ├── manual_control.py
+├── model.py
 ├── run_tests.py
 ├── setup.py
 ├── test_interactive_mode.py
-└── test_throwingleftovers.py (new)
+├── test_throwingleftovers.py (new)
+├── train.py
+├── train_behavior.py
+├── visualize.py
+└── visualize_behavior.py
  ```
 
 ### File Descriptions 

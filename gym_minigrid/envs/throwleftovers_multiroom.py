@@ -170,3 +170,65 @@ register(
     id='MiniGrid-ThrowLeftovers-8x8-N2-v0',
     entry_point='gym_minigrid.envs:ThrowLeftovers8x8'
 )
+
+
+#######################################################################################################################
+
+
+class ThrowLeftoversNavigation(ThrowLeftoversEnvMulti):
+    """
+    Environment in which the agent is instructed to navigate to a hamburger
+    """
+
+    def __init__(
+            self,
+            mode='not_human',
+            room_size=8,
+            num_rows=1,
+            num_cols=1,
+            max_steps=500,
+            num_objs=None
+    ):
+        super().__init__(mode=mode,
+                         room_size=room_size,
+                         num_rows=num_rows,
+                         num_cols=num_cols,
+                         max_steps=max_steps,
+                         num_objs=num_objs
+                         )
+
+    def _reward(self):
+        for hamburger in self.objs['hamburger']:
+            if hamburger.check_rel_state(self, self.agent, 'nextto'):
+                self.reward += 1
+            # if hamburger.check_abs_state(self, 'agentcarrying'):
+            #     self.reward += 1e-1
+            for ashcan in self.objs['ashcan']:
+                if hamburger.check_rel_state(self, ashcan, 'inside'):
+                    self.reward += 10
+        return self.reward
+
+    def step(self, action):
+        obs, reward, done, info = super().step(action)
+
+        reward = self._reward()
+
+        return obs, reward, done, {}
+
+
+class ThrowLeftoversNavigationBig(ThrowLeftoversNavigation):
+    def __init__(self):
+        super().__init__(room_size=16)
+
+
+register(
+    id='MiniGrid-ThrowLeftoversNavigation-8x8-N2-v0',
+    entry_point='gym_minigrid.envs:ThrowLeftoversNavigation'
+)
+
+
+register(
+    id='MiniGrid-ThrowLeftoversNavigation-16x16-N2-v0',
+    entry_point='gym_minigrid.envs:ThrowLeftoversNavigationBig'
+)
+

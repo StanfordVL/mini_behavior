@@ -8,7 +8,6 @@ def all_pos(env):
     for obj_name in env.obj_instances:
         obj_instance = env.obj_instances[obj_name]
         pos[obj_name] = [int(obj_pos) for obj_pos in obj_instance.cur_pos]
-    print(pos)
     return pos
 
 

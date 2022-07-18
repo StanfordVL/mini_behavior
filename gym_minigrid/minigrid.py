@@ -266,7 +266,8 @@ class Grid:
                     #     array[i, j, :] = v.encode()
                     elif isinstance(v, list):
                         for obj in v:
-                            array[i, j, :] = np.add(array[i, j, :], obj.encode())
+                            if obj is not None:
+                                array[i, j, :] = np.add(array[i, j, :], obj.encode())
                     elif not isinstance(v, list):
                         array[i, j, :] = v.encode()
 
@@ -307,10 +308,10 @@ class Grid:
 
                 if isinstance(cell, list):
                     for obj in cell:
-                        if obj and not obj.check_static_state(grid, 'seebehind'):
+                        if obj and not obj.check_static_state('seebehind'):
                             continue
                 else:
-                    if cell and not cell.check_static_state(grid, 'seebehind'):
+                    if cell and not cell.check_static_state('seebehind'):
                         continue
 
                 mask[i+1, j] = True
@@ -326,10 +327,10 @@ class Grid:
                 # if cell and not cell.see_behind():
                 if isinstance(cell, list):
                     for obj in cell:
-                        if obj and not obj.check_static_state(grid, 'seebehind'):
+                        if obj and not obj.check_static_state('seebehind'):
                             continue
                 else:
-                    if cell and not cell.check_static_state(grid, 'seebehind'):
+                    if cell and not cell.check_static_state('seebehind'):
                         continue
 
                 mask[i-1, j] = True
@@ -416,7 +417,7 @@ class MiniGridEnv(gym.Env):
         })
 
         # Range of possible rewards
-        self.reward_range = (0, 1)
+        self.reward_range = (0, math.inf)
 
         # Window to use for human rendering mode
         self.window = None
@@ -428,6 +429,7 @@ class MiniGridEnv(gym.Env):
         self.see_through_walls = see_through_walls
 
         # Current position and direction of the agent
+        self.agent = Agent()
         self.agent_pos = None
         self.agent_dir = None
 
@@ -462,6 +464,8 @@ class MiniGridEnv(gym.Env):
         # Current position and direction of the agent
         self.agent_pos = None
         self.agent_dir = None
+        self.agent.cur_pos = None
+        self.reward = 0
 
         # Generate a new random grid at the start of each episode
         # To keep the same grid for each episode, call env.seed() with
@@ -733,8 +737,18 @@ class MiniGridEnv(gym.Env):
         """
 
         self.agent_pos = None
-        pos = self.place_obj(None, top, size, max_tries=max_tries)
+
+        next_to = True
+        while next_to:
+            pos = self.place_obj(None, top, size, max_tries=max_tries)
+            self.agent.cur_pos = pos
+            next_to = False
+            for obj in self.obj_instances.values():
+                if obj.check_rel_state(self, self.agent, 'nextto'):
+                    next_to = True
+
         self.agent_pos = pos
+        self.agent.cur_pos = pos
 
         if rand_dir:
             self.agent_dir = self._rand_int(0, 4)
@@ -982,6 +996,7 @@ class MiniGridEnv(gym.Env):
             done = True
 
         obs = self.gen_obs()
+        self.agent.cur_pos = self.agent_pos
         return obs, reward, done, {}
 
     # def _end_condition(self):
