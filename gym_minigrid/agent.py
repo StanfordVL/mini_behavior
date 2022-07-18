@@ -1,317 +1,146 @@
-# from .rendering import *
-# import numpy as np
-# from .bddl import _DEFAULT_STATES, _DEFAULT_ACTIONS, _STATE_FUNC_MAPPING, _ACTION_FUNC_MAPPING
-# from .globals import COLOR_TO_IDX, IDX_TO_COLOR, OBJECT_TO_IDX, IDX_TO_OBJECT, COLORS
-#
-# global _OBJECT_CLASS
-# global _OBJECT_COLOR
-#
-#
-# class Agent:
-#     """
-#     Base class for grid world objects
-#     """
-#
-#     def __init__(self, color):
-#         # Initial position of the object
-#         self.init_pos = None
-#
-#         # Current position of the object
-#         self.cur_pos = None
-#
-#         # TODO: define self.states and write a loop to initialize all states
-#         self.state_keys = _DEFAULT_STATES
-#
-#         for key in self.state_keys:
-#             self.states[key] = _STATE_FUNC_MAPPING[key](self)
-#
-#
-#     def possible_state(self, state):
-#         return state in self.state_keys
-#
-#     def check_abs_state(self, env, state):
-#         return state in self.state_keys and self.states[state].get_value(env)
-#
-#     def check_static_state(self, state):
-#         return state in self.state_keys and self.states[state].get_value()
-#
-#     def check_rel_state(self, env, other, state):
-#         return state in self.state_keys and self.states[state].get_value(other, env)
-#
-#     def reachable(self, env):
-#         # true if the agent can reach the object
-#         carrying = self.check_abs_state(env, 'agentcarrying')
-#         in_front = np.all(self.cur_pos == env.front_pos)
-#         return carrying or in_front
-#
-#     def toggle(self, env, pos):
-#         """Method to trigger/toggle an action this object performs"""
-#         return False
-#
-#     def encode(self):
-#         """Encode the a description of this object as a 3-tuple of integers"""
-#         return OBJECT_TO_IDX[self.type], COLOR_TO_IDX[self.color], 0
-#
-#     @staticmethod
-#     def decode(type_idx, color_idx, state):
-#         """Create an object from a 3-tuple state description"""
-#
-#         obj_type = IDX_TO_OBJECT[type_idx]
-#         color = IDX_TO_COLOR[color_idx]
-#
-#         if obj_type == 'empty' or obj_type == 'unseen':
-#             return None
-#
-#         if obj_type == 'door':
-#             # State, 0: open, 1: closed, 2: locked
-#             is_open = state == 0
-#             is_locked = state == 2
-#             v = Door(color, is_open, is_locked)
-#         else:
-#             OBJ_TYPE_DICT = {
-#                 'wall': Wall,
-#                 'floor': Floor,
-#                 'ball': Ball,
-#                 'key': Key,
-#                 'box': Box,
-#                 'goal': Goal,
-#                 'counter': Counter,
-#                 's_ball': S_ball,
-#                 'ashcan': Ashcan,
-#                 'agent': Agent
-#             }
-#
-#             v = OBJ_TYPE_DICT[obj_type](color)
-#
-#         return v
-#
-#     def render(self, r):
-#         """Draw this object with the given renderer"""
-#         raise NotImplementedError
-#
-#
-# class Goal(WorldObj):
-#     def __init__(self):
-#         super().__init__('goal', 'green')
-#
-#     def render(self, img):
-#         fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
-#
-#
-# class Floor(WorldObj):
-#     """
-#     Colored floor tile the agent can walk over
-#     """
-#
-#     def __init__(self, color='blue'):
-#         super().__init__('floor', color)
-#
-#     def can_overlap(self):
-#         return True
-#
-#     def render(self, img):
-#         # Give the floor a pale color
-#         color = COLORS[self.color] / 2
-#         fill_coords(img, point_in_rect(0.031, 1, 0.031, 1), color)
-#
-#
-# # NEW
-# # TODO: check cannot pickup counter
-# class Counter(WorldObj):
-#     """
-#     Colored floor tile the agent can walk over
-#     """
-#
-#     def __init__(self, color='purple', name='counter'):
-#         super(Counter, self).__init__('counter', color, name)
-#
-#     def render(self, img):
-#         fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
-#
-#
-# class Lava(WorldObj):
-#     def __init__(self, state_keys=set('overlap')):
-#         super().__init__('lava', 'red')
-#
-#     def render(self, img):
-#         c = (255, 128, 0)
-#
-#         # Background color
-#         fill_coords(img, point_in_rect(0, 1, 0, 1), c)
-#
-#         # Little waves
-#         for i in range(3):
-#             ylo = 0.3 + 0.2 * i
-#             yhi = 0.4 + 0.2 * i
-#             fill_coords(img, point_in_line(0.1, ylo, 0.3, yhi, r=0.03), (0,0,0))
-#             fill_coords(img, point_in_line(0.3, yhi, 0.5, ylo, r=0.03), (0,0,0))
-#             fill_coords(img, point_in_line(0.5, ylo, 0.7, yhi, r=0.03), (0,0,0))
-#             fill_coords(img, point_in_line(0.7, yhi, 0.9, ylo, r=0.03), (0,0,0))
-#
-#
-# class Wall(WorldObj):
-#     def __init__(self, color='grey'):
-#         super().__init__('wall', color=color, state_keys=['seebehind'])
-#
-#     def render(self, img):
-#         fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
-#
-#
-# class Door(WorldObj):
-#     def __init__(self, color, is_open=False, is_locked=False):
-#         super().__init__('door', color, state_keys=['seebehind', 'overlap'])
-#         self.is_open = is_open
-#         self.is_locked = is_locked
-#
-#     def toggle(self, env, pos):
-#         # If the player has the right key to open the door
-#         if self.is_locked:
-#             if isinstance(env.carrying, Key) and env.carrying.color == self.color:
-#                 self.is_locked = False
-#                 self.is_open = True
-#                 return True
-#             return False
-#
-#         self.is_open = not self.is_open
-#         return True
-#
-#     def encode(self):
-#         """Encode the a description of this object as a 3-tuple of integers"""
-#
-#         # State, 0: open, 1: closed, 2: locked
-#         if self.is_open:
-#             state = 0
-#         elif self.is_locked:
-#             state = 2
-#         elif not self.is_open:
-#             state = 1
-#
-#         return (OBJECT_TO_IDX[self.type], COLOR_TO_IDX[self.color], state)
-#
-#     def render(self, img):
-#         c = COLORS[self.color]
-#
-#         if self.is_open:
-#             fill_coords(img, point_in_rect(0.88, 1.00, 0.00, 1.00), c)
-#             fill_coords(img, point_in_rect(0.92, 0.96, 0.04, 0.96), (0,0,0))
-#             return
-#
-#         # Door frame and door
-#         if self.is_locked:
-#             fill_coords(img, point_in_rect(0.00, 1.00, 0.00, 1.00), c)
-#             fill_coords(img, point_in_rect(0.06, 0.94, 0.06, 0.94), 0.45 * np.array(c))
-#
-#             # Draw key slot
-#             fill_coords(img, point_in_rect(0.52, 0.75, 0.50, 0.56), c)
-#         else:
-#             fill_coords(img, point_in_rect(0.00, 1.00, 0.00, 1.00), c)
-#             fill_coords(img, point_in_rect(0.04, 0.96, 0.04, 0.96), (0,0,0))
-#             fill_coords(img, point_in_rect(0.08, 0.92, 0.08, 0.92), c)
-#             fill_coords(img, point_in_rect(0.12, 0.88, 0.12, 0.88), (0,0,0))
-#
-#             # Draw door handle
-#             fill_coords(img, point_in_circle(cx=0.75, cy=0.50, r=0.08), c)
-#
-#
-# class Key(WorldObj):
-#     def __init__(self, color='blue', name='key'):
-#         super(Key, self).__init__('key', color, name, state_keys=['agentcarrying'], action_keys=['pickup', 'drop'])
-#
-#     def can_pickup(self):
-#         return True
-#
-#     def render(self, img):
-#         c = COLORS[self.color]
-#
-#         # Vertical quad
-#         fill_coords(img, point_in_rect(0.50, 0.63, 0.31, 0.88), c)
-#
-#         # Teeth
-#         fill_coords(img, point_in_rect(0.38, 0.50, 0.59, 0.66), c)
-#         fill_coords(img, point_in_rect(0.38, 0.50, 0.81, 0.88), c)
-#
-#         # Ring
-#         fill_coords(img, point_in_circle(cx=0.56, cy=0.28, r=0.190), c)
-#         fill_coords(img, point_in_circle(cx=0.56, cy=0.28, r=0.064), (0,0,0))
-#
-#
-# class Ball(WorldObj):
-#     def __init__(self, color='blue', name='ball'):
-#         super(Ball, self).__init__('ball', color, name,
-#                                    state_keys=['agentcarrying'],
-#                                    action_keys=['pickup', 'drop'])
-#
-#     def render(self, img):
-#         fill_coords(img, point_in_circle(0.5, 0.5, 0.4), COLORS[self.color])
-#
-#
-# # NEW
-# class S_ball(WorldObj):
-#     def __init__(self, color='blue', name='s_ball'):
-#         super(S_ball, self).__init__('s_ball', color, name,
-#                                      state_keys=['agentcarrying'],
-#                                      action_keys=['pickup', 'drop'])
-#
-#     def render(self, img):
-#         fill_coords(img, point_in_circle(0.5, 0.5, 0.2), COLORS[self.color])
-#
-#
-# # NEW
-# class Ashcan(WorldObj):
-#     def __init__(self, color='green', name='ashcan'):
-#         super(Ashcan, self).__init__('ashcan', color, name, state_keys=['contains'])
-#
-#     def render(self, img):
-#         c = COLORS[self.color]
-#
-#         # Outline
-#         fill_coords(img, point_in_rect(0.12, 0.88, 0.12, 0.88), c)
-#         fill_coords(img, point_in_rect(0.18, 0.82, 0.18, 0.82), (0,0,0))
-#
-#
-# # NEW
-# class Agent(WorldObj):
-#     def __init__(self, color='red', name='agent'):
-#         super(Agent, self).__init__('agent', color, name)
-#
-#     def render(self, img):
-#         pass
-#
-#
-# class Box(WorldObj):
-#     def __init__(self, color, name=None):
-#         super(Box, self).__init__('box', color, name,
-#                                   state_keys=['agentcarrying', 'contains'],
-#                                   action_keys=['pickup', 'drop'])
-#
-#     def render(self, img):
-#         c = COLORS[self.color]
-#
-#         # Outline
-#         fill_coords(img, point_in_rect(0.12, 0.88, 0.12, 0.88), c)
-#         fill_coords(img, point_in_rect(0.18, 0.82, 0.18, 0.82), (0,0,0))
-#
-#         # Horizontal slit
-#         fill_coords(img, point_in_rect(0.16, 0.84, 0.47, 0.53), c)
-#
-#     def toggle(self, env, pos):
-#         # Replace the box by its contents
-#         env.grid.set(*pos, self.contains)
-#         return True
-#
-#
-# ########################################################################################################################
-#
-# _OBJECT_CLASS = {
-#     'counter': Counter,
-#     'plate': Ball,
-#     'ashcan': Ashcan,
-#     'hamburger': S_ball
-# }
-#
-# _OBJECT_COLOR = {
-#     'counter': 'purple',
-#     'plate': 'yellow',
-#     'ashcan': 'green',
-#     'hamburger': 'red'
-# }
+import numpy as np
+from .bddl import _ALL_ACTIONS, _ACTION_FUNC_MAPPING
+from .globals import DIR_TO_VEC
+
+
+class Agent:
+    """
+    Base class for agent
+    """
+
+    def __init__(self, env, agent_view_size):
+        # Initial position of agent
+        self.init_pos = None
+        self.env = env
+        self.view_size = agent_view_size
+
+        # Current position of agent
+        self.cur_pos = None
+        self.dir = None
+        self.obj = None
+        self.carrying = []
+
+        self.actions = {} # NOTE: dict with key = action_key, value = action class
+
+        for action in _ALL_ACTIONS:
+            self.actions[action] = _ACTION_FUNC_MAPPING[action](env)
+
+    def reset(self):
+        self.dir = None
+        self.cur_pos = None
+        self.obj = None
+        self.carrying = []
+
+    @property
+    def dir_vec(self):
+        """
+        Get the direction vector for the agent, pointing in the direction
+        of forward movement.
+        """
+
+        assert 0 <= self.dir < 4
+        return DIR_TO_VEC[self.dir]
+
+    @property
+    def right_vec(self):
+        """
+        Get the vector pointing to the right of the agent.
+        """
+
+        dx, dy = self.dir_vec
+        return np.array((-dy, dx))
+
+    @property
+    def front_pos(self):
+        """
+        Get the position of the cell that is right in front of the agent
+        """
+
+        return self.cur_pos + self.dir_vec
+
+    def get_view_coords(self, i, j):
+        """
+        Translate and rotate absolute grid coordinates (i, j) into the
+        agent's partially observable view (sub-grid). Note that the resulting
+        coordinates may be negative or outside of the agent's view size.
+        """
+
+        ax, ay = self.cur_pos
+        dx, dy = self.dir_vec
+        rx, ry = self.right_vec
+
+        # Compute the absolute coordinates of the top-left view corner
+        sz = self.view_size
+        hs = self.view_size // 2
+        tx = ax + (dx * (sz-1)) - (rx * hs)
+        ty = ay + (dy * (sz-1)) - (ry * hs)
+
+        lx = i - tx
+        ly = j - ty
+
+        # Project the coordinates of the object relative to the top-left
+        # corner onto the agent's own coordinate system
+        vx = (rx*lx + ry*ly)
+        vy = -(dx*lx + dy*ly)
+
+        return vx, vy
+
+    def relative_coords(self, x, y):
+        """
+        Check if a grid position belongs to the agent's field of view, and returns the corresponding coordinates
+        """
+
+        vx, vy = self.get_view_coords(x, y)
+
+        if vx < 0 or vy < 0 or vx >= self.view_size or vy >= self.view_size:
+            return None
+
+        return vx, vy
+
+
+    def get_view_exts(self):
+        """
+        Get the extents of the square set of tiles visible to the agent
+        Note: the bottom extent indices are not included in the set
+        """
+
+        # Facing right
+        if self.dir == 0:
+            topX = self.cur_pos[0]
+            topY = self.cur_pos[1] - self.view_size // 2
+        # Facing down
+        elif self.dir == 1:
+            topX = self.cur_pos[0] - self.view_size // 2
+            topY = self.cur_pos[1]
+        # Facing left
+        elif self.dir == 2:
+            topX = self.cur_pos[0] - self.view_size + 1
+            topY = self.cur_pos[1] - self.view_size // 2
+        # Facing up
+        elif self.dir == 3:
+            topX = self.cur_pos[0] - self.view_size // 2
+            topY = self.cur_pos[1] - self.view_size + 1
+        else:
+            assert False, "invalid agent direction"
+
+        botX = topX + self.view_size
+        botY = topY + self.view_size
+
+        return topX, topY, botX, botY
+
+    def in_view(self, x, y):
+        """
+        check if a grid position is visible to the agent
+        """
+        return self.relative_coords(x, y) is not None
+
+    # NEW
+    def reachable(self, obj):
+        # true if the agent can reach the object
+        carrying = self.is_carrying(obj)
+        in_front = np.all(obj.cur_pos == self.front_pos)
+        return carrying or in_front
+
+    # NEW
+    def is_carrying(self, obj):
+        return obj in self.carrying

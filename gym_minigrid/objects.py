@@ -1,6 +1,6 @@
 from .rendering import *
 import numpy as np
-from .bddl import _DEFAULT_STATES, _DEFAULT_ACTIONS, _STATE_FUNC_MAPPING, _ACTION_FUNC_MAPPING
+from .bddl import _DEFAULT_STATES, _DEFAULT_ACTIONS, _STATE_FUNC_MAPPING
 from .globals import COLOR_TO_IDX, IDX_TO_COLOR, OBJECT_TO_IDX, IDX_TO_OBJECT, COLORS
 
 global _OBJECT_CLASS
@@ -12,7 +12,12 @@ class WorldObj:
     Base class for grid world objects
     """
 
-    def __init__(self, type, color, name=None, state_keys=[], action_keys=[]):
+    def __init__(self, type, color, name=None, state_keys=None, action_keys=None):
+        if action_keys is None:
+            action_keys = []
+        if state_keys is None:
+            state_keys = []
+
         assert type in OBJECT_TO_IDX, type
         assert color in COLOR_TO_IDX, color
         self.type = type
@@ -28,9 +33,6 @@ class WorldObj:
         # Name of the object (type_number)
         self.name = name
 
-        # is the agent carrying this
-        self.agent_carry = False
-
         # TODO: define self.states and write a loop to initialize all states
         self.state_keys = _DEFAULT_STATES + state_keys
         self.states = {}
@@ -38,13 +40,11 @@ class WorldObj:
         for key in self.state_keys:
             self.states[key] = _STATE_FUNC_MAPPING[key](self)
 
-        self.action_keys = _DEFAULT_ACTIONS + action_keys
-        self.actions = {}
-        for key in self.action_keys:
-            self.actions[key] = _ACTION_FUNC_MAPPING[key](self)
+        self.actions = _DEFAULT_ACTIONS + action_keys
 
-    def possible_action(self, env, action):
-        return action in self.action_keys and self.actions[action].can(env)
+    # whether the obj is able to have the action performed on it
+    def possible_action(self, action):
+        return action in self.actions
 
     def possible_state(self, state):
         return state in self.state_keys
@@ -57,12 +57,6 @@ class WorldObj:
 
     def check_rel_state(self, env, other, state):
         return state in self.state_keys and self.states[state].get_value(other, env)
-
-    def reachable(self, env):
-        # true if the agent can reach the object
-        carrying = self.check_abs_state(env, 'agentcarrying')
-        in_front = np.all(self.cur_pos == env.front_pos)
-        return carrying or in_front
 
     def toggle(self, env, pos):
         """Method to trigger/toggle an action this object performs"""
@@ -98,7 +92,6 @@ class WorldObj:
                 'counter': Counter,
                 's_ball': S_ball,
                 'ashcan': Ashcan,
-                'agent': Agent
             }
 
             v = OBJ_TYPE_DICT[obj_type](color)
@@ -287,16 +280,6 @@ class Ashcan(WorldObj):
         # Outline
         fill_coords(img, point_in_rect(0.12, 0.88, 0.12, 0.88), c)
         fill_coords(img, point_in_rect(0.18, 0.82, 0.18, 0.82), (0,0,0))
-
-
-# NEW
-# TODO: remove
-class Agent(WorldObj):
-    def __init__(self, color='red', name='agent'):
-        super(Agent, self).__init__('agent', color, name)
-
-    def render(self, img):
-        pass
 
 
 class Box(WorldObj):

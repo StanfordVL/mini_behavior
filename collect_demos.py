@@ -3,7 +3,7 @@ import json
 
 
 def all_pos(env):
-    pos = {'agent': [int(obj_pos) for obj_pos in env.agent_pos]}
+    pos = {'agent': [int(obj_pos) for obj_pos in env.agent.cur_pos]}
 
     for obj_name in env.obj_instances:
         obj_instance = env.obj_instances[obj_name]
@@ -40,7 +40,10 @@ def all_states(env):
 # save last action, all states
 def save_step(all_steps, env):
     step_count = env.step_count
-    action = env.last_action.name
+    if env.last_action is None:
+        action = 'none'
+    else:
+        action = env.last_action.name
     states = all_states(env)
     pos = all_pos(env)
 

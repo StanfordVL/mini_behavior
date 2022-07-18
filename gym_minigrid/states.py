@@ -53,7 +53,6 @@ class Onfloor(AbsoluteObjectState):
 
         # return agent_room == obj_room
 
-
 class Agentcarrying(AbsoluteObjectState):
     def __init__(self, obj, value=False):
         super(Agentcarrying, self).__init__(obj)

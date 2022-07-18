@@ -130,11 +130,11 @@ class RoomGrid(MiniGridEnv):
         self._gen_rooms(width, height)
 
         # Place the agent, starting in the middle, facing right
-        self.agent_pos = (
+        self.agent.cur_pos = (
             (self.num_cols // 2) * (self.room_size-1) + (self.room_size // 2),
             (self.num_rows // 2) * (self.room_size-1) + (self.room_size // 2)
         )
-        self.agent_dir = 0
+        self.agent.dir = 0
 
     def _gen_rooms(self, width, height):
         # Create the grid
@@ -312,8 +312,8 @@ class RoomGrid(MiniGridEnv):
         # Find a position that is not right in front of an object
         while True:
             super().place_agent(room.top, room.size, rand_dir, max_tries=1000)
-            front_cell = self.grid.get(*self.front_pos)
-            # agent_cell = self.grid.get(*self.agent_pos)
+            front_cell = self.grid.get(*self.agent.front_pos)
+            # agent_cell = self.grid.get(*self.agent.cur_pos)
             # if not isinstance(agent_cell, list):
             if front_cell is None:
                 break
@@ -322,7 +322,7 @@ class RoomGrid(MiniGridEnv):
             # elif front_cell.type == 'wall':
             #     break
 
-        return self.agent_pos
+        return self.agent.cur_pos
 
     def connect_all(self, door_colors=COLOR_NAMES, max_itrs=5000):
         """
@@ -330,7 +330,7 @@ class RoomGrid(MiniGridEnv):
         starting position
         """
 
-        start_room = self.room_from_pos(*self.agent_pos)
+        start_room = self.room_from_pos(*self.agent.cur_pos)
 
         added_doors = []
 
