@@ -37,6 +37,7 @@ def all_states(env):
                         states[state_name] = state_value
     return states
 
+
 # save last action, all states
 def save_step(all_steps, env):
     step_count = env.step_count
@@ -47,19 +48,27 @@ def save_step(all_steps, env):
     states = all_states(env)
     pos = all_pos(env)
 
+    door_pos = []
+    for door in env.doors:
+        door_pos.append(door.cur_pos)
     all_steps[step_count] = {'action': action,
                              'states': states,
-                             'pos': pos
+                             'pos': pos,
+                             'door_pos': door_pos
                              }
 
 
-def save_demo(all_steps, env_name):
+def save_demo(all_steps, env_name, episode):
     demo_dir = os.path.join('../demos', env_name)
+    if not os.path.isdir(demo_dir):
+        os.mkdir(demo_dir)
+    demo_dir = os.path.join(demo_dir, str(episode))
     if not os.path.isdir(demo_dir):
         os.mkdir(demo_dir)
     all_files = os.listdir(demo_dir)
     demo_num = len(all_files)
     demo_file = os.path.join(demo_dir, '{}_{}'.format(env_name, demo_num))
+    # demo_file = demo_num
     assert not os.path.isfile(demo_file)
 
     print('saving demo to: {}'.format(demo_file))

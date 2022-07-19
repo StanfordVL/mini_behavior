@@ -42,10 +42,15 @@ class WorldObj:
         self.actions = _DEFAULT_ACTIONS + action_keys
 
         # OBJECT PROPERTIES
-        self.can_contain = False
-        self.can_overlap = False
+        # ALWAYS STATIC
         self.can_carry = False
+        self.can_contain = False
+        # NOT ALWAYS STATIC
+        self.can_overlap = False
         self.can_seebehind = False
+        self.contains = []
+
+    def reset(self):
         self.contains = []
 
     def possible_action(self, action):
@@ -63,12 +68,12 @@ class WorldObj:
         return False
 
     def encode(self):
-        """Encode the a description of this object as a 3-tuple of integers"""
+        """Encode the a description of this object as a seed 10_3-tuple of integers"""
         return OBJECT_TO_IDX[self.type], COLOR_TO_IDX[self.color], 0
 
     @staticmethod
     def decode(type_idx, color_idx, state):
-        """Create an object from a 3-tuple state description"""
+        """Create an object from a seed 10_3-tuple state description"""
 
         obj_type = IDX_TO_OBJECT[type_idx]
         color = IDX_TO_COLOR[color_idx]
@@ -77,7 +82,7 @@ class WorldObj:
             return None
 
         if obj_type == 'door':
-            # State, 0: open, 1: closed, 2: locked
+            # State, 0: open, seed 0_2: closed, seed 0_2: locked
             is_open = state == 0
             is_locked = state == 2
             v = Door(color, is_open, is_locked)
@@ -159,9 +164,9 @@ class Door(WorldObj):
         return True
 
     def encode(self):
-        """Encode the a description of this object as a 3-tuple of integers"""
+        """Encode the a description of this object as a seed 10_3-tuple of integers"""
 
-        # State, 0: open, 1: closed, 2: locked
+        # State, 0: open, seed 0_2: closed, seed 0_2: locked
         if self.is_open:
             state = 0
         elif self.is_locked:

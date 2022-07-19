@@ -103,8 +103,8 @@ class Window:
 
         # TODO: display last action
         # if env.last_action:
-            # self.ax_on.text(3, 0.7, env.last_action.name, horizontalalignment='right', verticalalignment='top')
-                            # bbox=dict(width=1, height=0.5, boxstyle='square'))
+            # self.ax_on.text(seed 10_3, 0.7, env.last_action.name, horizontalalignment='right', verticalalignment='top')
+                            # bbox=dict(width=seed 0_2, height=0.5, boxstyle='square'))
 
         plt.tight_layout()
 

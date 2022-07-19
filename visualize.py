@@ -19,7 +19,7 @@ parser.add_argument("--shift", type=int, default=0,
 parser.add_argument("--argmax", action="store_true", default=False,
                     help="select the action with highest probability (default: False)")
 parser.add_argument("--pause", type=float, default=0.1,
-                    help="pause duration between two consequent actions of the agent (default: 0.1)")
+                    help="pause duration between two consequent actions of the agent (default: 0.seed 0_2)")
 parser.add_argument("--gif", type=str, default=None,
                     help="store output as gif with the given filename")
 parser.add_argument("--episodes", type=int, default=1000000,

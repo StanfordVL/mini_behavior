@@ -79,7 +79,7 @@ class RoomGrid(MiniGridEnv):
         num_rows=2,
         num_cols=2,
         max_steps=100,
-        seed=0,
+        seed=500,
         agent_view_size=7
     ):
         assert room_size > 0
@@ -250,15 +250,18 @@ class RoomGrid(MiniGridEnv):
         door = Door(color, is_open=True, is_locked=False)
 
         pos = room.door_pos[door_idx]
-        while self.grid.get(*pos) is not None:
-            self.grid.remove(*pos, self.grid.get(*pos)[0])
+        self.grid.set(*pos, None)
         self.grid.set(*pos, door)
+        # while self.grid.get(*pos) is not None:
+        #     self.grid.remove(*pos, self.grid.get(*pos)[0])
+        # self.grid.set(*pos, door)
         door.cur_pos = pos
 
         neighbor = room.neighbors[door_idx]
         room.doors[door_idx] = door
         neighbor.doors[(door_idx+2) % 4] = door
 
+        self.doors.append(door)
         return door, pos
 
     def remove_wall(self, i, j, wall_idx):

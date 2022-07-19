@@ -62,7 +62,7 @@ class Grid:
     def set(self, i, j, v):
         assert 0 <= i < self.width
         assert 0 <= j < self.height
-        if self.grid[j * self.width + i] is None:
+        if v is None or self.grid[j * self.width + i] is None:
             self.grid[j * self.width + i] = v
         elif isinstance(self.grid[j * self.width + i], list):
             self.grid[j * self.width + i].append(v)
@@ -157,7 +157,7 @@ class Grid:
         key = (agent_dir, highlight, tile_size)
 
         if isinstance(objs, list):
-            keys = [obj.encode() for obj in objs]
+            keys = [obj.encode() for obj in objs if obj is not None]
             key = tuple(keys) + key
         elif objs:
             key = objs.encode() + key
@@ -267,8 +267,7 @@ class Grid:
                     #     array[i, j, :] = v.encode()
                     elif isinstance(v, list):
                         for obj in v:
-                            if obj is not None:
-                                array[i, j, :] = np.add(array[i, j, :], obj.encode())
+                            array[i, j, :] = np.add(array[i, j, :], obj.encode())
                     elif not isinstance(v, list):
                         array[i, j, :] = v.encode()
 
@@ -370,6 +369,8 @@ class MiniGridEnv(gym.Env):
         agent_view_size=7,
     ):
         # Can't set both grid_size and width/height
+        self.episode = 0
+
         if grid_size:
             assert width is None and height is None
             width = grid_size
@@ -393,6 +394,7 @@ class MiniGridEnv(gym.Env):
                 self.objs[obj].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 
+        self.doors = []
         # Action enumeration for this environment
         self.actions()
 
@@ -457,7 +459,12 @@ class MiniGridEnv(gym.Env):
     def reset(self):
         # Current position and direction of the agent
         self.agent.reset()
+
+        for obj in self.obj_instances.values():
+            obj.reset()
+
         self.reward = 0
+        self.doors = []
 
         # Generate a new random grid at the start of each episode
         # To keep the same grid for each episode, call env.seed() with
@@ -483,6 +490,7 @@ class MiniGridEnv(gym.Env):
 
         # Step count since episode start
         self.step_count = 0
+        self.episode += 1
 
         # Return first observation
         obs = self.gen_obs()
@@ -512,7 +520,7 @@ class MiniGridEnv(gym.Env):
     def __str__(self):
         """
         Produce a pretty string of the environment's grid along with the agent.
-        A grid cell is represented by 2-character string, the first one for
+        A grid cell is represented by seed 0_2-character string, the first one for
         the object and the second one for the color.
         """
 
@@ -805,11 +813,11 @@ class MiniGridEnv(gym.Env):
             else:
                 if fwd_cell is None or fwd_cell.can_overlap:
                     self.agent.cur_pos = fwd_pos
-                if fwd_cell is not None and fwd_cell.type == 'goal':
-                    done = True
-                    reward = self._reward()
-                if fwd_cell is not None and fwd_cell.type == 'lava':
-                    done = True
+                # if fwd_cell is not None and fwd_cell.type == 'goal':
+                #     done = True
+                #     reward = self._reward()
+                # if fwd_cell is not None and fwd_cell.type == 'lava':
+                #     done = True
 
         # Choose an object to interact with
         elif action == self.actions.done:
@@ -864,15 +872,15 @@ class MiniGridEnv(gym.Env):
                 # TODO: check that this works
                 obj_action = self.actions(action).name.split('/') # list: [obj, action]
                 # print("Chosen object: {}".format(obj_action[0]))
-                # print("Chosen action: {}".format(obj_action[1]))
+                # print("Chosen action: {}".format(obj_action[seed 0_2]))
 
                 # try to perform action
                 obj = self.obj_instances[obj_action[0]] # assert obj.name == obj_action[0]
                 if self.agent.actions[obj_action[1]].can(obj):
                     self.agent.actions[obj_action[1]].do(obj)
 
-        if self.step_count >= self.max_steps:
-            done = True
+                if self.step_count >= self.max_steps:
+                    done = True
 
         obs = self.gen_obs()
         return obs, reward, done, {}
@@ -905,10 +913,11 @@ class MiniGridEnv(gym.Env):
         # We do this by placing the carried object at the agent's position
         # in the agent's partially observable view
         agent_pos = grid.width // 2, grid.height - 1
-        if self.agent.carrying:
-            grid.set(*agent_pos, self.agent.carrying)
-        else:
-            grid.set(*agent_pos, None)
+        # TODO: commented out below. otherwise, there is error with multiroom when you carry an object through door
+        # if self.agent.carrying:
+        #     grid.set(*agent_pos, self.agent.carrying)
+        # else:
+        #     grid.set(*agent_pos, None)
 
         return grid, vis_mask
 

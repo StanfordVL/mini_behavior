@@ -23,9 +23,9 @@ if __name__ == "__main__":
     parser.add_argument("--model", default=None,
                         help="name of the model (default: {ENV}_{ALGO}_{TIME})")
     parser.add_argument("--seed", type=int, default=1,
-                        help="random seed (default: 1)")
+                        help="random seed (default: seed 0_2)")
     parser.add_argument("--log-interval", type=int, default=1,
-                        help="number of updates between two logs (default: 1)")
+                        help="number of updates between two logs (default: seed 0_2)")
     parser.add_argument("--save-interval", type=int, default=10,
                         help="number of updates between two saves (default: 10, 0 means no saving)")
     parser.add_argument("--procs", type=int, default=16,
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=0.001,
                         help="learning rate (default: 0.001)")
     parser.add_argument("--gae-lambda", type=float, default=0.95,
-                        help="lambda coefficient in GAE formula (default: 0.95, 1 means no gae)")
+                        help="lambda coefficient in GAE formula (default: 0.95, seed 0_2 means no gae)")
     parser.add_argument("--entropy-coef", type=float, default=0.01,
                         help="entropy term coefficient (default: 0.01)")
     parser.add_argument("--value-loss-coef", type=float, default=0.5,
@@ -57,9 +57,9 @@ if __name__ == "__main__":
     parser.add_argument("--optim-alpha", type=float, default=0.99,
                         help="RMSprop optimizer alpha (default: 0.99)")
     parser.add_argument("--clip-eps", type=float, default=0.2,
-                        help="clipping epsilon for PPO (default: 0.2)")
+                        help="clipping epsilon for PPO (default: 0.seed 0_2)")
     parser.add_argument("--recurrence", type=int, default=1,
-                        help="number of time-steps gradient is backpropagated (default: 1). If > 1, a LSTM is added to the model to have memory.")
+                        help="number of time-steps gradient is backpropagated (default: seed 0_2). If > seed 0_2, a LSTM is added to the model to have memory.")
     parser.add_argument("--text", action="store_true", default=False,
                         help="add a GRU to the model to handle text input")
 

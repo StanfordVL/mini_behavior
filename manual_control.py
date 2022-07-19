@@ -34,7 +34,7 @@ def step(action):
 
     if done:
         print('done!')
-        save_demo(all_steps, args.env)
+        save_demo(all_steps, args.env, env.episode)
         reset()
     else:
         redraw(obs)
@@ -74,8 +74,9 @@ parser.add_argument(
     help="gym environment to load",
     # default='MiniGrid-ThrowLeftoversMulti-16x16-N2-v1'
     # default='MiniGrid-ThrowLeftovers-8x8-N2-v0'
-    default='MiniGrid-ThrowLeftoversNavigation-8x8-N2-v0'
-    # default='MiniGrid-ThrowLeftoversNavigation-16x16-N2-v0'
+    # default='MiniGrid-ThrowLeftoversNavigation-8x8-N2-v0'
+    # default='MiniGrid-ThrowLeftoversMulti-16x16-N2-v1'
+    default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
 )
 parser.add_argument(
     "--seed",

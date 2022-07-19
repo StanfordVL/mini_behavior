@@ -1,163 +1,252 @@
 import random
-from gym_minigrid.minigrid import *
+from gym_minigrid.roomgrid import *
 from gym_minigrid.register import register
 
 
-class ThrowLeftoversEnv(MiniGridEnv):
+class ThrowLeftoversEnvMulti(RoomGrid):
     """
     Environment in which the agent is instructed to throw away all leftovers into a trash can.
     """
 
     def __init__(
             self,
-            size=16,
-            numPlates=4,
-            numHamburgers=3,
+            mode='not_human',
+            room_size=16,
+            num_rows=1,
+            num_cols=1,
+            max_steps=100,
+            num_objs=None
     ):
-        self.numPlates = numPlates
-        self.numHamburgers = numHamburgers
+        if num_objs is None:
+            num_objs = {'counter': 4,
+                        'plate': 4,
+                        'hamburger': 3,
+                        'ashcan': 1}
 
-        self.objs = {}
-        self.numThrown = 0
-
-        super().__init__(
-            grid_size=size,
-            # max_steps=5 * size,
-            max_steps=1e10,
-            # Set this to True for maximum speed
-            see_through_walls=True
-        )
-
-    def action_space(self):
-        objs = self.objs
-        actions = self.actions
+        super().__init__(mode=mode,
+                         num_objs=num_objs,
+                         room_size=room_size,
+                         num_rows=num_rows,
+                         num_cols=num_cols,
+                         max_steps=max_steps
+                         )
 
     def _gen_grid(self, width, height):
-        self.grid = Grid(width, height)
-
-        # Generate the surrounding walls
-        self.grid.horz_wall(0, 0)
-        self.grid.horz_wall(0, height - 1)
-        self.grid.vert_wall(0, 0)
-        self.grid.vert_wall(width - 1, 0)
+        self._gen_rooms(width, height)
 
         # return True if not a valid counter space
-        def invalid_counter(env, p1):
-            return p1[0] + 3 >= env.width or p1[1] <= 2
+        def invalid_counter(env, cell):
+            x, y = cell
+            for i in range(3):
+                if env.grid.get(x+i, y) is not None:
+                    return True
+            return False
 
-        def init_conditions():
-            assert 'counters' in self.objs.keys(), "No counter"
-            assert 'ashcan' in self.objs.keys(), "No ashcan"
-            assert 'plates' in self.objs.keys(), "No plates"
-            assert 'hamburgers' in self.objs.keys(), "No hamburgers"
+        # # generate counter
+        # place all objects
+        counters = self.objs['counter']
+        plates = self.objs['plate']
+        hamburgers = self.objs['hamburger']
+        ashcans = self.objs['ashcan']
 
-            for ashcan in self.objs['ashcan']:
-                assert check_abs_state(self, ashcan, 'onfloor'), "Ashcan not on floor"
-
-            for plate in self.objs['plates']:
-                on_counter = False
-                for counter in self.objs['counters']:
-                    on_counter = check_rel_state(self, plate, counter, 'ontop')
-                    if on_counter:
-                        break
-                assert on_counter, "Plate not on counter"
-
-            for hamburger in self.objs['hamburgers']:
-                on_plate = False
-                for plate in self.objs['plates']:
-                    on_plate = check_rel_state(self, hamburger, plate, 'ontop')
-                    if on_plate:
-                        break
-                assert on_plate, "Hamburger not on plate"
-
-        # generate counter
-        counters = [Counter('purple', 'counter_0')]
-        init_counter = self.place_obj(counters[0], reject_fn=invalid_counter)
-        for i in range(1, self.numPlates):
-            counter = Counter('purple', 'counter_{}'.format(i))
+        # place counters
+        _, init_counter = self.place_in_room(0, 0, counters[0], reject_fn=invalid_counter)
+        for i in range(1, len(counters)):
             x = init_counter[0] + i
             y = init_counter[1]
-            self.put_obj(counter, x, y)
-            counters.append(counter)
-        self.objs['counters'] = counters
+            self.put_obj(counters[i], x, y)
 
-        # TODO: generate floor
+        # # TODO: generate floor
 
-        # generate all plates
-        plates = []
+        # place plates
+        for i in range(len(plates)):
+            self.put_obj(plates[i], *counters[i].cur_pos)
+
+        # place all hamburgers
         i = 0
-        for counter in counters:
-            plate = Ball('yellow', 'plate_{}'.format(i))
-            self.put_obj(plate, *counter.cur_pos)
-            plates.append(plate)
+        for plate in self._rand_subset(plates, len(hamburgers)):
+        # for plate in random.sample(plates, len(hamburgers)):
+            self.put_obj(hamburgers[i], *plate.cur_pos)
             i += 1
-        self.objs['plates'] = plates
-
-        # generate all hamburgers
-        hamburgers = []
-        i = 0
-        for plate in random.sample(plates, self.numHamburgers):
-            hamburger = S_ball('red', 'hamburger_{}'.format(i))
-            self.put_obj(hamburger, *plate.cur_pos)
-            hamburgers.append(hamburger)
-            i += 1
-        self.objs['hamburgers'] = hamburgers
 
         # generate ashcan on floor
-        ashcan = Box('green', 'ashcan_0')
-        ashcan.on_floor = True
-        self.objs['ashcan'] = [ashcan]
-        self.target_pos = self.place_obj(self.objs['ashcan'][0])
+        for ashcan in ashcans:
+            ashcan.on_floor = True
+            self.target_pos = self.place_obj(ashcan)
 
         # check init conditions satisfied
-        init_conditions()
+        assert self.init_conditions(), "Does not satisfy initial conditions"
 
         # randomize the agent start position and orientation
         self.place_agent()
-        self.mission = 'throw the leftovers in the ashcan'
+        self.mission = 'throw all {} leftovers in the ashcan'.format(self.num_objs['hamburger'])
+        self.connect_all()
+
+    # TODO: automatically generate function from BDDL
+    def init_conditions(self):
+        assert 'counter' in self.objs.keys(), "No counter"
+        assert 'ashcan' in self.objs.keys(), "No ashcan"
+        assert 'plate' in self.objs.keys(), "No plates"
+        assert 'hamburger' in self.objs.keys(), "No hamburgers"
+
+        for ashcan in self.objs['ashcan']:
+            assert ashcan.check_abs_state(self, 'onfloor'), "Ashcan not on floor"
+
+        for plate in self.objs['plate']:
+            on_counter = False
+            for counter in self.objs['counter']:
+                on_counter = plate.check_rel_state(self, counter, 'ontop')
+                if on_counter:
+                    break
+            assert on_counter, "Plate not on counter"
+
+        for hamburger in self.objs['hamburger']:
+            on_plate = False
+            for plate in self.objs['plate']:
+                on_plate = hamburger.check_rel_state(self, plate, 'ontop')
+                if on_plate:
+                    break
+            assert on_plate, "Hamburger not on plate"
+
+        return True
 
     def step(self, action):
         obs, reward, done, info = super().step(action)
-        obj = self.agent_object
 
-        # if dropping an object
-        if action == self.actions.drop and obj:
-            # if dropped a hamburger into the ashcan
-            # pos = [np.all(obj.cur_pos == ashcan.cur_pos) for ashcan in self.objs['ashcan']]
-            pos = [check_rel_state(self, obj, ashcan, 'inside') for ashcan in self.objs['ashcan']]
-            # if obj in self.objs['hamburgers'] and True in pos:
-            if obj in self.objs['hamburgers'] and True in pos:
-                # TODO: set reward
-                # reward = self._reward()
-                self.numThrown += 1
-                print('Num remaining hamburgers: ' + str(self.numHamburgers - self.numThrown))
+        reward = self._reward()
+        done = self._end_condition()
 
-        # done if succesfully throw away all leftovers
-        def end_condition():
-            for hamburger in self.objs['hamburgers']:
-                is_inside = [check_rel_state(self, hamburger, ashcan, 'inside') for ashcan in self.objs['ashcan']]
-                if True not in is_inside:
-                    return False
-            return True
+        return obs, reward, done, {}
 
-        done = end_condition()
+    def _end_condition(self):
+        for hamburger in self.objs['hamburger']:
+            is_inside = [hamburger.check_rel_state(self, ashcan, 'inside') for ashcan in self.objs['ashcan']]
+            if True not in is_inside:
+                return False
+        return True
+
+    def _reward(self):
+        # fraction of hamburgers thrown away
+        num_thrown = 0
+        for hamburger in self.objs['hamburger']:
+            is_inside = [hamburger.check_rel_state(self, ashcan, 'inside') for ashcan in self.objs['ashcan']]
+            if True in is_inside:
+                num_thrown += 1
+
+        return num_thrown / self.num_objs['hamburger']
+
+
+class ThrowLeftoversMulti16x16_Human(ThrowLeftoversEnvMulti):
+    def __init__(self):
+        super().__init__(mode='human',
+                         room_size=16,
+                         num_objs={'counter': 4,
+                                   'plate': 4,
+                                   'hamburger': 3,
+                                   'ashcan': 1}
+                         )
+
+
+class ThrowLeftoversMulti8x8x4_Human(ThrowLeftoversEnvMulti):
+    def __init__(self):
+        super().__init__(mode='human',
+                         room_size=8,
+                         num_rows=2,
+                         num_cols=2,
+                         num_objs={'counter': 4,
+                                   'plate': 4,
+                                   'hamburger': 3,
+                                   'ashcan': 1}
+                         )
+
+
+class ThrowLeftovers8x8(ThrowLeftoversEnvMulti):
+    def __init__(self):
+        super().__init__(mode='human',
+                         room_size=8
+                         )
+
+
+# non human input env
+register(
+    id='MiniGrid-ThrowLeftoversMulti-16x16-N2-v0',
+    entry_point='gym_minigrid.envs:ThrowLeftoversEnvMulti'
+)
+
+# human input env
+register(
+    id='MiniGrid-ThrowLeftoversMulti-16x16-N2-v1',
+    entry_point='gym_minigrid.envs:ThrowLeftoversMulti16x16_Human'
+)
+
+# human input env
+register(
+    id='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1',
+    entry_point='gym_minigrid.envs:ThrowLeftoversMulti8x8x4_Human'
+)
+
+# non human input env,
+register(
+    id='MiniGrid-ThrowLeftovers-8x8-N2-v0',
+    entry_point='gym_minigrid.envs:ThrowLeftovers8x8'
+)
+
+
+#######################################################################################################################
+
+
+class ThrowLeftoversNavigation(ThrowLeftoversEnvMulti):
+    """
+    Environment in which the agent is rewarded for navigating to a hamburger
+    """
+
+    def __init__(
+            self,
+            mode='human',
+            room_size=8,
+            num_rows=1,
+            num_cols=1,
+            max_steps=500,
+            num_objs=None
+    ):
+        super().__init__(mode=mode,
+                         room_size=room_size,
+                         num_rows=num_rows,
+                         num_cols=num_cols,
+                         max_steps=max_steps,
+                         num_objs=num_objs
+                         )
+
+    def _reward(self):
+        for hamburger in self.objs['hamburger']:
+            if hamburger.check_rel_state(self, self.agent, 'nextto'):
+                self.reward += 1
+            for ashcan in self.objs['ashcan']:
+                if hamburger.check_rel_state(self, ashcan, 'inside'):
+                    self.reward += 10
+        return self.reward
+
+    def step(self, action):
+        obs, reward, done, info = super().step(action)
+
+        reward = self._reward()
 
         return obs, reward, done, {}
 
 
-class ThrowLeftovers16x16N3(ThrowLeftoversEnv):
+class ThrowLeftoversNavigationBig(ThrowLeftoversNavigation):
     def __init__(self):
-        super().__init__(size=32, numPlates=4, numHamburgers=3)
+        super().__init__(room_size=16)
 
 
 register(
-    id='MiniGrid-ThrowLeftovers-16x16-N2-v0',
-    entry_point='gym_minigrid.envs:ThrowLeftoversEnv'
-)    
-
-register(        
-    id='MiniGrid-ThrowLeftovers-32x32-N3-v0',
-    entry_point='gym_minigrid.envs:ThrowLeftovers32x32N3'
+    id='MiniGrid-ThrowLeftoversNavigation-8x8-N2-v0',
+    entry_point='gym_minigrid.envs:ThrowLeftoversNavigation'
 )
 
+
+register(
+    id='MiniGrid-ThrowLeftoversNavigation-16x16-N2-v0',
+    entry_point='gym_minigrid.envs:ThrowLeftoversNavigationBig'
+)
 

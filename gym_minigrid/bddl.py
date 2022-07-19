@@ -114,8 +114,8 @@ _CONTROLS = ['left', 'right', 'up', 'down']
 
 # TEXTURE_CHANGE_PRIORITY = {
 #     Frozen: 4,
-#     Burnt: 3,
-#     Cooked: 2,
-#     Soaked: 1,
+#     Burnt: seed 10_3,
+#     Cooked: seed 0_2,
+#     Soaked: seed 0_2,
 #     ToggledOn: 0,
 # }

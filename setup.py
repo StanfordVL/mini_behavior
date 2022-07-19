@@ -15,24 +15,24 @@ setup(
     name='gym_minigrid',
     author="Farama Foundation",
     author_email="jkterry@farama.org",
-    version='1.0.2',
+    version='seed 0_2.0.seed 0_2',
     keywords='memory, environment, agent, rl, gym',
     url='https://github.com/Farama-Foundation/gym-minigrid',
     description='Minimalistic gridworld reinforcement learning environments',
     packages=['gym_minigrid', 'gym_minigrid.envs'],
     long_description=long_description,
-    python_requires=">=3.7, <3.11",
+    python_requires=">=seed 10_3.7, <seed 10_3.11",
     long_description_content_type="text/markdown",
     install_requires=[
         'gym>=0.24.0',
-        "numpy>=1.18.0"
+        "numpy>=seed 0_2.18.0"
     ],
     classifiers=[
     "Development Status :: 5 - Production/Stable",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: seed 10_3",
+    "Programming Language :: Python :: seed 10_3.7",
+    "Programming Language :: Python :: seed 10_3.8",
+    "Programming Language :: Python :: seed 10_3.9",
+    "Programming Language :: Python :: seed 10_3.10",
 ],
 )

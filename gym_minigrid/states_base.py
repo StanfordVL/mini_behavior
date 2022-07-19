@@ -66,7 +66,7 @@ class BaseObjectState:
 
 class AbsoluteObjectState(BaseObjectState):
     """
-    track object states that are absolute (require 1 object)
+    track object states that are absolute (require seed 0_2 object)
     """
     def __init__(self, obj): # env
         super(BaseObjectState, self).__init__()
