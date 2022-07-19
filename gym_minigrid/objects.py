@@ -22,7 +22,6 @@ class WorldObj:
         assert color in COLOR_TO_IDX, color
         self.type = type
         self.color = color
-        self.contains = None
 
         # Initial position of the object
         self.init_pos = None
@@ -42,18 +41,19 @@ class WorldObj:
 
         self.actions = _DEFAULT_ACTIONS + action_keys
 
-    # whether the obj is able to have the action performed on it
-    def possible_action(self, action):
-        return action in self.actions
+        # OBJECT PROPERTIES
+        self.can_contain = False
+        self.can_overlap = False
+        self.can_carry = False
+        self.can_seebehind = False
+        self.contains = []
 
-    def possible_state(self, state):
-        return state in self.state_keys
+    def possible_action(self, action):
+        # whether the obj is able to have the action performed on it
+        return action in self.actions
 
     def check_abs_state(self, env, state):
         return state in self.state_keys and self.states[state].get_value(env)
-
-    def check_static_state(self, state):
-        return state in self.state_keys and self.states[state].get_value()
 
     def check_rel_state(self, env, other, state):
         return state in self.state_keys and self.states[state].get_value(other, env)
@@ -118,9 +118,7 @@ class Floor(WorldObj):
 
     def __init__(self, color='blue'):
         super().__init__('floor', color)
-
-    def can_overlap(self):
-        return True
+        self.can_overlap = True
 
     def render(self, img):
         # Give the floor a pale color
@@ -128,23 +126,9 @@ class Floor(WorldObj):
         fill_coords(img, point_in_rect(0.031, 1, 0.031, 1), color)
 
 
-# NEW
-# TODO: check cannot pickup counter
-class Counter(WorldObj):
-    """
-    Colored floor tile the agent can walk over
-    """
-
-    def __init__(self, color='purple', name='counter'):
-        super(Counter, self).__init__('counter', color, name)
-
-    def render(self, img):
-        fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
-
-
 class Wall(WorldObj):
     def __init__(self, color='grey'):
-        super().__init__('wall', color=color, state_keys=['seebehind'])
+        super().__init__('wall', color=color)
 
     def render(self, img):
         fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
@@ -152,9 +136,13 @@ class Wall(WorldObj):
 
 class Door(WorldObj):
     def __init__(self, color, is_open=False, is_locked=False):
-        super().__init__('door', color, state_keys=['seebehind', 'overlap'])
+        super().__init__('door', color)
         self.is_open = is_open
         self.is_locked = is_locked
+
+        if self.is_open:
+            self.can_overlap = True
+            self.can_seebehind = True
 
     def toggle(self, env, pos):
         # If the player has the right key to open the door
@@ -166,6 +154,8 @@ class Door(WorldObj):
             return False
 
         self.is_open = not self.is_open
+        self.can_overlap = self.is_open
+        self.can_seebehind = self.is_open
         return True
 
     def encode(self):
@@ -208,10 +198,7 @@ class Door(WorldObj):
 
 class Key(WorldObj):
     def __init__(self, color='blue', name='key'):
-        super(Key, self).__init__('key', color, name, state_keys=['agentcarrying'], action_keys=['pickup', 'drop'])
-
-    def can_pickup(self):
-        return True
+        super(Key, self).__init__('key', color, name, action_keys=['pickup', 'drop'])
 
     def render(self, img):
         c = COLORS[self.color]
@@ -231,7 +218,6 @@ class Key(WorldObj):
 class Ball(WorldObj):
     def __init__(self, color='blue', name='ball'):
         super(Ball, self).__init__('ball', color, name,
-                                   state_keys=['agentcarrying'],
                                    action_keys=['pickup', 'drop'])
 
     def render(self, img):
@@ -242,7 +228,6 @@ class Ball(WorldObj):
 class S_ball(WorldObj):
     def __init__(self, color='blue', name='s_ball'):
         super(S_ball, self).__init__('s_ball', color, name,
-                                     state_keys=['agentcarrying'],
                                      action_keys=['pickup', 'drop'])
 
     def render(self, img):
@@ -250,9 +235,22 @@ class S_ball(WorldObj):
 
 
 # NEW
+class Counter(WorldObj):
+    """
+    Colored floor tile the agent can walk over
+    """
+    def __init__(self, color='purple', name='counter'):
+        super(Counter, self).__init__('counter', color, name)
+
+    def render(self, img):
+        fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
+
+
+# NEW
 class Ashcan(WorldObj):
     def __init__(self, color='green', name='ashcan'):
-        super(Ashcan, self).__init__('ashcan', color, name, state_keys=['contains'])
+        super(Ashcan, self).__init__('ashcan', color, name)
+        self.can_contain = True
 
     def render(self, img):
         c = COLORS[self.color]
@@ -265,8 +263,8 @@ class Ashcan(WorldObj):
 class Box(WorldObj):
     def __init__(self, color, name=None):
         super(Box, self).__init__('box', color, name,
-                                  state_keys=['agentcarrying', 'contains'],
                                   action_keys=['pickup', 'drop'])
+        self.can_contain = True
 
     def render(self, img):
         c = COLORS[self.color]

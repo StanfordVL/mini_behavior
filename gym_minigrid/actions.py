@@ -61,7 +61,6 @@ class Pickup(BaseAction):
 
         self.env.grid.remove(*obj.cur_pos, obj)  # remove obj from the grid
         obj.cur_pos = np.array([-1, -1]) # update cur_pos of obj
-        obj.states['agentcarrying'].set_value(True) # change carrying state of object
         self.env.agent.carrying.append(obj) # update list of objects being carried by agent
 
         # check dependencies
@@ -87,7 +86,6 @@ class Drop(BaseAction):
 
         # change object properties
         obj.cur_pos = fwd_pos
-        obj.states['agentcarrying'].set_value(False)
 
         # change agent / grid
         self.env.grid.set(*fwd_pos, obj)
@@ -95,13 +93,11 @@ class Drop(BaseAction):
 
         if isinstance(cell, list):
             for other_obj in cell:
-                if 'contains' in other_obj.state_keys:
-                    other_obj.states['contains'].set_value(True)
-                    other_obj.states['contains'].add_obj(obj)
+                if other_obj.can_contain:
+                    other_obj.contains.append(obj)
         elif cell is not None:
-            if 'contains' in cell.state_keys:
-                cell.states['contains'].set_value(True)
-                cell.states['contains'].add_obj(obj)
+            if cell.can_contain:
+                cell.contains.append(obj)
 
         # check dependencies
         if cell == [] or cell is None:

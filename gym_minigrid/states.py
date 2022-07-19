@@ -32,9 +32,11 @@ def get_obj_cell(self, env):
     return obj, cell
 
 
+# TODO: check that get_value is correct
 class Onfloor(AbsoluteObjectState):
     def _get_value(self, env):
-        if self.obj.possible_state('agentcarrying') and self.obj.states['agentcarrying'].get_value(env):
+        # if self.obj.possible_state('agentcarrying') and self.obj.states['agentcarrying'].get_value(env):
+        if env.agent.is_carrying(self.obj):
             return False
 
         obj, cell = get_obj_cell(self, env)
@@ -45,61 +47,10 @@ class Onfloor(AbsoluteObjectState):
             return obj == cell[0]
 
 
-# class Inroom(AbsoluteObjectState):
-    # def _get_value(self):
-        # obj, env, cell = init(self)
-        # agent_room = env.room_from_pos(*env.agent_pos)
-        # obj_room = env.room_from_pos(*obj.cur_pos)
-
-        # return agent_room == obj_room
-
-class Agentcarrying(AbsoluteObjectState):
-    def __init__(self, obj, value=False):
-        super(Agentcarrying, self).__init__(obj)
-        self.value = value
-
-    def _get_value(self, env):
-        return self.value
-
-    def _set_value(self, new_value):
-        self.value = new_value
-
-
-class Contains(AbsoluteObjectState):
-    def __init__(self, obj, value=False):
-        super(Contains, self).__init__(obj)
-        self.value = value
-        self.contains_objs = []
-
-    def _get_value(self, env):
-        return self.value
-
-    def _set_value(self, new_value):
-        self.value = new_value
-
-    def add_obj(self, obj):
-        self.contains_objs.append(obj)
-        self.value = True
-
-    def remove_obj(self, obj):
-        self.contains_objs.remove(obj)
-
-
-class Overlap(StaticObjectState):
-    def _get_value(self):
-        return True
-
-
-class Seebehind(StaticObjectState):
-    def _get_value(self):
-        return True
-
-
 class Ontop(RelativeObjectState):
     # returns true if obj is ontop other
     def _get_value(self, other, env):
-        if 'agentcarrying' in self.obj.state_keys \
-                and self.obj.states['agentcarrying'].get_value(env):
+        if env.agent.is_carrying(self.obj):
             return False
 
         obj, cell = get_obj_cell(self, env)
@@ -111,15 +62,13 @@ class Ontop(RelativeObjectState):
                 other_index = cell.index(other)
                 if obj_index > other_index:
                     return True
-
         return False
 
 
 class Under(RelativeObjectState):
     # returns true if self.obj is under other
     def _get_value(self, other, env):
-        if 'agentcarrying' in self.obj.state_keys \
-                and self.obj.states['agentcarrying'].get_value(env):
+        if env.agent.is_carrying(self.obj):
             return False
 
         obj, cell = get_obj_cell(self, env)
@@ -131,15 +80,16 @@ class Under(RelativeObjectState):
                 other_index = cell.index(other)
                 if obj_index < other_index:
                     return True
-
         return False
 
 
+# TODO: check that inside function works
 class Inside(RelativeObjectState):
     # returns true if obj is inside other
     # define obj is inside other: obj is ontop other and other can contain
     def _get_value(self, other, env):
-        return self.obj.states['ontop'].get_value(other, env) and other.possible_state("contains")
+        # return self.obj.states['ontop'].get_value(other, env) and other.can_contain
+        return self.obj in other.contains
 
 
 class NextTo(RelativeObjectState):

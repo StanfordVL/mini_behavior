@@ -309,10 +309,10 @@ class Grid:
 
                 if isinstance(cell, list):
                     for obj in cell:
-                        if obj and not obj.check_static_state('seebehind'):
+                        if obj and not obj.can_seebehind:
                             continue
                 else:
-                    if cell and not cell.check_static_state('seebehind'):
+                    if cell and not cell.can_seebehind:
                         continue
 
                 mask[i+1, j] = True
@@ -328,10 +328,10 @@ class Grid:
                 # if cell and not cell.see_behind():
                 if isinstance(cell, list):
                     for obj in cell:
-                        if obj and not obj.check_static_state('seebehind'):
+                        if obj and not obj.can_seebehind:
                             continue
                 else:
-                    if cell and not cell.check_static_state('seebehind'):
+                    if cell and not cell.can_seebehind:
                         continue
 
                 mask[i-1, j] = True
@@ -476,7 +476,7 @@ class MiniGridEnv(gym.Env):
             if not isinstance(start_cell, list):
                 start_cell = [start_cell]
             for obj in start_cell:
-                if not obj.possible_state('overlap'):
+                if not obj.can_overlap:
                     can_overlap = False
 
         assert start_cell is None or can_overlap is True
@@ -797,13 +797,13 @@ class MiniGridEnv(gym.Env):
                     can_overlap = True
                 else:
                     for obj in fwd_cell:
-                        if not obj.possible_state('overlap'):
+                        if not obj.can_overlap:
                             can_overlap = False
                             break
                 if can_overlap:
                     self.agent.cur_pos = fwd_pos
             else:
-                if fwd_cell is None or fwd_cell.possible_state('overlap'):
+                if fwd_cell is None or fwd_cell.can_overlap:
                     self.agent.cur_pos = fwd_pos
                 if fwd_cell is not None and fwd_cell.type == 'goal':
                     done = True

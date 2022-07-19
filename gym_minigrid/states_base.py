@@ -82,19 +82,6 @@ class AbsoluteObjectState(BaseObjectState):
         # raise NotImplementedError()
         pass
 
-    # NOTE: DUMP / LOAD ARE RELATED TO THE SIMULATOR. UNSURE IF NEED THIS
-    # @abstractmethod
-    # def _dump(self):
-    #     raise NotImplementedError()
-    #
-    # def dump(self):
-    #     assert self._initialized
-    #     return self._dump()
-    #
-    # @abstractmethod
-    # def load(self, data):
-    #     raise NotImplementedError()
-
 
 class RelativeObjectState(BaseObjectState):
     """
@@ -113,19 +100,3 @@ class RelativeObjectState(BaseObjectState):
     # @abstractmethod
     def _set_value(self, other, new_value):
         pass
-
-
-class StaticObjectState(BaseObjectState):
-    """
-    This class is used to track object states that cannot change
-    """
-    def __init__(self, obj): #, env):
-        super(StaticObjectState, self).__init__(obj) #, env)
-        self.value = True
-        self.type = 'static'
-
-    def _get_value(self):
-        return self.value
-
-    def _set_value(self, new_value):
-        self.value = new_value

@@ -268,7 +268,7 @@ class RoomGrid(MiniGridEnv):
 
         room = self.get_room(i, j)
 
-        assert wall_idx >= 0 and wall_idx < 4
+        assert 0 <= wall_idx < 4
         assert room.doors[wall_idx] is None, "door exists on this wall"
         assert room.neighbors[wall_idx], "invalid wall"
 
