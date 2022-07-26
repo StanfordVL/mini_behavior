@@ -3,7 +3,7 @@ from gym_minigrid.register import register
 from gym_minigrid.bddl import _CONTROLS
 
 
-class ThrowLeftoversEnvMulti(RoomGrid):
+class ThrowLeftoversEnv(RoomGrid):
     """
     Environment in which the agent is instructed to throw away all leftovers into a trash can.
     """
@@ -33,14 +33,6 @@ class ThrowLeftoversEnvMulti(RoomGrid):
                          max_steps=max_steps
                          )
 
-    def _gen_grid(self, width, height):
-        self._gen_rooms(width, height)
-        self._gen_objs()
-
-        # randomize the agent start position and orientation
-        self.place_agent()
-        self.connect_all()
-
     def _gen_objs(self):
         # return True if not a valid counter space
         def invalid_counter(env, cell):
@@ -58,7 +50,7 @@ class ThrowLeftoversEnvMulti(RoomGrid):
         ashcans = self.objs['ashcan']
 
         # place counters
-        _, init_counter = self.place_in_room(0, 0, counters[0], reject_fn=invalid_counter)
+        init_counter = self.place_obj(counters[0], reject_fn=invalid_counter)
         for i in range(1, len(counters)):
             x = init_counter[0] + i
             y = init_counter[1]
@@ -82,11 +74,8 @@ class ThrowLeftoversEnvMulti(RoomGrid):
             ashcan.on_floor = True
             self.target_pos = self.place_obj(ashcan)
 
-        # check init conditions satisfied
-        assert self.init_conditions(), "Does not satisfy initial conditions"
-
     # TODO: automatically generate function from BDDL
-    def init_conditions(self):
+    def _init_conditions(self):
         assert 'counter' in self.objs.keys(), "No counter"
         assert 'ashcan' in self.objs.keys(), "No ashcan"
         assert 'plate' in self.objs.keys(), "No plates"
@@ -113,21 +102,6 @@ class ThrowLeftoversEnvMulti(RoomGrid):
 
         return True
 
-    def step(self, action):
-        obs, reward, done, info = super().step(action)
-
-        reward = self._reward()
-        done = self._end_condition()
-
-        return obs, reward, done, {}
-
-    def _end_condition(self):
-        for hamburger in self.objs['hamburger']:
-            is_inside = [hamburger.check_rel_state(self, ashcan, 'inside') for ashcan in self.objs['ashcan']]
-            if True not in is_inside:
-                return False
-        return True
-
     def _reward(self):
         # fraction of hamburgers thrown away
         num_thrown = 0
@@ -138,67 +112,49 @@ class ThrowLeftoversEnvMulti(RoomGrid):
 
         return num_thrown / self.num_objs['hamburger']
 
-
-class ThrowLeftoversMulti16x16_Human(ThrowLeftoversEnvMulti):
-    def __init__(self):
-        super().__init__(mode='human',
-                         room_size=16,
-                         num_objs={'counter': 4,
-                                   'plate': 4,
-                                   'hamburger': 3,
-                                   'ashcan': 1}
-                         )
-
-
-class ThrowLeftoversMulti8x8x4_Human(ThrowLeftoversEnvMulti):
-    def __init__(self):
-        super().__init__(mode='human',
-                         room_size=8,
-                         num_rows=2,
-                         num_cols=2,
-                         num_objs={'counter': 4,
-                                   'plate': 4,
-                                   'hamburger': 3,
-                                   'ashcan': 1}
-                         )
-
-
-class ThrowLeftovers8x8(ThrowLeftoversEnvMulti):
-    def __init__(self):
-        super().__init__(mode='not_human',
-                         room_size=8
-                         )
-
+    def _end_conditions(self):
+        for hamburger in self.objs['hamburger']:
+            is_inside = [hamburger.check_rel_state(self, ashcan, 'inside') for ashcan in self.objs['ashcan']]
+            if True not in is_inside:
+                return False
+        return True
 
 # non human input env
 register(
-    id='MiniGrid-ThrowLeftoversMulti-16x16-N2-v0',
-    entry_point='gym_minigrid.envs:ThrowLeftoversEnvMulti'
+    id='MiniGrid-ThrowLeftovers-16x16-N2-v0',
+    entry_point='gym_minigrid.envs:ThrowLeftoversEnv'
 )
 
 # human input env
 register(
-    id='MiniGrid-ThrowLeftoversMulti-16x16-N2-v1',
-    entry_point='gym_minigrid.envs:ThrowLeftoversMulti16x16_Human'
+    id='MiniGrid-ThrowLeftovers-16x16-N2-v1',
+    entry_point='gym_minigrid.envs:ThrowLeftoversEnv',
+    kwargs={'mode': 'human'}
 )
 
 # human input env
 register(
     id='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1',
-    entry_point='gym_minigrid.envs:ThrowLeftoversMulti8x8x4_Human'
+    entry_point='gym_minigrid.envs:ThrowLeftoversEnv',
+    kwargs={'mode': 'human',
+            'room_size': 8,
+            'num_rows': 2,
+            'num_cols': 2}
 )
 
 # non human input env,
 register(
     id='MiniGrid-ThrowLeftovers-8x8-N2-v0',
-    entry_point='gym_minigrid.envs:ThrowLeftovers8x8'
+    entry_point='gym_minigrid.envs:ThrowLeftoversEnv',
+    kwargs={'mode': 'not_human',
+            'room_size': 8}
 )
 
 
 #######################################################################################################################
 
 
-class ThrowLeftoversNavigation(ThrowLeftoversEnvMulti):
+class ThrowLeftoversNavigation(ThrowLeftoversEnv):
     """
     Environment in which the agent is rewarded for navigating to a counter
     """
@@ -237,18 +193,6 @@ class ThrowLeftoversNavigation(ThrowLeftoversEnvMulti):
 
         return self.reward
 
-    def step(self, action):
-        obs, reward, done, info = super().step(action)
-
-        reward = self._reward()
-
-        return obs, reward, done, {}
-
-
-class ThrowLeftoversNavigationBig(ThrowLeftoversNavigation):
-    def __init__(self):
-        super().__init__(room_size=16)
-
 
 register(
     id='MiniGrid-ThrowLeftoversNavigation-8x8-N2-v0',
@@ -258,6 +202,7 @@ register(
 
 register(
     id='MiniGrid-ThrowLeftoversNavigation-16x16-N2-v0',
-    entry_point='gym_minigrid.envs:ThrowLeftoversNavigationBig'
+    entry_point='gym_minigrid.envs:ThrowLeftoversNavigation',
+    kwargs={'room_size': 16}
 )
 

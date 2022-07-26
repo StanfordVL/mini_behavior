@@ -129,13 +129,15 @@ class RoomGrid(MiniGridEnv):
     def _gen_grid(self, width, height):
         self._gen_rooms(width, height)
         self._gen_objs()
+        self.place_agent()
+        self.connect_all()
 
-        # Place the agent, starting in the middle, facing right
-        self.agent.cur_pos = (
-            (self.num_cols // 2) * (self.room_size-1) + (self.room_size // 2),
-            (self.num_rows // 2) * (self.room_size-1) + (self.room_size // 2)
-        )
-        self.agent.dir = 0
+        # # Place the agent, starting in the middle, facing right
+        # self.agent.cur_pos = (
+        #     (self.num_cols // 2) * (self.room_size-1) + (self.room_size // 2),
+        #     (self.num_rows // 2) * (self.room_size-1) + (self.room_size // 2)
+        # )
+        # self.agent.dir = 0
 
     def _gen_rooms(self, width, height):
         # Create the grid

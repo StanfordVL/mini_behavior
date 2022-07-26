@@ -588,9 +588,9 @@ class MiniGridEnv(gym.Env):
     def _gen_grid(self, width, height):
         self.grid = Grid(width, height)
         self._gen_objs()
+        assert self._init_conditions(), "Does not satisfy initial conditions"
         self.place_agent()
         self.mission = self.mission
-
 
     def _gen_objs(self):
         assert False, "_gen_objs needs to be implemented by each environment"
@@ -599,8 +599,15 @@ class MiniGridEnv(gym.Env):
         """
         Compute the reward to be given upon success
         """
+        assert False, "_reward needs to be implemented by each environment"
+        # return 1 - 0.9 * (self.step_count / self.max_steps)
 
-        return 1 - 0.9 * (self.step_count / self.max_steps)
+    def _init_conditions(self):
+        print('no init conditions')
+        return True
+
+    def _end_conditions(self):
+        assert False, "_end_conditions needs to be implemented by each environment"
 
     def _rand_int(self, low, high):
         """
@@ -792,9 +799,6 @@ class MiniGridEnv(gym.Env):
         self.step_count += 1
         self.action_done = True
 
-        reward = 0
-        done = False
-
         # Get the position and contents in front of the agent
         fwd_pos = self.agent.front_pos
         fwd_cell = self.grid.get(*fwd_pos)
@@ -903,11 +907,14 @@ class MiniGridEnv(gym.Env):
                 if self.step_count >= self.max_steps:
                     done = True
 
+        reward = self._reward()
+        done = self._end_conditions()
         obs = self.gen_obs()
         return obs, reward, done, {}
 
-    # def _end_condition(self):
-        # raise NotImplementedError()
+    def _end_conditions(self):
+        print('no end conditions')
+        return False
 
     def gen_obs_grid(self):
         """

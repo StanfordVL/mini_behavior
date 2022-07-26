@@ -43,27 +43,21 @@ class FloorPlanEnv(MiniGridEnv):
         self.grid = Grid(width, height)
         self.add_walls()
         self._gen_objs()
+        assert self._init_conditions(), "Does not satisfy initial conditions"
         self.place_agent()
+
 
     def _gen_objs(self):
         goal = self.objs['goal'][0]
         self.target_pos = self.place_obj(goal)
 
-    def step(self, action):
-        obs, reward, done, info = super().step(action)
-
-        reward = self._reward()
-        done = self._end_condition()
-
-        return obs, reward, done, {}
-
     def _reward(self):
-        if self._end_condition():
+        if self._end_conditions():
             return 1
         else:
             return 0
 
-    def _end_condition(self):
+    def _end_conditions(self):
         if np.all(self.agent.cur_pos == self.target_pos):
             return True
         else:

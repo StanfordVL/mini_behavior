@@ -47,22 +47,14 @@ class NavigationEnv(RoomGrid):
         self.mission = 'navigate to the target position'
         self.connect_all()
 
-    def step(self, action):
-        obs, reward, done, info = super().step(action)
-
-        reward = self._reward()
-        done = self._end_condition()
-
-        return obs, reward, done, {}
-
-    def _end_condition(self):
+    def _end_conditions(self):
         if np.all(self.agent.cur_pos == self.target_pos):
             return True
         else:
             return False
 
     def _reward(self):
-        if self._end_condition():
+        if self._end_conditions():
             return 1
         else:
             return 0

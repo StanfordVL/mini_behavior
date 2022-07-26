@@ -1,7 +1,5 @@
-from gym_minigrid.minigrid import Grid
 from gym_minigrid.envs.floorplan import FloorPlanEnv
 from gym_minigrid.register import register
-from gym_minigrid.bddl import _CONTROLS
 
 
 class ThrowLeftoversSceneEnv(FloorPlanEnv):
@@ -71,11 +69,8 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
             ashcan.on_floor = True
             self.target_pos = self.place_obj(ashcan)
 
-        # check init conditions satisfied
-        assert self.init_conditions(), "Does not satisfy initial conditions"
-
     # TODO: automatically generate function from BDDL
-    def init_conditions(self):
+    def _init_conditions(self):
         assert 'counter' in self.objs.keys(), "No counter"
         assert 'ashcan' in self.objs.keys(), "No ashcan"
         assert 'plate' in self.objs.keys(), "No plates"
@@ -102,21 +97,6 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
 
         return True
 
-    def step(self, action):
-        obs, reward, done, info = super().step(action)
-
-        reward = self._reward()
-        done = self._end_condition()
-
-        return obs, reward, done, {}
-
-    def _end_condition(self):
-        for hamburger in self.objs['hamburger']:
-            is_inside = [hamburger.check_rel_state(self, ashcan, 'inside') for ashcan in self.objs['ashcan']]
-            if True not in is_inside:
-                return False
-        return True
-
     def _reward(self):
         # fraction of hamburgers thrown away
         num_thrown = 0
@@ -126,6 +106,13 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
                 num_thrown += 1
 
         return num_thrown / self.num_objs['hamburger']
+
+    def _end_conditions(self):
+        for hamburger in self.objs['hamburger']:
+            is_inside = [hamburger.check_rel_state(self, ashcan, 'inside') for ashcan in self.objs['ashcan']]
+            if True not in is_inside:
+                return False
+        return True
 
 
 
