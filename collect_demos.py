@@ -38,7 +38,7 @@ def all_states(env):
     return states
 
 
-# save last action, all states
+# save last action, all states, all obj pos, all door pos
 def save_step(all_steps, env):
     step_count = env.step_count
     if env.last_action is None:
@@ -58,6 +58,7 @@ def save_step(all_steps, env):
                              }
 
 
+# save demo as a json file
 def save_demo(all_steps, env_name, episode):
     demo_dir = os.path.join('../demos', env_name)
     if not os.path.isdir(demo_dir):
@@ -68,7 +69,6 @@ def save_demo(all_steps, env_name, episode):
     all_files = os.listdir(demo_dir)
     demo_num = len(all_files)
     demo_file = os.path.join(demo_dir, '{}_{}'.format(env_name, demo_num))
-    # demo_file = demo_num
     assert not os.path.isfile(demo_file)
 
     print('saving demo to: {}'.format(demo_file))

@@ -5,6 +5,7 @@ from gym_minigrid.wrappers import *
 from gym_minigrid.window import Window
 from collect_demos import save_step, save_demo
 
+
 def redraw(img):
     if not args.agent_view:
         img = env.render('rgb_array', tile_size=args.tile_size)
@@ -30,11 +31,13 @@ def step(action):
     obs, reward, done, info = env.step(action)
     print('step=%s, reward=%.2f' % (env.step_count, reward))
 
-    save_step(all_steps, env)
+    if args.save is True:
+        save_step(all_steps, env)
 
     if done:
         print('done!')
-        save_demo(all_steps, args.env, env.episode)
+        if args.save is True:
+            save_demo(all_steps, args.env, env.episode)
         reset()
     else:
         redraw(obs)
@@ -68,6 +71,7 @@ def key_handler(event):
         step(env.actions.done)
         return
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--env",
@@ -77,6 +81,8 @@ parser.add_argument(
     # default='MiniGrid-ThrowLeftoversNavigation-8x8-N2-v0'
     # default='MiniGrid-ThrowLeftoversMulti-16x16-N2-v1'
     default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
+    # default='MiniGrid-FloorPlanEnv-16x16-N1-v0'
+
 )
 parser.add_argument(
     "--seed",
@@ -96,9 +102,13 @@ parser.add_argument(
     help="draw the agent sees (partially observable view)",
     action='store_true'
 )
+parser.add_argument(
+    "--save",
+    default=True,
+    help="whether or not to save the demo"
+)
 
 args = parser.parse_args()
-
 env = gym.make(args.env)
 all_steps = {}
 

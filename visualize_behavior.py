@@ -7,8 +7,10 @@ from utils import device
 
 
 # Parse arguments
-env = 'MiniGrid-ThrowLeftoversMulti-16x16-N2-v0'
-model = 'throw_leftovers_model'
+# env = 'MiniGrid-ThrowLeftoversMulti-16x16-N2-v0'
+# model = 'throw_leftovers_model'
+env = 'MiniGrid-ThrowLeftoversNavigation-8x8-N2-v0'
+model = 'MiniGrid-ThrowLeftoversNavigation-8x8-N2-v0_22-07-20-16-13-11'
 seed = 0
 shift = 0
 argmax = False

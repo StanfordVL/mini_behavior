@@ -9,7 +9,7 @@ def reject_next_to(env, pos):
     the agent's starting point
     """
 
-    sx, sy = env.agent_pos
+    sx, sy = env.agent.cur_pos
     x, y = pos
     d = abs(sx - x) + abs(sy - y)
     return d < 2
@@ -78,7 +78,7 @@ class RoomGrid(MiniGridEnv):
         room_size=10,
         num_rows=2,
         num_cols=2,
-        max_steps=100,
+        max_steps=1e5,
         seed=500,
         agent_view_size=7
     ):

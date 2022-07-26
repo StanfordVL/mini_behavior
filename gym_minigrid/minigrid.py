@@ -295,6 +295,7 @@ class Grid:
         return grid, vis_mask
 
     def process_vis(grid, agent_pos):
+        # agent_pos=(self.agent.view_size // 2 , self.agent.view_size - 1)
         mask = np.zeros(shape=(grid.width, grid.height), dtype=bool)
 
         mask[agent_pos[0], agent_pos[1]] = True
@@ -309,10 +310,11 @@ class Grid:
                 if isinstance(cell, list):
                     for obj in cell:
                         if obj and not obj.can_seebehind:
-                            continue
+                            break
+                    break
                 else:
                     if cell and not cell.can_seebehind:
-                        continue
+                        break
 
                 mask[i+1, j] = True
                 if j > 0:
@@ -328,10 +330,11 @@ class Grid:
                 if isinstance(cell, list):
                     for obj in cell:
                         if obj and not obj.can_seebehind:
-                            continue
+                            break
+                    break
                 else:
                     if cell and not cell.can_seebehind:
-                        continue
+                        break
 
                 mask[i-1, j] = True
                 if j > 0:
@@ -363,7 +366,7 @@ class MiniGridEnv(gym.Env):
         width=None,
         height=None,
         num_objs=None,
-        max_steps=100,
+        max_steps=1e5,
         see_through_walls=False,
         seed=1337,
         agent_view_size=7,
@@ -378,6 +381,7 @@ class MiniGridEnv(gym.Env):
 
         self.mode = mode
         self.last_action = None
+        self.action_done = None
 
         if num_objs is None:
             num_objs = {}
@@ -442,10 +446,10 @@ class MiniGridEnv(gym.Env):
         # creates Actions class
         actions = {'left': 0,
                    'right': 1,
-                   'forward': 2,
-                   'done': 3}
+                   'forward': 2}
+                   # 'done': 3}
 
-        i = 4
+        i = 3
         for objs in self.objs.values():
             for obj in objs:
                 for action in _ALL_ACTIONS:
@@ -777,6 +781,7 @@ class MiniGridEnv(gym.Env):
             self.last_action = self.actions(action)
 
         self.step_count += 1
+        self.action_done = True
 
         reward = 0
         done = False
@@ -810,18 +815,23 @@ class MiniGridEnv(gym.Env):
                             break
                 if can_overlap:
                     self.agent.cur_pos = fwd_pos
+                else:
+                    self.action_done = False
             else:
                 if fwd_cell is None or fwd_cell.can_overlap:
                     self.agent.cur_pos = fwd_pos
-                # if fwd_cell is not None and fwd_cell.type == 'goal':
-                #     done = True
-                #     reward = self._reward()
+                else:
+                    self.action_done = False
+                if fwd_cell is not None and fwd_cell.type == 'goal':
+                    done = True
+                    reward = self._reward()
                 # if fwd_cell is not None and fwd_cell.type == 'lava':
                 #     done = True
 
         # Choose an object to interact with
-        elif action == self.actions.done:
-            pass
+        # elif action == self.actions.done:
+        #     self.action_done = False
+        #     # pass
         else:
             if self.mode == 'human':
                 self.last_action = None
@@ -878,6 +888,8 @@ class MiniGridEnv(gym.Env):
                 obj = self.obj_instances[obj_action[0]] # assert obj.name == obj_action[0]
                 if self.agent.actions[obj_action[1]].can(obj):
                     self.agent.actions[obj_action[1]].do(obj)
+                else:
+                    self.action_done = False
 
                 if self.step_count >= self.max_steps:
                     done = True
@@ -914,10 +926,10 @@ class MiniGridEnv(gym.Env):
         # in the agent's partially observable view
         agent_pos = grid.width // 2, grid.height - 1
         # TODO: commented out below. otherwise, there is error with multiroom when you carry an object through door
-        # if self.agent.carrying:
-        #     grid.set(*agent_pos, self.agent.carrying)
-        # else:
-        #     grid.set(*agent_pos, None)
+        if self.agent.carrying:
+            grid.set(*agent_pos, self.agent.carrying)
+        else:
+            grid.set(*agent_pos, None)
 
         return grid, vis_mask
 

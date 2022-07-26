@@ -1,6 +1,6 @@
-import random
 from gym_minigrid.roomgrid import *
 from gym_minigrid.register import register
+from gym_minigrid.bddl import _CONTROLS
 
 
 class ThrowLeftoversEnvMulti(RoomGrid):
@@ -14,7 +14,7 @@ class ThrowLeftoversEnvMulti(RoomGrid):
             room_size=16,
             num_rows=1,
             num_cols=1,
-            max_steps=100,
+            max_steps=1e5,
             num_objs=None
     ):
         if num_objs is None:
@@ -162,7 +162,7 @@ class ThrowLeftoversMulti8x8x4_Human(ThrowLeftoversEnvMulti):
 
 class ThrowLeftovers8x8(ThrowLeftoversEnvMulti):
     def __init__(self):
-        super().__init__(mode='human',
+        super().__init__(mode='not_human',
                          room_size=8
                          )
 
@@ -197,12 +197,12 @@ register(
 
 class ThrowLeftoversNavigation(ThrowLeftoversEnvMulti):
     """
-    Environment in which the agent is rewarded for navigating to a hamburger
+    Environment in which the agent is rewarded for navigating to a counter
     """
 
     def __init__(
             self,
-            mode='human',
+            mode='not_human',
             room_size=8,
             num_rows=1,
             num_cols=1,
@@ -218,12 +218,20 @@ class ThrowLeftoversNavigation(ThrowLeftoversEnvMulti):
                          )
 
     def _reward(self):
-        for hamburger in self.objs['hamburger']:
-            if hamburger.check_rel_state(self, self.agent, 'nextto'):
-                self.reward += 1
-            for ashcan in self.objs['ashcan']:
-                if hamburger.check_rel_state(self, ashcan, 'inside'):
-                    self.reward += 10
+        if self.last_action.name in _CONTROLS:
+            self.reward += 0.01
+
+        # for counter in self.objs['counter']:
+        #     if counter.check_rel_state(self, self.agent, 'nextto'):
+        #         self.reward += 0.01
+
+        # for hamburger in self.objs['hamburger']:
+        #     for ashcan in self.objs['ashcan']:
+        #         if hamburger.check_rel_state(self, ashcan, 'inside'):
+        #             self.reward += 1
+        if not self.action_done:
+            self.reward -= 0.01
+
         return self.reward
 
     def step(self, action):

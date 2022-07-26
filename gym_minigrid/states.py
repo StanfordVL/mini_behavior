@@ -47,6 +47,16 @@ class Onfloor(AbsoluteObjectState):
             return obj == cell[0]
 
 
+class InFrontOfAgent(AbsoluteObjectState):
+    # return true if obj is in front of agent
+    def _get_value(self, env):
+
+        agent_front = env.agent.front_pos
+        obj_pos = self.obj.cur_pos
+
+        return agent_front == obj_pos
+
+
 class Ontop(RelativeObjectState):
     # returns true if obj is ontop other
     def _get_value(self, other, env):

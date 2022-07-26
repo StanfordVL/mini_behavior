@@ -109,8 +109,9 @@ class WorldObj:
 
 
 class Goal(WorldObj):
-    def __init__(self):
-        super().__init__('goal', 'green')
+    def __init__(self, color='green', name='goal'):
+        super().__init__('goal', color=color, name=name)
+        self.can_overlap = True
 
     def render(self, img):
         fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
@@ -134,6 +135,7 @@ class Floor(WorldObj):
 class Wall(WorldObj):
     def __init__(self, color='grey'):
         super().__init__('wall', color=color)
+        self.can_seebehind = False
 
     def render(self, img):
         fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
@@ -293,12 +295,18 @@ _OBJECT_CLASS = {
     'counter': Counter,
     'plate': Ball,
     'ashcan': Ashcan,
-    'hamburger': S_ball
+    'hamburger': S_ball,
+    'goal': Goal,
+    'ball': Ball,
+    'wall': Wall
 }
 
 _OBJECT_COLOR = {
     'counter': 'purple',
     'plate': 'yellow',
     'ashcan': 'green',
-    'hamburger': 'red'
+    'hamburger': 'red',
+    'goal': 'green',
+    'ball': 'blue',
+    'wall': 'grey'
 }
