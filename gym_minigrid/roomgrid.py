@@ -80,7 +80,7 @@ class RoomGrid(MiniGridEnv):
         num_cols=2,
         max_steps=1e5,
         seed=500,
-        agent_view_size=7
+        agent_view_size=7,
     ):
         assert room_size > 0
         assert room_size >= 3
@@ -128,6 +128,7 @@ class RoomGrid(MiniGridEnv):
 
     def _gen_grid(self, width, height):
         self._gen_rooms(width, height)
+        self._gen_objs()
 
         # Place the agent, starting in the middle, facing right
         self.agent.cur_pos = (
@@ -181,6 +182,9 @@ class RoomGrid(MiniGridEnv):
                 if j > 0:
                     room.neighbors[3] = self.room_grid[j-1][i]
                     room.door_pos[3] = room.neighbors[3].door_pos[1]
+
+    def _gen_objs(self):
+        assert False, "_gen_objs needs to be implemented by each environment"
 
     def place_in_room(self, i, j, obj, reject_fn=reject_next_to):
         """

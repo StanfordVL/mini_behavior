@@ -442,6 +442,8 @@ class MiniGridEnv(gym.Env):
         # Initialize the state
         self.reset()
 
+        self.mission = ''
+
     def actions(self):
         # creates Actions class
         actions = {'left': 0,
@@ -584,7 +586,14 @@ class MiniGridEnv(gym.Env):
         return str
 
     def _gen_grid(self, width, height):
-        assert False, "_gen_grid needs to be implemented by each environment"
+        self.grid = Grid(width, height)
+        self._gen_objs()
+        self.place_agent()
+        self.mission = self.mission
+
+
+    def _gen_objs(self):
+        assert False, "_gen_objs needs to be implemented by each environment"
 
     def _reward(self):
         """

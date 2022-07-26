@@ -9,8 +9,10 @@ from gym_minigrid.scene_to_grid import img_to_array
 # generate grid
 class FloorPlanEnv(MiniGridEnv):
     def __init__(self,
-                 img_path='grids_from_scenes/rs_int_floor_trav_no_obj_0.png',
-                 num_objs=None
+                 mode='human',
+                 img_path='grids/rs_int_floor_trav_no_obj_0.png',
+                 num_objs=None,
+                 max_steps=1e5,
                  ):
 
         self.img_path = img_path
@@ -21,24 +23,31 @@ class FloorPlanEnv(MiniGridEnv):
 
         self.height, self.width = np.shape(self.floor_plan)
         self.num_objs = num_objs
+        self.mission = ''
 
-        super().__init__(width=self.width,
+        super().__init__(mode=mode,
+                         width=self.width,
                          height=self.height,
-                         num_objs=self.num_objs)
+                         num_objs=self.num_objs,
+                         max_steps=max_steps)
 
-    def _gen_grid(self, width, height):
-        self.grid = Grid(width, height)
-        # add walls
+
+    def add_walls(self):
+        # add walls based on floor plan
         for i in range(self.height):
             for j in range(self.width):
                 if self.floor_plan[i, j] == 0:
                     self.put_obj(Wall(), j, i)
 
+    def _gen_grid(self, width, height):
+        self.grid = Grid(width, height)
+        self.add_walls()
+        self._gen_objs()
+        self.place_agent()
+
+    def _gen_objs(self):
         goal = self.objs['goal'][0]
         self.target_pos = self.place_obj(goal)
-
-        self.place_agent()
-        self.mission = 'generate env from floor plan'
 
     def step(self, action):
         obs, reward, done, info = super().step(action)

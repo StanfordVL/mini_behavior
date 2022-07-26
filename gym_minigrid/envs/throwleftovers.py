@@ -23,6 +23,8 @@ class ThrowLeftoversEnvMulti(RoomGrid):
                         'hamburger': 3,
                         'ashcan': 1}
 
+        self.mission = 'throw all {} leftovers in the ashcan'.format(num_objs['hamburger'])
+
         super().__init__(mode=mode,
                          num_objs=num_objs,
                          room_size=room_size,
@@ -33,7 +35,13 @@ class ThrowLeftoversEnvMulti(RoomGrid):
 
     def _gen_grid(self, width, height):
         self._gen_rooms(width, height)
+        self._gen_objs()
 
+        # randomize the agent start position and orientation
+        self.place_agent()
+        self.connect_all()
+
+    def _gen_objs(self):
         # return True if not a valid counter space
         def invalid_counter(env, cell):
             x, y = cell
@@ -76,11 +84,6 @@ class ThrowLeftoversEnvMulti(RoomGrid):
 
         # check init conditions satisfied
         assert self.init_conditions(), "Does not satisfy initial conditions"
-
-        # randomize the agent start position and orientation
-        self.place_agent()
-        self.mission = 'throw all {} leftovers in the ashcan'.format(self.num_objs['hamburger'])
-        self.connect_all()
 
     # TODO: automatically generate function from BDDL
     def init_conditions(self):
