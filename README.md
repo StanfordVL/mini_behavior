@@ -9,40 +9,50 @@
 To run in interactive mode: ./manual_control.py
 
 ### Directory 
-```.
+```angular2html
+├── __init__.py 
+├── benchmark.py
+├── collect_demos.py (new)
+├── convert_scenes.py (new)
+├── evaluate.py
 ├── gym_minigrid
+│   ├── __init__.py 
+│   ├── actions.py (new)
+│   ├── agent.py (new)
+│   ├── bddl.py (new)
 │   ├── envs
 │   │   ├── __init__.py
-│   │   ├── throwleftovers.py (new)
-│   │   └── throwleftovers_multiroom.py (new)
-│   ├── __init__.py
-│   ├── actions.py (new)
-│   ├── bddl.py (new)
+│   │   ├── floorplan.py (new)
+│   │   ├── navigation.py (new)
+│   │   └── throwleftovers.py (new)
 │   ├── globals.py (new)
+│   ├── grids (new)
 │   ├── minigrid.py (modified)
 │   ├── objects.py (new)
-│   ├── register.py 
-│   ├── rendering.py
+│   ├── register.py
+│   ├── rendering.py 
 │   ├── roomgrid.py
+│   ├── scene_to_grid.py (new)
+│   ├── scenes (new)
 │   ├── states.py (new)
 │   ├── states_base.py (new)
 │   ├── window.py
 │   └── wrappers.py
-├── __init__.py
-├── benchmark.py
-├── collect_demos.py (new)
-├── evaluate.py 
 ├── manual_control.py
 ├── model.py
 ├── run_tests.py
 ├── setup.py
-├── test_interactive_mode.py
-├── test_throwingleftovers.py (new)
 ├── train.py
-├── train_behavior.py
-├── visualize.py
-└── visualize_behavior.py
- ```
+├── train_nav.py
+├── utils
+│   ├── __init__.py
+│   ├── agent.py
+│   ├── env.py
+│   ├── format.py
+│   ├── other.py
+│   └── storage.py
+└── visualize.py
+``` 
 
 ### File Descriptions 
 * **gym_minigrid/actions.py**
@@ -72,7 +82,7 @@ To run in interactive mode: ./manual_control.py
 
 ### Floor plan to Mini-Behavior Environment
 * add image file of floor plan to gym_minigrid/scenes directory
-* run script to process floor plan and save grid to gym_minigrid/grids directory: `python convert_scenes.py --imgs IMGS`
-* `floorplan.py` will register the floor plan as an environment with:
+* run script to process floor plan and save grid to gym_minigrid/grids directory: `python convert_scenes.py --imgs IMG_FILENAMES`
+* `floorplan.py` will register the floor plan of each `IMG_FILENAME` as an environment with:
     * `id='MiniGrid-IMG_FILENAME-0x0-N1-v0'`
     * `entry_point='gym_minigrid.envs:FloorPlanEnv'`

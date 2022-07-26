@@ -13,6 +13,8 @@ from utils import device
 if __name__ == "__main__":
     ## General parameters
     algo = "ppo" # or a2c
+    # env = 'MiniGrid-ThrowLeftoversMulti-16x16-N2-v0'
+    # env = 'MiniGrid-ThrowLeftovers-8x8-N2-v0'
     # env = 'MiniGrid-Navigation-16x16-N2-v0'
     # env='MiniGrid-Navigation-8x8-N2-v0'
     # env = 'MiniGrid-NavigationMulti-16x16-N2-v0'
