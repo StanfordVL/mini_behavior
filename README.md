@@ -69,3 +69,10 @@ To run in interactive mode: ./manual_control.py
 
 * **gym_minigrid/states_base.py**
     * Contains base classes for states (different classes for absolute and relative states)
+
+### Floor plan to Mini-Behavior Environment
+* add image file of floor plan to gym_minigrid/scenes directory
+* run script to process floor plan and save grid to gym_minigrid/grids directory: `python convert_scenes.py --imgs IMGS`
+* `floorplan.py` will register the floor plan as an environment with:
+    * `id='MiniGrid-IMG_FILENAME-0x0-N1-v0'`
+    * `entry_point='gym_minigrid.envs:FloorPlanEnv'`

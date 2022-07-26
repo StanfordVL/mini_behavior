@@ -5,14 +5,12 @@ import os
 # run this to convert iGibson floor plan image to grid image
 # takes in img paths as args (default: process all imgs in scenes dir)
 
-parser = argparse.ArgumentParser()
-
 dir_path = os.path.dirname('gym_minigrid')
 img_dir = os.path.join(dir_path, 'gym_minigrid/scenes')
 list_scenes = os.listdir(img_dir)
-
 grids_dir = os.path.join(dir_path, 'gym_minigrid/grids')
 
+parser = argparse.ArgumentParser()
 parser.add_argument("--imgs", nargs='+', default=list_scenes,
                     help="path of the floor plan image (REQUIRED)")
 
