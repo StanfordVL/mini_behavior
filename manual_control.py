@@ -3,8 +3,7 @@
 import argparse
 from gym_minigrid.wrappers import *
 from gym_minigrid.window import Window
-from collect_demos import save_step, save_demo
-
+from save_utils import save_step, save_demo
 
 def redraw(img):
     if not args.agent_view:
@@ -19,6 +18,20 @@ def reset():
         env.seed(args.seed)
 
     obs = env.reset()
+
+    if hasattr(env, 'mission'):
+        print('Mission: %s' % env.mission)
+        window.set_caption(env.mission)
+
+    redraw(obs)
+
+
+def load():
+    if args.seed != -1:
+        env.seed(args.seed)
+
+    _ = env.reset()
+    obs = env.load_state(args.load)
 
     if hasattr(env, 'mission'):
         print('Mission: %s' % env.mission)
@@ -68,7 +81,7 @@ def key_handler(event):
         step('choose')
         return
     if event.key == 'enter':
-        step(env.actions.done)
+        env.save_state()
         return
 
 
@@ -80,8 +93,9 @@ parser.add_argument(
     # default='MiniGrid-ThrowLeftovers-8x8-N2-v0'
     # default='MiniGrid-ThrowLeftoversNavigation-8x8-N2-v0'
     # default='MiniGrid-ThrowLeftoversMulti-16x16-N2-v1'
-    default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
+    # default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
     # default='MiniGrid-FloorPlanEnv-16x16-N1-v0'
+    default='MiniGrid-TransitionEnv-8x8x4-N2-v1'
 
 )
 parser.add_argument(
@@ -102,14 +116,23 @@ parser.add_argument(
     help="draw the agent sees (partially observable view)",
     action='store_true'
 )
+# NEW
 parser.add_argument(
     "--save",
     default=True,
     help="whether or not to save the demo"
 )
+# NEW
+parser.add_argument(
+    "--load",
+    default=None,
+    help="path to load state from"
+)
 
 args = parser.parse_args()
+
 env = gym.make(args.env)
+
 all_steps = {}
 
 if args.agent_view:
@@ -119,7 +142,10 @@ if args.agent_view:
 window = Window('gym_minigrid - ' + args.env)
 window.reg_key_handler(key_handler)
 
-reset()
+if args.load is None:
+    reset()
+else:
+    load()
 
 # Blocking event loop
 window.show(block=True)

@@ -32,7 +32,6 @@ class WorldObj:
         # Name of the object (type_number)
         self.name = name
 
-        # TODO: define self.states and write a loop to initialize all states
         self.state_keys = _DEFAULT_STATES + state_keys
         self.states = {}
 
@@ -43,7 +42,7 @@ class WorldObj:
 
         # OBJECT PROPERTIES
         # ALWAYS STATIC
-        self.can_carry = False
+        self.can_carry = 'agentcarrying' in self.state_keys
         self.can_contain = False
         # NOT ALWAYS STATIC
         self.can_overlap = False
@@ -52,6 +51,10 @@ class WorldObj:
 
     def reset(self):
         self.contains = []
+
+    def get_class(self):
+        # ex: obj name = plate_0, class = plate
+        return self.name.split('_')[0]
 
     def possible_action(self, action):
         # whether the obj is able to have the action performed on it
@@ -62,6 +65,21 @@ class WorldObj:
 
     def check_rel_state(self, env, other, state):
         return state in self.state_keys and self.states[state].get_value(other, env)
+
+    def get_all_state_values(self, env):
+        states = {}
+        for state, instance in self.states.items():
+            if instance.type == 'absolute':
+                name = '{}/{}'.format(self.name, state)
+                val = instance.get_value(env)
+                states[name] = val
+            elif instance.type == 'relative':
+                for obj_name, obj_instance in env.obj_instances.items():
+                    if state in obj_instance.states:
+                        name = '{}/{}/{}'.format(self.name, obj_name, state)
+                        val = instance.get_value(obj_instance, env)
+                        states[name] = val
+        return states
 
     def toggle(self, env, pos):
         """Method to trigger/toggle an action this object performs"""
@@ -142,8 +160,8 @@ class Wall(WorldObj):
 
 
 class Door(WorldObj):
-    def __init__(self, color, is_open=False, is_locked=False):
-        super().__init__('door', color)
+    def __init__(self, color, is_open=False, is_locked=False, name='door'):
+        super().__init__('door', name=name, color=color)
         self.is_open = is_open
         self.is_locked = is_locked
 
@@ -205,7 +223,7 @@ class Door(WorldObj):
 
 class Key(WorldObj):
     def __init__(self, color='blue', name='key'):
-        super(Key, self).__init__('key', color, name, action_keys=['pickup', 'drop'])
+        super(Key, self).__init__('key', color, name, state_keys=['agentcarrying'], action_keys=['pickup', 'drop'])
 
     def render(self, img):
         c = COLORS[self.color]
@@ -225,6 +243,7 @@ class Key(WorldObj):
 class Ball(WorldObj):
     def __init__(self, color='blue', name='ball'):
         super(Ball, self).__init__('ball', color, name,
+                                   state_keys=['agentcarrying'],
                                    action_keys=['pickup', 'drop'])
 
     def render(self, img):
@@ -235,6 +254,7 @@ class Ball(WorldObj):
 class S_ball(WorldObj):
     def __init__(self, color='blue', name='s_ball'):
         super(S_ball, self).__init__('s_ball', color, name,
+                                     state_keys=['agentcarrying'],
                                      action_keys=['pickup', 'drop'])
 
     def render(self, img):
@@ -270,6 +290,7 @@ class Ashcan(WorldObj):
 class Box(WorldObj):
     def __init__(self, color, name=None):
         super(Box, self).__init__('box', color, name,
+                                  state_keys=['agentcarrying'],
                                   action_keys=['pickup', 'drop'])
         self.can_contain = True
 
@@ -289,7 +310,22 @@ class Box(WorldObj):
         return True
 
 
+class Square(WorldObj):
+    def __init__(self, color='blue', name='square'):
+        super(Ball, self).__init__('square', color, name,
+                                   state_keys=['agentcarrying'],
+                                   action_keys=['pickup', 'drop'])
+
+    def render(self, img):
+        c = COLORS[self.color]
+
+        # Outline
+        fill_coords(img, point_in_rect(0.12, 0.88, 0.12, 0.88), c)
+        fill_coords(img, point_in_rect(0.18, 0.82, 0.18, 0.82), (0,0,0))
+
+
 ########################################################################################################################
+
 
 _OBJECT_CLASS = {
     'counter': Counter,
@@ -298,7 +334,17 @@ _OBJECT_CLASS = {
     'hamburger': S_ball,
     'goal': Goal,
     'ball': Ball,
-    'wall': Wall
+    'wall': Wall,
+    'square': Square,
+    'apple': S_ball,
+    'milk': Square,
+    'juice': Square,
+    'kiwi': S_ball,
+    'grape': S_ball,
+    'orange': S_ball,
+    'bowl': Ball,
+    'egg': S_ball,
+    'cucumber': S_ball,
 }
 
 _OBJECT_COLOR = {
@@ -308,5 +354,15 @@ _OBJECT_COLOR = {
     'hamburger': 'red',
     'goal': 'green',
     'ball': 'blue',
-    'wall': 'grey'
+    'wall': 'grey',
+    'square': 'blue',
+    'apple': 'red',
+    'milk': 'grey',
+    'juice': 'orange',
+    'kiwi': 'green',
+    'grape': 'purple',
+    'orange': 'orange',
+    'bowl': 'blue',
+    'egg': 'white',
+    'cucumber': 'l_green',
 }

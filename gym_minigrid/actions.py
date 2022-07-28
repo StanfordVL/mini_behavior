@@ -98,7 +98,7 @@ class Drop(BaseAction):
         elif cell is not None:
             if cell.can_contain:
                 cell.contains.append(obj)
-
+                print(cell)
         # check dependencies
         if cell == [] or cell is None:
             assert obj.states['onfloor'].get_value(self.env)

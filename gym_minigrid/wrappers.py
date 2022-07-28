@@ -32,6 +32,7 @@ class ReseedWrapper(gym.core.Wrapper):
         obs, reward, done, info = self.env.step(action)
         return obs, reward, done, info
 
+
 class ActionBonus(gym.core.Wrapper):
     """
     Wrapper which adds an exploration bonus.
@@ -65,6 +66,7 @@ class ActionBonus(gym.core.Wrapper):
 
     def reset(self, **kwargs):
         return self.env.reset(**kwargs)
+
 
 class StateBonus(gym.core.Wrapper):
     """
@@ -101,6 +103,7 @@ class StateBonus(gym.core.Wrapper):
     def reset(self, **kwargs):
         return self.env.reset(**kwargs)
 
+
 class ImgObsWrapper(gym.core.ObservationWrapper):
     """
     Use the image as the only observation output, no language/mission.
@@ -112,6 +115,7 @@ class ImgObsWrapper(gym.core.ObservationWrapper):
 
     def observation(self, obs):
         return obs['image']
+
 
 class OneHotPartialObsWrapper(gym.core.ObservationWrapper):
     """
@@ -154,6 +158,7 @@ class OneHotPartialObsWrapper(gym.core.ObservationWrapper):
             **obs,
             'image': out
         }
+
 
 class RGBImgObsWrapper(gym.core.ObservationWrapper):
     """
@@ -220,6 +225,7 @@ class RGBImgPartialObsWrapper(gym.core.ObservationWrapper):
             'image': rgb_img_partial
         }
 
+
 class FullyObsWrapper(gym.core.ObservationWrapper):
     """
     Fully observable gridworld using a compact grid encoding
@@ -248,6 +254,7 @@ class FullyObsWrapper(gym.core.ObservationWrapper):
             **obs,
             'image': full_grid
         }
+
 
 class FlatObsWrapper(gym.core.ObservationWrapper):
     """
@@ -300,6 +307,7 @@ class FlatObsWrapper(gym.core.ObservationWrapper):
 
         return obs
 
+
 class ViewSizeWrapper(gym.core.Wrapper):
     """
     Wrapper to customize the agent field of view size.
@@ -334,6 +342,7 @@ class ViewSizeWrapper(gym.core.Wrapper):
     def step(self, action):
         return self.env.step(action)
 
+
 class DirectionObsWrapper(gym.core.ObservationWrapper):
     """
     Provides the slope/angular direction to the goal with the observations as modeled by (y2 - y2 )/( x2 - x1)
@@ -356,6 +365,7 @@ class DirectionObsWrapper(gym.core.ObservationWrapper):
         slope = np.divide( self.goal_position[1] - self.agent.cur_pos[1] ,  self.goal_position[0] - self.agent.cur_pos[0])
         obs['goal_direction'] = np.arctan( slope ) if self.type == 'angle' else slope
         return obs
+
 
 class SymbolicObsWrapper(gym.core.ObservationWrapper):
     """

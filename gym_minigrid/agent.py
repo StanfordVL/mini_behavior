@@ -31,6 +31,26 @@ class Agent:
         self.obj = None
         self.carrying = []
 
+    def copy(self):
+        from copy import deepcopy
+        agent = {'agent_view_size': self.view_size,
+                 'dir': self.dir,
+                 'cur_pos': self.cur_pos,
+                 'obj': self.obj,
+                 'carrying': self.carrying
+                 }
+        return deepcopy(agent)
+
+    def load(self, agent, env):
+        self.dir = agent['dir']
+        self.cur_pos = agent['cur_pos']
+        # self.obj = agent['obj']
+        # self.carrying = agent['carrying']
+        for obj_name, obj_instance in env.obj_instances.items():
+            if np.all(obj_instance.cur_pos == np.array([-1,-1])):
+                self.carrying.append(obj_instance)
+
+
     @property
     def dir_vec(self):
         """

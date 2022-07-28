@@ -10,7 +10,7 @@ from gym_minigrid.scene_to_grid import img_to_array
 class FloorPlanEnv(MiniGridEnv):
     def __init__(self,
                  mode='human',
-                 img_path='grids/rs_int_floor_trav_no_obj_0.png',
+                 img_path='grids/beechwood_0_int_floor_trav_no_obj_0.png',
                  num_objs=None,
                  max_steps=1e5,
                  ):

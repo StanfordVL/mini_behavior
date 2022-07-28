@@ -2,6 +2,9 @@
 
 import hashlib
 import gym
+import os
+# import pickle as pkl
+import dill as pkl
 from enum import IntEnum
 from gym import spaces
 from gym.utils import seeding
@@ -370,6 +373,7 @@ class MiniGridEnv(gym.Env):
         see_through_walls=False,
         seed=1337,
         agent_view_size=7,
+        load_from=None
     ):
         # Can't set both grid_size and width/height
         self.episode = 0
@@ -398,7 +402,6 @@ class MiniGridEnv(gym.Env):
                 self.objs[obj].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 
-        self.doors = []
         # Action enumeration for this environment
         self.actions()
 
@@ -444,6 +447,36 @@ class MiniGridEnv(gym.Env):
 
         self.mission = ''
 
+    def copy_objs(self):
+        from copy import deepcopy
+        return deepcopy(self.objs), deepcopy(self.obj_instances)
+
+    def get_state(self):
+        grid = self.grid.copy()
+        agent = self.agent.copy()
+        objs, obj_instances = self.copy_objs()
+        state = {'grid': grid,
+                 'agent': agent,
+                 'objs': objs,
+                 'obj_instances': obj_instances
+                }
+        return state
+
+    def save_state(self, out_file='cur_state.pkl'):
+        state = self.get_state()
+        with open(out_file, 'wb') as f:
+            pkl.dump(state, f)
+
+    def load_state(self, load_file):
+        assert os.path.isfile(load_file)
+        with open(load_file, 'rb') as f:
+            state = pkl.load(f)
+            self.grid = state['grid']
+            self.objs = state['objs']
+            self.obj_instances = state['obj_instances']
+            self.agent.load(state['agent'], self)
+        return self.grid
+
     def actions(self):
         # creates Actions class
         actions = {'left': 0,
@@ -470,7 +503,7 @@ class MiniGridEnv(gym.Env):
             obj.reset()
 
         self.reward = 0
-        self.doors = []
+        # self.doors = []
 
         # Generate a new random grid at the start of each episode
         # To keep the same grid for each episode, call env.seed() with
@@ -607,7 +640,8 @@ class MiniGridEnv(gym.Env):
         return True
 
     def _end_conditions(self):
-        assert False, "_end_conditions needs to be implemented by each environment"
+        print('no end conditions')
+        return False
 
     def _rand_int(self, low, high):
         """
@@ -786,7 +820,7 @@ class MiniGridEnv(gym.Env):
         obs_cell = obs_grid.get(vx, vy)
         world_cell = self.grid.get(x, y)
 
-        # TODO: change this to work if isintance(obs_cell, list)
+        # TODO: change this to work if isinstance(obs_cell, list)
         return obs_cell is not None and obs_cell.type == world_cell.type
 
     def step(self, action):
@@ -835,16 +869,7 @@ class MiniGridEnv(gym.Env):
                     self.agent.cur_pos = fwd_pos
                 else:
                     self.action_done = False
-                if fwd_cell is not None and fwd_cell.type == 'goal':
-                    done = True
-                    reward = self._reward()
-                # if fwd_cell is not None and fwd_cell.type == 'lava':
-                #     done = True
 
-        # Choose an object to interact with
-        # elif action == self.actions.done:
-        #     self.action_done = False
-        #     # pass
         else:
             if self.mode == 'human':
                 self.last_action = None
@@ -886,35 +911,26 @@ class MiniGridEnv(gym.Env):
                             action = int(input("Choose one of the following actions: \n{}".format(text)))
                             action = actions[action] # action key
                             self.agent.actions[action].do(obj) # perform action
-
                             self.last_action = self.actions['{}/{}'.format(obj.name, action)]
+
                 # Done action (not used by default)
                 else:
                     assert False, "unknown action {}".format(action)
             else:
-                # TODO: check that this works
                 obj_action = self.actions(action).name.split('/') # list: [obj, action]
-                # print("Chosen object: {}".format(obj_action[0]))
-                # print("Chosen action: {}".format(obj_action[seed 0_2]))
 
                 # try to perform action
-                obj = self.obj_instances[obj_action[0]] # assert obj.name == obj_action[0]
+                obj = self.obj_instances[obj_action[0]]
                 if self.agent.actions[obj_action[1]].can(obj):
                     self.agent.actions[obj_action[1]].do(obj)
                 else:
                     self.action_done = False
 
-                if self.step_count >= self.max_steps:
-                    done = True
-
         reward = self._reward()
-        done = self._end_conditions()
+        done = self._end_conditions() or self.step_count >= self.max_steps
         obs = self.gen_obs()
-        return obs, reward, done, {}
 
-    def _end_conditions(self):
-        print('no end conditions')
-        return False
+        return obs, reward, done, {}
 
     def gen_obs_grid(self):
         """

@@ -92,7 +92,7 @@ class Window:
         carrying = [obj.name for obj in env.agent.carrying]
         for objs in env.objs.values():
             for obj in objs:
-                if obj.name not in carrying:
+                if obj.name not in carrying and obj.type != 'door':
                     on_grid.append(obj.name)
 
         text_1 = create_text(on_grid)

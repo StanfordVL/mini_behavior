@@ -113,11 +113,15 @@ class ThrowLeftoversEnv(RoomGrid):
         return num_thrown / self.num_objs['hamburger']
 
     def _end_conditions(self):
+        # ashcan = self.objs['ashcan'][0]
+        # print(self.objs['ashcan'][0].contains)
         for hamburger in self.objs['hamburger']:
             is_inside = [hamburger.check_rel_state(self, ashcan, 'inside') for ashcan in self.objs['ashcan']]
-            if True not in is_inside:
-                return False
-        return True
+            print(is_inside)
+
+            # if True not in is_inside:
+            #     return False
+        return False
 
 # non human input env
 register(

@@ -12,7 +12,7 @@ from .states_base import *
 # stained
 # sliced
 # soaked
-# timset
+# timeset
 # toggledon
 
 # RELATIVE
@@ -116,3 +116,9 @@ class NextTo(RelativeObjectState):
             return True
         else:
             return False
+
+
+class AgentCarrying(AbsoluteObjectState):
+    # return true if agent is carrying the object
+    def _get_value(self, env):
+        return env.agent.is_carrying(self.obj)

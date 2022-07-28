@@ -19,7 +19,9 @@ class Room:
     def __init__(
         self,
         top,
-        size
+        size,
+        row,
+        col
     ):
         # Top-left corner and size (tuples)
         self.top = top
@@ -38,6 +40,15 @@ class Room:
         self.locked = False
 
         # List of objects contained
+        self.objs = []
+
+        self.row = row
+        self.col = col
+
+    def reset(self):
+        self.doors = [None] * 4
+        self.door_pos = [None] * 4
+        self.neighbors = [None] * 4
         self.objs = []
 
     def rand_pos(self, env):
@@ -90,10 +101,14 @@ class RoomGrid(MiniGridEnv):
         self.num_rows = num_rows
         self.num_cols = num_cols
 
+        # self.room_idx = {}
+        # for i in range(num_rows):
+        #     for j in range(num_cols):
+        #         self.room_idx[i * num_cols + j] = (i, j)
+
         height = (room_size - 1) * num_rows + 1
         width = (room_size - 1) * num_cols + 1
 
-        # By default, this environment has no mission
         self.mission = ''
 
         super().__init__(
@@ -106,6 +121,17 @@ class RoomGrid(MiniGridEnv):
             seed=seed,
             agent_view_size=agent_view_size
         )
+
+    def room_num_from_pos(self, x, y):
+        i = x // (self.room_size-1)
+        j = y // (self.room_size-1)
+        room_num = i * self.num_cols + j
+        return room_num
+
+    def room_idx_from_num(self, x):
+        i = x // self.num_cols
+        j = x % self.num_cols
+        return i, j
 
     def room_from_pos(self, x, y):
         """Get the room a given position maps to"""
@@ -126,11 +152,19 @@ class RoomGrid(MiniGridEnv):
         assert j < self.num_rows
         return self.room_grid[j][i]
 
+    def reset(self):
+        super().reset()
+        for row in self.room_grid:
+            for room in row:
+                room.reset()
+        self.objs['door'] = []
+
     def _gen_grid(self, width, height):
         self._gen_rooms(width, height)
         self._gen_objs()
         self.place_agent()
         self.connect_all()
+
 
         # # Place the agent, starting in the middle, facing right
         # self.agent.cur_pos = (
@@ -142,8 +176,8 @@ class RoomGrid(MiniGridEnv):
     def _gen_rooms(self, width, height):
         # Create the grid
         self.grid = Grid(width, height)
-
-        self.room_grid = []
+        self.room_grid = [] # list of lists
+        self.doors = []
 
         # For each row of rooms
         for j in range(0, self.num_rows):
@@ -152,8 +186,10 @@ class RoomGrid(MiniGridEnv):
             # For each column of rooms
             for i in range(0, self.num_cols):
                 room = Room(
-                    (i * (self.room_size-1), j * (self.room_size-1)),
-                    (self.room_size, self.room_size)
+                    top=(i * (self.room_size-1), j * (self.room_size-1)),
+                    size=(self.room_size, self.room_size),
+                    row=j,
+                    col=i
                 )
                 row.append(room)
 
@@ -253,21 +289,21 @@ class RoomGrid(MiniGridEnv):
         assert room.doors[door_idx] is None, "door already exists"
 
         room.locked = locked
-        door = Door(color, is_open=True, is_locked=False)
+
+        # doors = self.objs.get('door', []) # TODO: should be [] on first door added
+        name = 'door_{}'.format(len(self.doors))
+        door = Door(color, name=name, is_open=True, is_locked=False)
+        self.doors.append(door)
 
         pos = room.door_pos[door_idx]
         self.grid.set(*pos, None)
         self.grid.set(*pos, door)
-        # while self.grid.get(*pos) is not None:
-        #     self.grid.remove(*pos, self.grid.get(*pos)[0])
-        # self.grid.set(*pos, door)
         door.cur_pos = pos
 
         neighbor = room.neighbors[door_idx]
         room.doors[door_idx] = door
         neighbor.doors[(door_idx+2) % 4] = door
 
-        self.doors.append(door)
         return door, pos
 
     def remove_wall(self, i, j, wall_idx):
@@ -333,6 +369,7 @@ class RoomGrid(MiniGridEnv):
 
         return self.agent.cur_pos
 
+
     def connect_all(self, door_colors=COLOR_NAMES, max_itrs=5000):
         """
         Make sure that all rooms are reachable by the agent from its
@@ -375,6 +412,10 @@ class RoomGrid(MiniGridEnv):
             j = self._rand_int(0, self.num_rows)
             k = self._rand_int(0, 4)
             room = self.get_room(i, j)
+
+            # if the room is reachable
+            if room in reach:
+                continue
 
             # If there is already a door there, skip
             if not room.door_pos[k] or room.doors[k]:

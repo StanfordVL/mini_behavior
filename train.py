@@ -10,7 +10,7 @@ import sys
 import mini_behavior.utils as utils
 from mini_behavior.utils import device
 from mini_behavior.model import ACModel
-
+from mini_behavior.save_utils import save_step, save_snapshots
 
 if __name__ == "__main__":
     # Parse arguments
@@ -102,6 +102,12 @@ if __name__ == "__main__":
     for i in range(args.procs):
         envs.append(utils.make_env(args.env, args.seed + 10000 * i))
     txt_logger.info("Environments loaded\n")
+
+    # NEW: snapshot env/agent at every timestep
+    # key = env, value=all_steps
+    env_steps = {}
+    for env in envs:
+        env_steps[env] = {}
 
     # Load training status
 
@@ -195,8 +201,11 @@ if __name__ == "__main__":
             for field, value in zip(header, data):
                 tb_writer.add_scalar(field, value, num_frames)
 
-        # Save status
+        # NEW: snapshot env/agent at every timestep
+        for env in envs:
+            env_steps[env] = save_step(env_steps[env], env)
 
+        # Save status
         if args.save_interval > 0 and update % args.save_interval == 0:
             status = {"num_frames": num_frames, "update": update,
                       "model_state": acmodel.state_dict(), "optimizer_state": algo.optimizer.state_dict()}
@@ -204,3 +213,8 @@ if __name__ == "__main__":
                 status["vocab"] = preprocess_obss.vocab.vocab
             utils.save_status(status, model_dir)
             txt_logger.info("Status saved")
+
+            # NEW: save snapshots
+            save_snapshots(env_steps, model_name, date)
+            txt_logger.info("Snapshots saved")
+
