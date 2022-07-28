@@ -1,12 +1,28 @@
 from gym_minigrid.roomgrid import *
 from gym_minigrid.register import register
 from gym_minigrid.objects import *
-from gym_minigrid.transition_probs import create_transition_matrices
 
 DEFAULT_OBJS = ['counter', 'plate', 'ashcan', 'hamburger', 'ball', 'apple', 'milk', 'juice', 'kiwi', 'grape', 'orange', 'bowl', 'egg', 'cucumber']
 
+
+def create_transition_matrices(objs, num_rooms):
+    """
+    return dict transitions, where transitions[obj] is the transition matrix for any obj in objs.
+    the probability of obj going from room i --> j is: transitions[obj][i, j]
+    """
+    transitions = {}
+    for obj in objs:
+        probs = np.random.rand(num_rooms, num_rooms)
+        probs /= np.expand_dims(np.sum(probs, axis=1), 1)
+        transitions[obj] = probs
+
+    return transitions
+
+
 class TransitionEnv(RoomGrid):
     """
+    at every episode, randomly sample num_choose objects from given object list
+    at every step, palce objects in rooms based on matrix of transition probabilities
     """
 
     def __init__(

@@ -89,14 +89,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--env",
     help="gym environment to load",
-    # default='MiniGrid-ThrowLeftoversMulti-16x16-N2-v1'
-    # default='MiniGrid-ThrowLeftovers-8x8-N2-v0'
-    # default='MiniGrid-ThrowLeftoversNavigation-8x8-N2-v0'
-    # default='MiniGrid-ThrowLeftoversMulti-16x16-N2-v1'
     # default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
     # default='MiniGrid-FloorPlanEnv-16x16-N1-v0'
-    default='MiniGrid-TransitionEnv-8x8x4-N2-v1'
-
 )
 parser.add_argument(
     "--seed",
@@ -119,7 +113,7 @@ parser.add_argument(
 # NEW
 parser.add_argument(
     "--save",
-    default=True,
+    default=False,
     help="whether or not to save the demo"
 )
 # NEW
