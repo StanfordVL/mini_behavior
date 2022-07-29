@@ -82,7 +82,6 @@ class Grid:
             self.grid[j * self.width + i].append(v)
         else:
             self.grid[j * self.width + i] = [self.grid[j * self.width + i], v]
-        # self.objs.append(v)
 
     def remove(self, i, j, v):
         assert 0 <= i < self.width
@@ -96,8 +95,6 @@ class Grid:
                     self.grid[j * self.width + i].remove(v)
             else:
                 self.grid[j * self.width + i] = None
-
-            # self.objs.remove(v)
 
     def clear(self, i, j):
         cur_objs = self.grid[j * self.width + i]
@@ -426,7 +423,6 @@ class MiniGridEnv(gym.Env):
                 self.objs[obj].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 
-        # self.walls = {}
         # Action enumeration for this environment
         self.actions()
 
@@ -523,13 +519,12 @@ class MiniGridEnv(gym.Env):
                    # 'done': 3}
 
         i = 3
-        for objs in self.objs.values():
-            for obj in objs:
-                for action in _ALL_ACTIONS:
-                    if obj.possible_action(action):
-                        obj_action = '{}/{}'.format(obj.name, action)
-                        actions[obj_action] = i
-                        i += 1
+        for obj in self.obj_instances.values():
+            for action in _ALL_ACTIONS:
+                if obj.possible_action(action):
+                    obj_action = '{}/{}'.format(obj.name, action)
+                    actions[obj_action] = i
+                    i += 1
 
         self.actions = IntEnum('Actions', actions)
 

@@ -157,21 +157,12 @@ class RoomGrid(MiniGridEnv):
         for row in self.room_grid:
             for room in row:
                 room.reset()
-        self.objs['door'] = []
 
     def _gen_grid(self, width, height):
         self._gen_rooms(width, height)
         self._gen_objs()
         self.place_agent()
         self.connect_all()
-
-
-        # # Place the agent, starting in the middle, facing right
-        # self.agent.cur_pos = (
-        #     (self.num_cols // 2) * (self.room_size-1) + (self.room_size // 2),
-        #     (self.num_rows // 2) * (self.room_size-1) + (self.room_size // 2)
-        # )
-        # self.agent.dir = 0
 
     def _gen_rooms(self, width, height):
         # Create the grid
@@ -290,7 +281,6 @@ class RoomGrid(MiniGridEnv):
 
         room.locked = locked
 
-        # doors = self.objs.get('door', []) # TODO: should be [] on first door added
         name = 'door_{}'.format(len(self.doors))
         door = Door(color, name=name, is_open=True, is_locked=False)
         self.doors.append(door)
