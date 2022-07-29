@@ -30,7 +30,7 @@ def load():
     if args.seed != -1:
         env.seed(args.seed)
 
-    _ = env.reset()
+    env.reset()
     obs = env.load_state(args.load)
 
     if hasattr(env, 'mission'):
@@ -89,7 +89,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--env",
     help="gym environment to load",
-    # default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
+    default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
     # default='MiniGrid-FloorPlanEnv-16x16-N1-v0'
 )
 parser.add_argument(

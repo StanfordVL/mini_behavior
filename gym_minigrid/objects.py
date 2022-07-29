@@ -52,6 +52,21 @@ class WorldObj:
     def reset(self):
         self.contains = []
 
+    def load(self, obj, grid, env):
+        self.reset()
+        self.cur_pos = obj.cur_pos
+        self.can_overlap = obj.can_overlap
+        self.can_seebehind = obj.can_seebehind
+
+        if obj.can_contain:
+            cell = grid.get(*obj.cur_pos)
+            if isinstance(cell, list):
+                cell_names = [obj.name for obj in cell]
+                obj_idx = cell_names.index(obj.name)
+                for i in range(obj_idx+1, len(cell)):
+                    self.contains.append(env.obj_instances[cell_names[i]])
+
+
     def get_class(self):
         # ex: obj name = plate_0, class = plate
         return self.name.split('_')[0]
@@ -312,7 +327,7 @@ class Box(WorldObj):
 
 class Square(WorldObj):
     def __init__(self, color='blue', name='square'):
-        super(Ball, self).__init__('square', color, name,
+        super(Square, self).__init__('square', color, name,
                                    state_keys=['agentcarrying'],
                                    action_keys=['pickup', 'drop'])
 

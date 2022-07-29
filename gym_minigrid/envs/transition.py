@@ -1,6 +1,6 @@
 from gym_minigrid.roomgrid import *
 from gym_minigrid.register import register
-from gym_minigrid.objects import *
+from gym_minigrid.objects import _OBJECT_CLASS, _OBJECT_COLOR
 
 DEFAULT_OBJS = ['counter', 'plate', 'ashcan', 'hamburger', 'ball', 'apple', 'milk', 'juice', 'kiwi', 'grape', 'orange', 'bowl', 'egg', 'cucumber']
 
@@ -22,7 +22,7 @@ def create_transition_matrices(objs, num_rooms):
 class TransitionEnv(RoomGrid):
     """
     at every episode, randomly sample num_choose objects from given object list
-    at every step, palce objects in rooms based on matrix of transition probabilities
+    at every step, place objects in rooms based on matrix of transition probabilities
     """
 
     def __init__(
@@ -40,6 +40,8 @@ class TransitionEnv(RoomGrid):
         if objs is None:
             objs = DEFAULT_OBJS
 
+        self.available_objs = objs
+        self.num_choose = num_choose
         self.num_rooms = num_rows * num_cols
 
         # generate matrix
@@ -74,6 +76,28 @@ class TransitionEnv(RoomGrid):
                    'forward': 2}
 
         self.actions = IntEnum('Actions', actions)
+
+    def choose_objs(self):
+        chosen_objs = self._rand_subset(self.available_objs, self.num_choose)
+        num_objs = {obj: 1 for obj in chosen_objs}
+
+        # initialize num_objs, key=obj name (str), value=num of the obj (1)
+        return num_objs
+
+    def reset(self):
+        num_objs = self.choose_objs()
+
+        self.objs = {}
+        self.obj_instances = {}
+        for obj in num_objs.keys():
+            self.objs[obj] = []
+            for i in range(num_objs[obj]):
+                obj_name = '{}_{}'.format(obj, i)
+                obj_instance = _OBJECT_CLASS[obj](_OBJECT_COLOR[obj], obj_name)
+                self.objs[obj].append(obj_instance)
+                self.obj_instances[obj_name] = obj_instance
+
+        super().reset()
 
     def _gen_objs(self):
         # randomly place objs on the grid

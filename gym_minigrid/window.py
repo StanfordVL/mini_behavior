@@ -89,7 +89,7 @@ class Window:
             ax.text(0.5, 0.5, text, rotation=0, ha='center', va='center')
 
         on_grid = []
-        carrying = [obj.name for obj in env.agent.carrying]
+        carrying = [obj.name for obj in env.obj_instances.values() if env.agent.is_carrying(obj)]
         for objs in env.objs.values():
             for obj in objs:
                 if obj.name not in carrying and obj.type != 'door':

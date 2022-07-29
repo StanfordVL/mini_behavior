@@ -63,6 +63,9 @@ class BaseObjectState:
         # assert self._initialized
         return self._set_value(*args, **kwargs)
 
+    def check_dependencies(self, env):
+        pass
+
 
 class AbsoluteObjectState(BaseObjectState):
     """

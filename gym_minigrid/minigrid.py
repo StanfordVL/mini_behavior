@@ -3,8 +3,8 @@
 import hashlib
 import gym
 import os
-# import pickle as pkl
-import dill as pkl
+import pickle as pkl
+# import dill as pkl
 from enum import IntEnum
 from gym import spaces
 from gym.utils import seeding
@@ -62,6 +62,17 @@ class Grid:
         from copy import deepcopy
         return deepcopy(self)
 
+    def load(self, grid, env):
+        for x in range(self.width):
+            for y in range(self.height):
+                self.clear(x, y)
+                cell = grid.get(x, y)
+                if isinstance(cell, list):
+                    for obj in cell:
+                        if obj.type != 'wall' and obj.type != 'door':
+                            new_obj = env.obj_instances[obj.name]
+                            env.grid.set(x, y, new_obj)
+
     def set(self, i, j, v):
         assert 0 <= i < self.width
         assert 0 <= j < self.height
@@ -71,6 +82,7 @@ class Grid:
             self.grid[j * self.width + i].append(v)
         else:
             self.grid[j * self.width + i] = [self.grid[j * self.width + i], v]
+        # self.objs.append(v)
 
     def remove(self, i, j, v):
         assert 0 <= i < self.width
@@ -84,6 +96,18 @@ class Grid:
                     self.grid[j * self.width + i].remove(v)
             else:
                 self.grid[j * self.width + i] = None
+
+            # self.objs.remove(v)
+
+    def clear(self, i, j):
+        cur_objs = self.grid[j * self.width + i]
+        if cur_objs:
+            if isinstance(cur_objs, list):
+                for obj in cur_objs:
+                    if obj.type != 'wall' and obj.type != 'door':
+                        self.remove(i, j, obj)
+            elif cur_objs.type != 'wall' and cur_objs.type != 'door':
+                self.remove(i, j, cur_objs)
 
     def get(self, i, j):
         assert 0 <= i < self.width
@@ -402,6 +426,7 @@ class MiniGridEnv(gym.Env):
                 self.objs[obj].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 
+        # self.walls = {}
         # Action enumeration for this environment
         self.actions()
 
@@ -451,6 +476,20 @@ class MiniGridEnv(gym.Env):
         from copy import deepcopy
         return deepcopy(self.objs), deepcopy(self.obj_instances)
 
+    def load_objs(self, state):
+        obj_instances = state['obj_instances']
+        grid = state['grid']
+        for obj in self.obj_instances.values():
+            if obj.type != 'wall' and obj.type != 'door':
+                load_obj = obj_instances[obj.name]
+                obj.load(load_obj, grid, self)
+
+        for obj in self.obj_instances.values():
+            obj.contains = []
+            for other_obj in self.obj_instances.values():
+                if other_obj.check_rel_state(self, obj, 'inside'):
+                    obj.contains.append(other_obj)
+
     def get_state(self):
         grid = self.grid.copy()
         agent = self.agent.copy()
@@ -471,10 +510,9 @@ class MiniGridEnv(gym.Env):
         assert os.path.isfile(load_file)
         with open(load_file, 'rb') as f:
             state = pkl.load(f)
-            self.grid = state['grid']
-            self.objs = state['objs']
-            self.obj_instances = state['obj_instances']
-            self.agent.load(state['agent'], self)
+            self.load_objs(state)
+            self.grid.load(state['grid'], self)
+            self.agent.load(state['agent'], self.obj_instances)
         return self.grid
 
     def actions(self):
@@ -503,7 +541,6 @@ class MiniGridEnv(gym.Env):
             obj.reset()
 
         self.reward = 0
-        # self.doors = []
 
         # Generate a new random grid at the start of each episode
         # To keep the same grid for each episode, call env.seed() with
@@ -771,7 +808,6 @@ class MiniGridEnv(gym.Env):
         """
         Put an object at a specific position in the grid
         """
-
         self.grid.set(i, j, obj)
         obj.init_pos = (i, j)
         obj.cur_pos = (i, j)
@@ -874,7 +910,7 @@ class MiniGridEnv(gym.Env):
             if self.mode == 'human':
                 self.last_action = None
                 if action == 'choose':
-                    if fwd_cell is None and self.agent.carrying == []:
+                    if self.agent.all_reachable() == []:
                         print("No reachable objects")
                     else:
                         # get all reachable objects
@@ -886,8 +922,8 @@ class MiniGridEnv(gym.Env):
                         elif fwd_cell:
                             choices = [fwd_cell]
 
-                        if self.agent.carrying:
-                            choices += self.agent.carrying
+                        carrying = [obj for obj in self.obj_instances.values() if self.agent.is_carrying(obj)]
+                        choices += carrying
 
                         text = ""
                         for i in range(len(choices)):
@@ -958,10 +994,10 @@ class MiniGridEnv(gym.Env):
         # in the agent's partially observable view
         agent_pos = grid.width // 2, grid.height - 1
         # TODO: commented out below. otherwise, there is error with multiroom when you carry an object through door
-        if self.agent.carrying:
-            grid.set(*agent_pos, self.agent.carrying)
-        else:
-            grid.set(*agent_pos, None)
+        # if self.agent.carrying:
+        #     grid.set(*agent_pos, self.agent.carrying)
+        # else:
+        #     grid.set(*agent_pos, None)
 
         return grid, vis_mask
 

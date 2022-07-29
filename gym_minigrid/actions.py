@@ -61,7 +61,7 @@ class Pickup(BaseAction):
 
         self.env.grid.remove(*obj.cur_pos, obj)  # remove obj from the grid
         obj.cur_pos = np.array([-1, -1]) # update cur_pos of obj
-        self.env.agent.carrying.append(obj) # update list of objects being carried by agent
+        # self.env.agent.carrying.append(obj) # update list of objects being carried by agent
 
         # check dependencies
         assert not obj.states['onfloor'].get_value(self.env)
@@ -89,7 +89,7 @@ class Drop(BaseAction):
 
         # change agent / grid
         self.env.grid.set(*fwd_pos, obj)
-        self.env.agent.carrying.remove(obj)
+        # self.env.agent.carrying.remove(obj)
 
         if isinstance(cell, list):
             for other_obj in cell:
@@ -104,4 +104,3 @@ class Drop(BaseAction):
             assert obj.states['onfloor'].get_value(self.env)
         else:
             assert not obj.states['onfloor'].get_value(self.env)
-

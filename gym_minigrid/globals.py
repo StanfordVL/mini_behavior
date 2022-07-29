@@ -45,7 +45,8 @@ OBJECT_TO_IDX = {
     'agent': 10,
     'counter': 11,
     's_ball': 12,
-    'ashcan': 13
+    'ashcan': 13,
+    'square': 14
 }
 
 IDX_TO_OBJECT = dict(zip(OBJECT_TO_IDX.values(), OBJECT_TO_IDX.keys()))

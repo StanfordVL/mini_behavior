@@ -17,8 +17,8 @@ class Agent:
         # Current position of agent
         self.cur_pos = None
         self.dir = None
-        self.obj = None
-        self.carrying = []
+        # self.obj = None
+        # self.carrying = []
 
         self.actions = {} # NOTE: dict with key = action_key, value = action class
 
@@ -28,28 +28,21 @@ class Agent:
     def reset(self):
         self.dir = None
         self.cur_pos = None
-        self.obj = None
-        self.carrying = []
+        # self.carrying = []
 
     def copy(self):
         from copy import deepcopy
-        agent = {'agent_view_size': self.view_size,
-                 'dir': self.dir,
-                 'cur_pos': self.cur_pos,
-                 'obj': self.obj,
-                 'carrying': self.carrying
-                 }
+        agent = {'dir': self.dir,
+                 'cur_pos': self.cur_pos}
         return deepcopy(agent)
 
-    def load(self, agent, env):
+    def load(self, agent, obj_instances):
         self.dir = agent['dir']
         self.cur_pos = agent['cur_pos']
-        # self.obj = agent['obj']
-        # self.carrying = agent['carrying']
-        for obj_name, obj_instance in env.obj_instances.items():
-            if np.all(obj_instance.cur_pos == np.array([-1,-1])):
-                self.carrying.append(obj_instance)
 
+        # for obj in obj_instances.values():
+            # if self.is_carrying(obj):
+                # self.carrying.append(obj)
 
     @property
     def dir_vec(self):
@@ -161,6 +154,11 @@ class Agent:
         in_front = np.all(obj.cur_pos == self.front_pos)
         return carrying or in_front
 
+    def all_reachable(self):
+        return [obj for obj in self.env.obj_instances.values() if self.reachable(obj)]
+
     # NEW
     def is_carrying(self, obj):
-        return obj in self.carrying
+        # return obj.states['agentcarrying'].get_value(
+        return np.all(obj.cur_pos == [-1, -1])
+        # return obj in self.carrying

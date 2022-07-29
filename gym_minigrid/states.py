@@ -1,4 +1,5 @@
 from .states_base import *
+import numpy as np
 
 # ABSOLUTE
 # broken
@@ -35,8 +36,7 @@ def get_obj_cell(self, env):
 # TODO: check that get_value is correct
 class Onfloor(AbsoluteObjectState):
     def _get_value(self, env):
-        # if self.obj.possible_state('agentcarrying') and self.obj.states['agentcarrying'].get_value(env):
-        if env.agent.is_carrying(self.obj):
+        if 'agentcarrying' in self.obj.states and self.obj.states['agentcarrying'].get_value(env):
             return False
 
         obj, cell = get_obj_cell(self, env)
@@ -50,7 +50,6 @@ class Onfloor(AbsoluteObjectState):
 class InFrontOfAgent(AbsoluteObjectState):
     # return true if obj is in front of agent
     def _get_value(self, env):
-
         agent_front = env.agent.front_pos
         obj_pos = self.obj.cur_pos
 
@@ -60,7 +59,7 @@ class InFrontOfAgent(AbsoluteObjectState):
 class Ontop(RelativeObjectState):
     # returns true if obj is ontop other
     def _get_value(self, other, env):
-        if env.agent.is_carrying(self.obj):
+        if 'agentcarrying' in self.obj.states and self.obj.states['agentcarrying'].get_value(env):
             return False
 
         obj, cell = get_obj_cell(self, env)
@@ -78,7 +77,7 @@ class Ontop(RelativeObjectState):
 class Under(RelativeObjectState):
     # returns true if self.obj is under other
     def _get_value(self, other, env):
-        if env.agent.is_carrying(self.obj):
+        if 'agentcarrying' in self.obj.states and self.obj.states['agentcarrying'].get_value(env):
             return False
 
         obj, cell = get_obj_cell(self, env)
@@ -98,8 +97,14 @@ class Inside(RelativeObjectState):
     # returns true if obj is inside other
     # define obj is inside other: obj is ontop other and other can contain
     def _get_value(self, other, env):
-        # return self.obj.states['ontop'].get_value(other, env) and other.can_contain
-        return self.obj in other.contains
+        inside = self.obj.states['ontop'].get_value(other, env) and other.can_contain
+        # check dependencies
+        if inside and self.obj not in other.contains:
+            other.contains.append(self.obj)
+
+        return inside
+
+
 
 
 class NextTo(RelativeObjectState):
@@ -121,4 +126,4 @@ class NextTo(RelativeObjectState):
 class AgentCarrying(AbsoluteObjectState):
     # return true if agent is carrying the object
     def _get_value(self, env):
-        return env.agent.is_carrying(self.obj)
+        return np.all(self.obj.cur_pos == np.array([-1, -1]))
