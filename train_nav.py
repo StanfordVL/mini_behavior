@@ -10,6 +10,7 @@ sys.path.append('../mini_behavior')
 import utils
 from model import ACModel
 from utils import device
+from save_utils import get_step, save_snapshots
 
 
 if __name__ == "__main__":
@@ -69,6 +70,12 @@ if __name__ == "__main__":
     for i in range(procs):
         envs.append(utils.make_env(env, seed + 10000 * i))
     txt_logger.info("Environments loaded\n")
+
+    # NEW: snapshot env/agent at every timestep
+    # key = env, value=all_steps
+    env_steps = {}
+    for env in envs:
+        env_steps[env] = {}
 
     # Load training status
 
@@ -162,6 +169,11 @@ if __name__ == "__main__":
             for field, value in zip(header, data):
                 tb_writer.add_scalar(field, value, num_frames)
 
+        # NEW: snapshot env/agent at every timestep
+        for env in envs:
+            step_count, step = get_step(env)
+            env_steps[env][step_count] = step
+
         # Save status
 
         if save_interval > 0 and update % save_interval == 0:
@@ -171,3 +183,8 @@ if __name__ == "__main__":
                 status["vocab"] = preprocess_obss.vocab.vocab
             utils.save_status(status, model_dir)
             txt_logger.info("Status saved")
+
+            # NEW: save snapshots
+            save_snapshots(env_steps, model_name, date)
+            txt_logger.info("Snapshots saved")
+

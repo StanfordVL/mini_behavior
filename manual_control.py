@@ -3,7 +3,7 @@
 import argparse
 from gym_minigrid.wrappers import *
 from gym_minigrid.window import Window
-from save_utils import save_step, save_demo
+from save_utils import get_step, save_demo
 
 def redraw(img):
     if not args.agent_view:
@@ -44,12 +44,13 @@ def step(action):
     obs, reward, done, info = env.step(action)
     print('step=%s, reward=%.2f' % (env.step_count, reward))
 
-    if args.save is True:
-        save_step(all_steps, env)
+    if args.save:
+        step_count, step = get_step(env)
+        all_steps[step_count] = step
 
     if done:
         print('done!')
-        if args.save is True:
+        if args.save:
             save_demo(all_steps, args.env, env.episode)
         reset()
     else:

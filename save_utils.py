@@ -22,43 +22,32 @@ def all_state_values(env):
     """
     states = {}
     for obj_name, obj_instance in env.obj_instances.items():
-        print(obj_instance.cur_pos)
-        print(obj_instance)
-        print(env.agent.carrying)
+        # print(obj_instance.cur_pos)
+        # print(obj_instance)
         obj_states = obj_instance.get_all_state_values(env)
         states.update(obj_states)
     return states
 
 
-def get_grid_agent(env):
-    state = env.get_state()
-    grid = state['grid']
-    agent = state['agent']
-    return grid, agent
-
-
 # save last action, all states, all obj pos, all door pos
-def save_step(all_steps, env):
+def get_step(env):
     step_count = env.step_count
-    if env.last_action is None:
-        action = 'none'
-    else:
-        action = env.last_action.name
-    states = all_state_values(env)
-    # pos = all_cur_pos(env)
-    grid, agent = get_grid_agent(env)
+    action = 'none' if env.last_action is None else env.last_action.name
+    state = env.get_state()
+    state_values = all_state_values(env)
 
     # door_pos = []
     # for door in env.doors:
     #     door_pos.append(door.cur_pos)
-    all_steps[step_count] = {'action': action,
-                             'states': states,
-                             # 'pos': pos,
-                             'grid': grid,
-                             'agent_carrying': agent['carrying'],
-                             'agent_pos': agent['cur_pos']
-                             # 'door_pos': door_pos
-                             }
+    step = {'action': action,
+            'predicates': state_values,
+            'grid': state['grid'],
+            'agent_dir': state['agent']['dir'],
+            'agent_pos': state['agent']['cur_pos']
+            # 'door_pos': door_pos
+            }
+
+    return step_count, step
 
 
 # save demo as a pkl file
@@ -76,7 +65,7 @@ def save_demo(all_steps, env_name, episode):
 
     print('saving demo to: {}'.format(demo_file))
 
-    with open(demo_file, 'w') as f:
+    with open(demo_file, 'wb') as f:
         pkl.dump(all_steps, f)
 
     print('saved')
@@ -87,13 +76,13 @@ def save_snapshots(env_steps, model_name='', date=''):
     dir = '../snapshots'
     if not os.path.isdir(dir):
         os.mkdir(dir)
-    demo_file = os.path.join(dir, f'{model_name}_{date}')
+    snapshot_file = os.path.join(dir, f'{model_name}_{date}')
 
-    print('saving demo to: {}'.format(demo_file))
+    print('saving snapshot to: {}'.format(snapshot_file))
 
     # hf = h5py.File('{demo_file}.h5', 'w')
 
-    with open(demo_file, 'w') as f:
+    with open(snapshot_file, 'wb') as f:
         pkl.dump(env_steps, f)
 
     print('saved')
@@ -102,19 +91,19 @@ def save_snapshots(env_steps, model_name='', date=''):
 def open_demo(demo_file):
     assert os.path.isfile(demo_file)
 
-    with open(demo_file) as f:
+    with open(demo_file, 'rb') as f:
         demo = pkl.load(f)
         print('num_steps in demo: {}'.format(len(demo)))
         return demo
 
 
-def get_step(step_num, demo_file):
+def get_step_num(step_num, demo_file):
     # returns dict with keys: action, grid, agent_carrying, agent_pos
     demo = open_demo(demo_file)
     return demo[step_num]
 
 
-def get_action(step_num, demo_file):
+def get_action_num(step_num, demo_file):
     demo = open_demo(demo_file)
     action = demo[step_num]['action']
     print('action at step {}: {}'.format(step_num, action.name))
@@ -131,9 +120,9 @@ def print_actions_states(demo_file):
     demo = open_demo(demo_file)
     for step_num in demo:
         print('{}: {}'.format(step_num,  demo[step_num]['action']))
-        print('true states')
-        for state in demo[step_num]['states']:
-            if demo[step_num]['states'][state]:
+        print('true predicates')
+        for state in demo[step_num]['predicates']:
+            if demo[step_num]['predicates'][state]:
                 print(state)
 
 
@@ -143,5 +132,5 @@ def print_actions(demo_file):
         print('{}: {}'.format(step_num,  demo[step_num]['action']))
 
 
-# demo_file = 'demos/MiniGrid-ThrowLeftovers-8x8-N2-v0/MiniGrid-ThrowLeftovers-8x8-N2-v0_0'
-# print_actions(demo_file)
+# demo_file = '/Users/emilyjin/Code/behavior/demos/MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1/2/MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1_10'
+# print_actions_states(demo_file)

@@ -7,10 +7,15 @@ import torch_ac
 import tensorboardX
 import sys
 
-import mini_behavior.utils as utils
-from mini_behavior.utils import device
-from mini_behavior.model import ACModel
-from mini_behavior.save_utils import save_step, save_snapshots
+sys.path.append('../mini_behavior')
+import utils
+from model import ACModel
+from utils import device
+from save_utils import get_step, save_snapshots
+# import mini_behavior.utils as utils
+# from mini_behavior.utils import device
+# from mini_behavior.model import ACModel
+# from mini_behavior.save_utils import get_step, save_snapshots
 
 if __name__ == "__main__":
     # Parse arguments
@@ -203,7 +208,8 @@ if __name__ == "__main__":
 
         # NEW: snapshot env/agent at every timestep
         for env in envs:
-            env_steps[env] = save_step(env_steps[env], env)
+            step_count, step = get_step(env)
+            env_steps[env][step_count] = step
 
         # Save status
         if args.save_interval > 0 and update % args.save_interval == 0:

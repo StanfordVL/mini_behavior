@@ -11,7 +11,7 @@ from gym.utils import seeding
 from .objects import _OBJECT_CLASS, _OBJECT_COLOR
 from .globals import COLOR_NAMES
 from .objects import *
-from .bddl import _ALL_ACTIONS
+from .bddl import _ALL_ACTIONS, _CONTROLS
 from .agent import Agent
 
 # Size in pixels of a tile in the full-scale human view
@@ -67,11 +67,15 @@ class Grid:
             for y in range(self.height):
                 self.clear(x, y)
                 cell = grid.get(x, y)
-                if isinstance(cell, list):
-                    for obj in cell:
-                        if obj.type != 'wall' and obj.type != 'door':
-                            new_obj = env.obj_instances[obj.name]
-                            env.grid.set(x, y, new_obj)
+                if cell:
+                    if isinstance(cell, list):
+                        for obj in cell:
+                            if obj.type != 'wall' and obj.type != 'door':
+                                new_obj = env.obj_instances[obj.name]
+                                env.grid.set(x, y, new_obj)
+                    elif cell.type != 'wall' and cell.type != 'door':
+                        new_obj = env.obj_instances[cell.name]
+                        env.grid.set(x, y, new_obj)
 
     def set(self, i, j, v):
         assert 0 <= i < self.width
@@ -98,13 +102,15 @@ class Grid:
 
     def clear(self, i, j):
         cur_objs = self.grid[j * self.width + i]
+        self.grid[j * self.width + i] = None
+
         if cur_objs:
             if isinstance(cur_objs, list):
                 for obj in cur_objs:
-                    if obj.type != 'wall' and obj.type != 'door':
-                        self.remove(i, j, obj)
-            elif cur_objs.type != 'wall' and cur_objs.type != 'door':
-                self.remove(i, j, cur_objs)
+                    if obj.type == 'wall' or obj.type == 'door':
+                        self.set(i, j, obj)
+            elif cur_objs.type == 'wall' or cur_objs.type == 'door':
+                self.set(i, j, cur_objs)
 
     def get(self, i, j):
         assert 0 <= i < self.width
@@ -383,6 +389,26 @@ class MiniGridEnv(gym.Env):
         'video.frames_per_second': 10
     }
 
+    # def actions(self):
+    #     all_actions = _ALL_ACTIONS + _CONTROLS
+    #
+    #     actions = {action: i for i, action in enumerate(all_actions)}
+    #     self.actions = IntEnum('Actions', actions)
+
+    # Enumeration of possible actions
+    class Actions(IntEnum):
+        # Turn left, turn right, move forward
+        left = 0
+        right = 1
+        forward = 2
+        pickup = 3
+        drop = 4
+        toggle = 5
+        open = 6
+        close = 7
+        slice = 8
+        cook = 9
+
     def __init__(
         self,
         mode='not_human',
@@ -424,8 +450,7 @@ class MiniGridEnv(gym.Env):
                 self.obj_instances[obj_name] = obj_instance
 
         # Action enumeration for this environment
-        self.actions()
-
+        self.actions = MiniGridEnv.Actions
         # Actions are discrete integer values
         self.action_space = spaces.Discrete(len(self.actions))
 
@@ -501,6 +526,7 @@ class MiniGridEnv(gym.Env):
         state = self.get_state()
         with open(out_file, 'wb') as f:
             pkl.dump(state, f)
+            print(f'saved to: {out_file}')
 
     def load_state(self, load_file):
         assert os.path.isfile(load_file)
@@ -510,23 +536,6 @@ class MiniGridEnv(gym.Env):
             self.grid.load(state['grid'], self)
             self.agent.load(state['agent'], self.obj_instances)
         return self.grid
-
-    def actions(self):
-        # creates Actions class
-        actions = {'left': 0,
-                   'right': 1,
-                   'forward': 2}
-                   # 'done': 3}
-
-        i = 3
-        for obj in self.obj_instances.values():
-            for action in _ALL_ACTIONS:
-                if obj.possible_action(action):
-                    obj_action = '{}/{}'.format(obj.name, action)
-                    actions[obj_action] = i
-                    i += 1
-
-        self.actions = IntEnum('Actions', actions)
 
     def reset(self):
         # Current position and direction of the agent
@@ -905,21 +914,12 @@ class MiniGridEnv(gym.Env):
             if self.mode == 'human':
                 self.last_action = None
                 if action == 'choose':
-                    if self.agent.all_reachable() == []:
+                    choices = self.agent.all_reachable()
+                    if not choices:
                         print("No reachable objects")
                     else:
                         # get all reachable objects
                         print('Reachable objects')
-                        choices = []
-                        if isinstance(fwd_cell, list):
-                            for obj in fwd_cell:
-                                choices.append(obj)
-                        elif fwd_cell:
-                            choices = [fwd_cell]
-
-                        carrying = [obj for obj in self.obj_instances.values() if self.agent.is_carrying(obj)]
-                        choices += carrying
-
                         text = ""
                         for i in range(len(choices)):
                             text += "{}) {} \n".format(i, choices[i].name)
@@ -942,12 +942,13 @@ class MiniGridEnv(gym.Env):
                             action = int(input("Choose one of the following actions: \n{}".format(text)))
                             action = actions[action] # action key
                             self.agent.actions[action].do(obj) # perform action
-                            self.last_action = self.actions['{}/{}'.format(obj.name, action)]
-
+                            self.last_action = self.actions[action]
                 # Done action (not used by default)
                 else:
                     assert False, "unknown action {}".format(action)
             else:
+                # action = self.actions(action).name
+                # TODO: with agent centric, how does agent choose which obj to do the action on
                 obj_action = self.actions(action).name.split('/') # list: [obj, action]
 
                 # try to perform action
@@ -957,11 +958,23 @@ class MiniGridEnv(gym.Env):
                 else:
                     self.action_done = False
 
+        self.update_states()
         reward = self._reward()
         done = self._end_conditions() or self.step_count >= self.max_steps
         obs = self.gen_obs()
 
         return obs, reward, done, {}
+
+    def update_states(self):
+        for obj in self.obj_instances.values():
+            for name, state in obj.states.items():
+                if state.type == 'absolute':
+                    state.update(self)
+                elif name == 'inside' and not self.agent.is_carrying(obj):
+                    cell = self.grid.get(*obj.cur_pos)
+                    if isinstance(cell, list):
+                        for other_obj in cell:
+                            state.update(other_obj, self)
 
     def gen_obs_grid(self):
         """

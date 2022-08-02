@@ -1,7 +1,9 @@
-# FROM MINIGRID REPO
+# MODIFIED FROM MINIGRID REPO
 
 import math
 import numpy as np
+from PIL import Image
+
 
 def downsample(img, factor):
     """
@@ -18,6 +20,7 @@ def downsample(img, factor):
 
     return img
 
+
 def fill_coords(img, fn, color):
     """
     Fill pixels of an image with coordinates matching a filter function
@@ -32,6 +35,7 @@ def fill_coords(img, fn, color):
 
     return img
 
+
 def rotate_fn(fin, cx, cy, theta):
     def fout(x, y):
         x = x - cx
@@ -43,6 +47,7 @@ def rotate_fn(fin, cx, cy, theta):
         return fin(x2, y2)
 
     return fout
+
 
 def point_in_line(x0, y0, x1, y1, r):
     p0 = np.array([x0, y0])
@@ -74,15 +79,18 @@ def point_in_line(x0, y0, x1, y1, r):
 
     return fn
 
+
 def point_in_circle(cx, cy, r):
     def fn(x, y):
         return (x-cx)*(x-cx) + (y-cy)*(y-cy) <= r * r
     return fn
 
+
 def point_in_rect(xmin, xmax, ymin, ymax):
     def fn(x, y):
         return x >= xmin and x <= xmax and y >= ymin and y <= ymax
     return fn
+
 
 def point_in_triangle(a, b, c):
     a = np.array(a)
@@ -111,6 +119,7 @@ def point_in_triangle(a, b, c):
 
     return fn
 
+
 def highlight_img(img, color=(255, 255, 255), alpha=0.30):
     """
     Add highlighting to an image
@@ -119,3 +128,61 @@ def highlight_img(img, color=(255, 255, 255), alpha=0.30):
     blend_img = img + alpha * (np.array(color, dtype=np.uint8) - img)
     blend_img = blend_img.clip(0, 255).astype(np.uint8)
     img[:, :, :] = blend_img
+
+
+def img_to_array(img_path):
+    """
+    given a path to image, return array
+    """
+    img = Image.open(img_path)
+    array = np.asarray(img)
+    return array
+
+
+def square_img(img_path):
+    img_array = img_to_array(img_path)
+
+    # 0 = black, 255 = white
+    img_array = img_array[:, :, 0]
+    height, width = np.shape(img_array)
+    start_row = 0
+    end_row = height - 1
+    start_col = 0
+    end_col = width - 1
+
+    while np.all(img_array[start_row, :] == 255):
+        start_row += 1
+
+    while np.all(img_array[end_row, :] == 255):
+        end_row -= 1
+
+    while np.all(img_array[:, start_col] == 255):
+        start_col += 1
+
+    while np.all(img_array[:, end_col] == 255):
+        end_col -= 1
+
+    assert start_row <= end_row, 'incorrect start/end row'
+    assert start_col <= end_col, 'incorrect start/end col'
+
+    crop = img_array[start_row: end_row, start_col: end_col]
+
+    new_height, new_width = np.shape(crop)
+    expand_first = abs(new_height - new_width) // 2
+    expand_sec = abs(new_height - new_width) - expand_first
+
+    if new_height > new_width:
+        # expand the width by expand_by on both sides
+        expand_first = np.full((new_height, expand_first), 255)
+        expand_sec = np.full((new_height, expand_sec), 255)
+        square = np.hstack((expand_first, crop, expand_sec))
+        print(np.shape(square))
+    elif new_height < new_width:
+        expand_first = np.full((expand_first, new_width), 255)
+        expand_sec = np.full((expand_sec, new_width), 255)
+        square = np.vstack((expand_first, crop, expand_sec))
+        print(np.shape(square))
+    else:
+        square = crop
+
+    return square.astype(np.uint8)

@@ -33,30 +33,15 @@ class BaseObjectState:
     def __init__(self, obj): # env
         super(BaseObjectState, self).__init__()
         self.obj = obj
-        # self._initialized = False
-        # self.env = env
+        self.value = False
 
-    def _update(self):
-        """This function will be called once for every simulator step."""
-        pass
-
-    # def _initialize(self):
-    #     """This function will be called once, after the object has been loaded."""
-    #     pass
-    #
-    # def initialize(self, simulator):
-    #     assert not self._initialized, "State is already initialized."
-    #
-    #     self.simulator = simulator
-    #     self._initialize()
-    #     self._initialized = True
-
-    def update(self):
+    def update(self, *args, **kwargs):
         # assert self._initialized, "Cannot update uninitalized state."
-        return self._update()
+        self._update(*args, **kwargs)
 
     def get_value(self, *args, **kwargs):
         # assert self._initialized
+        self.update(*args, **kwargs)
         return self._get_value(*args, **kwargs)
 
     def set_value(self, *args, **kwargs):
@@ -72,18 +57,17 @@ class AbsoluteObjectState(BaseObjectState):
     track object states that are absolute (require seed 0_2 object)
     """
     def __init__(self, obj): # env
-        super(BaseObjectState, self).__init__()
-        self.obj = obj
+        super(AbsoluteObjectState, self).__init__(obj)
         self.type = 'absolute'
 
-    @abstractmethod
-    def _get_value(self, env):
-        raise NotImplementedError()
-
-    # @abstractmethod
-    def _set_value(self, new_value):
-        # raise NotImplementedError()
+    def _update(self, env):
         pass
+
+    def _get_value(self, env):
+        return self.value
+
+    def _set_value(self, new_value):
+        self.value = new_value
 
 
 class RelativeObjectState(BaseObjectState):
@@ -92,14 +76,27 @@ class RelativeObjectState(BaseObjectState):
     Note that subclasses will typically compute values on-the-fly.
     """
     def __init__(self, obj): # env
-        super(BaseObjectState, self).__init__()
-        self.obj = obj
+        super(RelativeObjectState, self).__init__(obj)
         self.type = 'relative'
 
-    @abstractmethod
-    def _get_value(self, other, env):
-        raise NotImplementedError()
+    def _update(self, other, env):
+        pass
 
-    # @abstractmethod
+    def _get_value(self, other, env):
+        return self.value
+
     def _set_value(self, other, new_value):
         pass
+
+
+class ObjectProperty(BaseObjectState):
+    """
+    track object states that are absolute (require seed 0_2 object)
+    """
+    def __init__(self, obj): # env
+        super(ObjectProperty, self).__init__(obj)
+        self.type = 'absolute'
+
+    @staticmethod
+    def _get_value(self, env=None):
+        return True

@@ -148,17 +148,15 @@ class Agent:
         return self.relative_coords(x, y) is not None
 
     # NEW
-    def reachable(self, obj):
-        # true if the agent can reach the object
-        carrying = self.is_carrying(obj)
-        in_front = np.all(obj.cur_pos == self.front_pos)
-        return carrying or in_front
+    # def reachable(self, obj):
+    #     # true if the agent can reach the object
+    #     carrying = self.is_carrying(obj)
+    #     in_front = np.all(obj.cur_pos == self.front_pos)
+    #     return carrying or in_front
 
     def all_reachable(self):
-        return [obj for obj in self.env.obj_instances.values() if self.reachable(obj)]
+        return [obj for obj in self.env.obj_instances.values() if obj.states['inreachofrobot'].get_value(self.env)]
 
     # NEW
     def is_carrying(self, obj):
-        # return obj.states['agentcarrying'].get_value(
         return np.all(obj.cur_pos == [-1, -1])
-        # return obj in self.carrying

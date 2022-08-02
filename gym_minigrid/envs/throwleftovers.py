@@ -132,6 +132,16 @@ register(
     kwargs={'mode': 'human'}
 )
 
+# non-human input env
+register(
+    id='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v0',
+    entry_point='gym_minigrid.envs:ThrowLeftoversEnv',
+    kwargs={'mode': 'not_human',
+            'room_size': 8,
+            'num_rows': 2,
+            'num_cols': 2}
+)
+
 # human input env
 register(
     id='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1',

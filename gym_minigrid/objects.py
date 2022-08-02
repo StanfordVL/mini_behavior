@@ -6,20 +6,53 @@ from .globals import COLOR_TO_IDX, IDX_TO_COLOR, OBJECT_TO_IDX, IDX_TO_OBJECT, C
 global _OBJECT_CLASS
 global _OBJECT_COLOR
 
+_OBJECTS = ["apple", "ashcan",
+            "backpack", "ball", "banana", "basket", "bed", "beef", "bin", "blender", "book", "bow", "bread", "broom", "bucket",
+            "cabinet", "cake", "calculator", "candy", "car", "carton", "carving_knife", "casserole", "chicken", "chip", "cookie", "countertop",
+            "date", "door", "dustpan",
+            "egg", "electric_refrigerator",
+            "fish", "floor", "folder", "fork",
+            "gym_shoe",
+            "hamburger", "hammer", "highlighter",
+            "jar", "jewelry", "juice",
+            "kettle", "knife",
+            "lemon", "lettuce",
+            "necklace", "notebook",
+            "olive",
+            "package", "pan", "pen", "pencil", "plate", "plywood", "pop", "printer",
+            "radish", "rag",
+            "salad", "sandwich", "saw", "scrub_brush", "shelf", "shoe", "shower", "sink", "soap", "sock", "sofa", "soup", "spoon", "stove", "strawberry",
+            "table", "tea_bag", "teapot", "toilet", "tomato", "towel",
+            "vegetable_oil",
+            "water", "window"]
+
+_FURNITURE = ["cabinet", "countertop", "door", "dustpan", "electric_refrigerator", "shelf", "sofa", "table", "toilet", "window"]
+
+########################################################################################################################
+
 
 class WorldObj:
     """
     Base class for grid world objects
     """
 
-    def __init__(self, type, color, name=None, state_keys=None, action_keys=None):
+    def __init__(self,
+                 type,
+                 color,
+                 name=None,
+                 state_keys=None,
+                 action_keys=None,
+                 can_contain=False,
+                 can_overlap=False,
+                 can_seebehind=False,
+                 ):
         if action_keys is None:
             action_keys = []
         if state_keys is None:
             state_keys = []
 
-        assert type in OBJECT_TO_IDX, type
-        assert color in COLOR_TO_IDX, color
+        assert type in OBJECT_TO_IDX, type # TODO: add all obj to OBJECT_TO_IDX
+        assert color in COLOR_TO_IDX, color # TODO: add all obj to COLOR_TO_IDX
         self.type = type
         self.color = color
 
@@ -42,11 +75,11 @@ class WorldObj:
 
         # OBJECT PROPERTIES
         # ALWAYS STATIC
-        self.can_carry = 'agentcarrying' in self.state_keys
-        self.can_contain = False
+        self.can_carry = 'pickup' in self.actions
+        self.can_contain = can_contain
         # NOT ALWAYS STATIC
-        self.can_overlap = False
-        self.can_seebehind = False
+        self.can_overlap = can_overlap
+        self.can_seebehind = can_seebehind
         self.contains = []
 
     def reset(self):
@@ -143,8 +176,7 @@ class WorldObj:
 
 class Goal(WorldObj):
     def __init__(self, color='green', name='goal'):
-        super().__init__('goal', color=color, name=name)
-        self.can_overlap = True
+        super().__init__('goal', color=color, name=name, can_overlap=True)
 
     def render(self, img):
         fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
@@ -156,8 +188,7 @@ class Floor(WorldObj):
     """
 
     def __init__(self, color='blue'):
-        super().__init__('floor', color)
-        self.can_overlap = True
+        super().__init__('floor', color, can_overlap=True)
 
     def render(self, img):
         # Give the floor a pale color
@@ -167,8 +198,7 @@ class Floor(WorldObj):
 
 class Wall(WorldObj):
     def __init__(self, color='grey'):
-        super().__init__('wall', color=color)
-        self.can_seebehind = False
+        super().__init__('wall', color=color, can_seebehind=False)
 
     def render(self, img):
         fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
@@ -238,7 +268,7 @@ class Door(WorldObj):
 
 class Key(WorldObj):
     def __init__(self, color='blue', name='key'):
-        super(Key, self).__init__('key', color, name, state_keys=['agentcarrying'], action_keys=['pickup', 'drop'])
+        super(Key, self).__init__('key', color, name, action_keys=['pickup', 'drop'])
 
     def render(self, img):
         c = COLORS[self.color]
@@ -258,7 +288,6 @@ class Key(WorldObj):
 class Ball(WorldObj):
     def __init__(self, color='blue', name='ball'):
         super(Ball, self).__init__('ball', color, name,
-                                   state_keys=['agentcarrying'],
                                    action_keys=['pickup', 'drop'])
 
     def render(self, img):
@@ -269,7 +298,6 @@ class Ball(WorldObj):
 class S_ball(WorldObj):
     def __init__(self, color='blue', name='s_ball'):
         super(S_ball, self).__init__('s_ball', color, name,
-                                     state_keys=['agentcarrying'],
                                      action_keys=['pickup', 'drop'])
 
     def render(self, img):
@@ -291,8 +319,7 @@ class Counter(WorldObj):
 # NEW
 class Ashcan(WorldObj):
     def __init__(self, color='green', name='ashcan'):
-        super(Ashcan, self).__init__('ashcan', color, name)
-        self.can_contain = True
+        super(Ashcan, self).__init__('ashcan', color, name, can_contain=True)
 
     def render(self, img):
         c = COLORS[self.color]
@@ -305,9 +332,8 @@ class Ashcan(WorldObj):
 class Box(WorldObj):
     def __init__(self, color, name=None):
         super(Box, self).__init__('box', color, name,
-                                  state_keys=['agentcarrying'],
-                                  action_keys=['pickup', 'drop'])
-        self.can_contain = True
+                                  action_keys=['pickup', 'drop'],
+                                  can_contain=True)
 
     def render(self, img):
         c = COLORS[self.color]
@@ -328,7 +354,6 @@ class Box(WorldObj):
 class Square(WorldObj):
     def __init__(self, color='blue', name='square'):
         super(Square, self).__init__('square', color, name,
-                                   state_keys=['agentcarrying'],
                                    action_keys=['pickup', 'drop'])
 
     def render(self, img):
@@ -341,6 +366,42 @@ class Square(WorldObj):
 
 ########################################################################################################################
 
+class Apple(WorldObj):
+    def __init__(self, color='red', name='apple'):
+        super(Apple, self).__init__('apple', color, name, action_keys=['pickup', 'drop'])
+
+
+# "backpack", "ball", "banana", "basket", "bed", "beef", "bin", "blender", "book", "bow", "bread", "broom", "bucket",
+# "cabinet", "cake", "calculator", "candy", "car", "carton", "carving_knife", "casserole", "chicken", "chip", "cookie", "countertop",
+# "date", "door", "dustpan",
+# "egg", "electric_refrigerator",
+# "fish", "floor", "folder", "fork",
+# "gym_shoe",
+# "hamburger", "hammer", "highlighter",
+# "jar", "jewelry", "juice",
+# "kettle", "knife",
+# "lemon", "lettuce",
+# "necklace", "notebook",
+# "olive",
+# "package", "pan", "pen", "pencil", "plate", "plywood", "pop", "printer",
+# "radish", "rag",
+# "salad", "sandwich", "saw", "scrub_brush", "shelf", "shoe", "shower", "sink", "soap", "sock", "sofa", "soup", "spoon", "stove", "strawberry",
+# "table", "tea_bag", "teapot", "toilet", "tomato", "towel",
+# "vegetable_oil",
+# "water", "window"
+
+_FURNITURE = ["cabinet", "countertop", "door", "dustpan", "electric_refrigerator", "shelf", "sofa", "table", "toilet", "window"]
+
+
+
+
+
+
+
+
+
+
+########################################################################################################################
 
 _OBJECT_CLASS = {
     'counter': Counter,

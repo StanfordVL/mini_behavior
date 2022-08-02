@@ -1,118 +1,96 @@
 from .actions import *
 from .states import *
 
-global _ALL_ACTIONS
-global _DEFAULT_ACTIONS
-global _ALL_STATES
-global _DEFAULT_STATES
-global _STATE_FUNC_MAPPING
-global _ABILITY_TO_STATE_MAPPING
-global _ACTION_FUNC_MAPPING
+_ALL_STATES = ['atsamelocation',
+               'cleaningTool',
+               'coldSource',
+               'cookable',
+               'dustyable',
+               'freezable',
+               'heatSource',
+               'infovofrobot',
+               'inhandofrobot',
+               'inreachofrobot',
+               'insameroomasrobot',
+               'inside',
+               'nextto',
+               'onfloor',
+               'ontop',
+               'openable',
+               'sliceable',
+               'slicer',
+               'soakable',
+               'stainable',
+               'toggleable',
+               'under'
+               'waterSource'
+               # 'touching', TODO: uncomment once implemented
+               ]
 
+# Touching
+# ObjectsInFOVOfRobot,
 
-_ALL_STATES = ['onfloor', 'ontop', 'under', 'inside', 'nextto', 'infrontofagent', 'agentcarrying'], #  'inroom'
-_DEFAULT_STATES = ['onfloor', 'ontop', 'under', 'nextto', 'inside', 'infrontofagent']  # , 'inroom']
+_DEFAULT_STATES = ['atsamelocation',
+                   'infovofrobot',
+                   'inhandofrobot',
+                   'inreachofrobot',
+                   'insameroomasrobot',
+                   'inside',
+                   'nextto',
+                   'onfloor',
+                   'ontop',
+                   'under'
+                   # 'touching', TODO: uncomment once implemented
+                   ]
+#                ]
 
-# TODO: add door states -- 'open', 'locked'
-
+# state (str) to state (function) mapping
 _STATE_FUNC_MAPPING = {
-    'onfloor': Onfloor,
-    'ontop': Ontop,
-    'under': Under,
+    'atsamelocation': AtSameLocation,
+    'cleaningTool': CleaningTool,
+    'coldSource': HeatSourceOrSink,
+    'cookable': Cooked,
+    'dustyable': Dusty,
+    'freezable': Frozen,
+    'heatSource': HeatSourceOrSink,
+    'infovofrobot': InFOVOfRobot,
+    'inhandofrobot': InHandOfRobot,
+    'inreachofrobot': InReachOfRobot,
+    'insameroomasrobot': InSameRoomAsRobot,
     'inside': Inside,
     'nextto': NextTo,
-    'infrontofagent': InFrontOfAgent,
-    'agentcarrying': AgentCarrying
-    # 'inroom': Inroom,
+    'onfloor': OnFloor,
+    'ontop': OnTop,
+    'openable': Opened,
+    'sliceable': Sliced,
+    'slicer': Slicer,
+    'soakable': Soaked,
+    'stainable': Stained,
+    'toggleable': ToggledOn,
+    'under': Under,
+    'waterSource': WaterSource
+    # 'touching', TODO: uncomment once implemented
 }
 
-# ability (function) to state (function) mapping
-_ABILITY_TO_STATE_MAPPING = {}
-
-_ALL_ACTIONS = ['pickup', 'drop']
+_ALL_ACTIONS = ['pickup', 'drop', 'toggle', 'open', 'close', 'slice', 'cook']
 _DEFAULT_ACTIONS = []
 
 _ACTION_FUNC_MAPPING = {
     'pickup': Pickup,
     'drop': Drop,
+    'toggle': Toggle,
+    'open': Open,
+    'close': Close,
+    # 'unlock': Unlock,
+    'slice': Slice,
+    'cook': Cook
 }
 
-_CONTROLS = ['left', 'right', 'up'] # 'down'
+_CONTROLS = ['left', 'right', 'forward']  # 'down'
 
 ########################################################################################################################
 
 # FROM BDDL
-
-# _ALL_STATES = frozenset(
-#     [
-#         # AABB,
-#         Burnt,
-#         CleaningTool,
-#         ContactBodies,
-#         Cooked,
-#         Dusty,
-#         # Frozen,
-#         HeatSourceOrSink,
-#         HorizontalAdjacency,
-#         InFOVOfRobot,
-#         InHandOfRobot,
-#         InReachOfRobot,
-#         InSameRoomAsRobot,
-#         Inside,
-#         InsideRoomTypes,
-#         MaxTemperature,
-#         NextTo,
-#         ObjectsInFOVOfRobot,
-#         OnFloor,
-#         OnTop,
-#         Open,
-#         Pose,
-#         Sliced,
-#         Slicer,
-#         Soaked,
-#         Stained,
-#         Temperature,
-#         ToggledOn,
-#         Touching,
-#         Under,
-#         VerticalAdjacency,
-#         WaterSource,
-#     ]
-# )
-#
-#
-# _ABILITY_TO_STATE_MAPPING = {
-#     "burnable": [Burnt],
-#     "cleaningTool": [CleaningTool],
-#     "coldSource": [HeatSourceOrSink],
-#     "cookable": [Cooked],
-#     "dustyable": [Dusty],
-#     "freezable": [Frozen],
-#     "heatSource": [HeatSourceOrSink],
-#     "openable": [Open],
-#     "robot": [ObjectsInFOVOfRobot],
-#     "sliceable": [Sliced],
-#     "slicer": [Slicer],
-#     "soakable": [Soaked],
-#     "stainable": [Stained],
-#     "toggleable": [ToggledOn],
-#     "waterSource": [WaterSource],
-# }
-#
-# _DEFAULT_STATE_SET = frozenset(
-#     [
-#         InFOVOfRobot,
-#         InHandOfRobot,
-#         InReachOfRobot,
-#         InSameRoomAsRobot,
-#         Inside,
-#         NextTo,
-#         OnFloor,
-#         OnTop,
-#         Touching,
-#         Under,
-#     ]
-# )
 
 # TEXTURE_CHANGE_PRIORITY = {
 #     Frozen: 4,

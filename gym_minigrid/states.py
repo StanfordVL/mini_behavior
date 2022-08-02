@@ -1,110 +1,200 @@
 from .states_base import *
 import numpy as np
 
-# ABSOLUTE
-# broken
-# burnt
-# cooked
-# dusty
-# frozen
-# open
-# perished
-# screwed
-# stained
-# sliced
-# soaked
-# timeset
-# toggledon
-
-# RELATIVE
-# inside -- done
-# nextto -- done
-# ontop -- done
-# under -- done
-
-# list of all objects at the current position: env.grid.get(*obj.cur_pos)
-#   order of elements in list = order of vertical object placement
-
 
 def get_obj_cell(self, env):
     obj = self.obj
     cell = env.grid.get(*obj.cur_pos)
-
     return obj, cell
 
 
-# TODO: check that get_value is correct
-class Onfloor(AbsoluteObjectState):
-    def _get_value(self, env):
-        if 'agentcarrying' in self.obj.states and self.obj.states['agentcarrying'].get_value(env):
-            return False
+###########################################################################################################
+# ROBOT RELATED STATES
 
-        obj, cell = get_obj_cell(self, env)
-
-        if not isinstance(cell, list):
-            return True
-        else:
-            return obj == cell[0]
-
-
-class InFrontOfAgent(AbsoluteObjectState):
+# TODO: CHANGE THIS
+class InFOVOfRobot(AbsoluteObjectState):
     # return true if obj is in front of agent
     def _get_value(self, env):
-        agent_front = env.agent.front_pos
-        obj_pos = self.obj.cur_pos
-
-        return agent_front == obj_pos
-
-
-class Ontop(RelativeObjectState):
-    # returns true if obj is ontop other
-    def _get_value(self, other, env):
-        if 'agentcarrying' in self.obj.states and self.obj.states['agentcarrying'].get_value(env):
-            return False
-
-        obj, cell = get_obj_cell(self, env)
-
-        # if obj and other are at the same pos
-        if isinstance(cell, list):
-            if other in cell:
-                obj_index = cell.index(obj)
-                other_index = cell.index(other)
-                if obj_index > other_index:
-                    return True
-        return False
+        # agent_front = env.agent.front_pos
+        # obj_pos = self.obj.cur_pos
+        #
+        # return np.all(agent_front == obj_pos)
+        return env.agent.in_view(*self.obj.cur_pos)
 
 
-class Under(RelativeObjectState):
-    # returns true if self.obj is under other
-    def _get_value(self, other, env):
-        if 'agentcarrying' in self.obj.states and self.obj.states['agentcarrying'].get_value(env):
-            return False
-
-        obj, cell = get_obj_cell(self, env)
-
-        if isinstance(cell, list):
-            # if obj and other are at the same pos
-            if other in cell:
-                obj_index = cell.index(obj)
-                other_index = cell.index(other)
-                if obj_index < other_index:
-                    return True
-        return False
+class InHandOfRobot(AbsoluteObjectState):
+    # return true if agent is carrying the object
+    def _get_value(self, env):
+        return np.all(self.obj.cur_pos == np.array([-1, -1]))
 
 
-# TODO: check that inside function works
+class InReachOfRobot(AbsoluteObjectState):
+    # return true if obj is reachable by agent
+    def _get_value(self, env):
+        carrying = env.agent.is_carrying(self.obj)
+        in_front = np.all(self.obj.cur_pos == env.agent.front_pos)
+        return carrying or in_front
+
+
+# TODO: check that this works
+class InSameRoomAsRobot(AbsoluteObjectState):
+    # return true if agent is in same room as the object
+    def _get_value(self, env):
+        if self.obj.check_abs_state(env, 'inhandofrobot'):
+            return True
+
+        obj_room = env.room_from_pos(*self.obj.cur_pos)
+        agent_room = env.room_from_pos(*env.agent.cur_pos)
+        return np.all(obj_room == agent_room)
+
+
+###########################################################################################################
+# ABSOLUTE OBJECT STATES
+
+
+# # NOTE: not implementing for now
+# class Burnt(AbsoluteObjectState):
+#     def _get_value(self, env):
+
+
+# TODO: check this works
+class Cooked(AbsoluteObjectState):
+    """
+    Cooked(obj) only changes when Cook action is done on the obj
+    """
+    def __init__(self, obj):
+        super(Cooked, self).__init__(obj)
+
+
+# TODO: check this works
+class Dusty(AbsoluteObjectState):
+    def __init__(self, obj):
+        """
+        Always init True
+        """
+        super(Dusty, self).__init__(obj)
+        self.value = True
+        self.tools = ["broom", "rag", "scrub_brush", "towel"]
+
+    def _update(self, env):
+        """
+        Always init True
+        False if at any point, obj and cleaningTool are in the same location
+        """
+        # for tool_type in env.state_objs['cleaningTool']:
+        for tool_type in self.tools:
+            for tool in env.objs.get(tool_type, []):
+                if self.obj.states['atsamelocation'].get_value(tool, env):
+                    self.value = False
+
+
+# TODO: check this works
+class Frozen(AbsoluteObjectState):
+    def __init__(self, obj):
+        super(Frozen, self).__init__(obj)
+        self.tools = ["electric_refrigerator"]
+
+    def _get_value(self, env):
+        """
+        True: coldSource is toggled on AND obj, cold source are at same location
+        False: coldsource is toggled off OR obj, cold source are not at same location
+
+        NOTE: refrigerator isnt togglebale
+        """
+        self.value = False
+
+        for tool_type in self.tools:
+            for cold_source in env.objs.get(tool_type, []):
+                # if cold_source.ToggledOn.get_value(env):
+                if self.obj.states['atsamelocation'].get_value(cold_source, env):
+                    self.value = True
+
+        return self.value
+
+
+# TODO: check this works
+class Opened(AbsoluteObjectState):
+    def __init__(self, obj):
+        """
+        Value changes only when Open action is done on obj
+        """
+        super(Opened, self).__init__(obj)
+
+
+# TODO: check this works
+class Sliced(AbsoluteObjectState):
+    def _set_value(self, new_value=True):
+        self.value = True
+
+
+# TODO: check this works
+class Soaked(AbsoluteObjectState):
+    def __init__(self, obj):
+        super(Soaked, self).__init__(obj)
+        self.tools = ['sink']
+
+    def _update(self, env):
+        """
+        not reversible
+        True if at any point, the obj is at the same location as a water source that is toggled on
+        """
+        for tool_type in self.tools:
+            for water_source in env.objs.get(tool_type, []):
+                if water_source.ToggledOn.get_value(env):
+                    if self.obj.states['atsamelocation'].get_value(water_source, env):
+                        self.value = True
+
+
+# TODO: check this works
+class Stained(AbsoluteObjectState):
+    def __init__(self, obj):
+        """
+        Always init True
+        """
+        super(Stained, self).__init__(obj)
+        self.value = True
+        self.tools = ['rag', 'scrub_brush', 'towel']
+
+    def _update(self, env):
+        """
+        not reversible
+        False if at any point, the obj is at the same location as a soaked cleaning tool
+        """
+        for tool_type in self.tools:
+            for cleaning_tool in env.objs.get(tool_type, []):
+                if cleaning_tool.Soaked.get_value(env):
+                    if self.obj.states['atsamelocation'].get_value(cleaning_tool, env):
+                        self.value = True
+
+
+# TODO: check this works
+class ToggledOn(AbsoluteObjectState):
+    def __init__(self, obj): # env
+        super(ToggledOn, self).__init__(obj)
+
+
+###########################################################################################################
+# RELATIVE OBJECT STATES
+
+
+# TODO: check this works
+class AtSameLocation(RelativeObjectState):
+    # returns true if obj is at the same location as other
+    def _update(self, other, env):
+        self.value = np.all(self.obj.cur_pos == other.cur_pos)
+
+
 class Inside(RelativeObjectState):
-    # returns true if obj is inside other
-    # define obj is inside other: obj is ontop other and other can contain
-    def _get_value(self, other, env):
-        inside = self.obj.states['ontop'].get_value(other, env) and other.can_contain
-        # check dependencies
-        if inside and self.obj not in other.contains:
-            other.contains.append(self.obj)
+    def _update(self, other, env):
+        same_location = np.all(self.obj.cur_pos == other.cur_pos)
 
-        return inside
-
-
+        if same_location:
+            if 'openable' not in other.state_keys:
+                self.value = True
+            elif other.Open.get_value(env):
+                self.value = True
+        else:
+            self.value = False
 
 
 class NextTo(RelativeObjectState):
@@ -123,7 +213,50 @@ class NextTo(RelativeObjectState):
             return False
 
 
-class AgentCarrying(AbsoluteObjectState):
-    # return true if agent is carrying the object
-    def _get_value(self, env):
-        return np.all(self.obj.cur_pos == np.array([-1, -1]))
+class OnFloor(AbsoluteObjectState):
+    def _update(self, env):
+        if 'pickup' in self.obj.actions and self.obj.states['inhandofrobot'].get_value(env):
+            self.value = False
+        else:
+            self.value = True
+
+
+class OnTop(AtSameLocation):
+    def __init__(self, obj):
+        super(OnTop, self).__init__(obj)
+
+
+class Under(AtSameLocation):
+    def __init__(self, obj):
+        super(Under, self).__init__(obj)
+
+
+###########################################################################################################
+# OBJECT PROPERTIES
+
+# TODO: CleaningTool
+class CleaningTool(ObjectProperty):
+    def __init__(self, obj):
+        super(CleaningTool, self).__init__(obj)
+
+
+# TODO: HeatSourceOrSink
+class HeatSourceOrSink(ObjectProperty):
+    def __init__(self, obj):
+        super(HeatSourceOrSink, self).__init__(obj)
+
+
+# TODO: ObjectsInFOVOfRobot
+# class ObjectsInFOVOfRobot(AbsoluteObjectState):
+
+
+# TODO: Slicer
+class Slicer(ObjectProperty):
+    def __init__(self, obj):
+        super(Slicer, self).__init__(obj)
+
+
+# TODO: WaterSource
+class WaterSource(ObjectProperty):
+    def __init__(self, obj):
+        super(WaterSource, self).__init__(obj)
