@@ -1,0 +1,534 @@
+{
+    "all": [
+        "dustyable",
+        "sliceable",
+        "coldSource",
+        "heatSource",
+        "cookable",
+        "burnable",
+        "freezable",
+        "stainable",
+        "openable",
+        "screwable",
+        "perishable",
+        "toggleable",
+        "waterSource",
+        "breakable",
+        "soakable",
+        "slicer",
+        "cleaningTool",
+        "liquid"
+    ],
+    "apple": {
+        "breakable": {},
+        "burnable": {
+            "burn_temperature": 1100.0
+        },
+        "cookable": {
+            "cook_temperature": 100.0
+        },
+        "freezable": {},
+        "perishable": {},
+        "sliceable": {}
+    },
+    "ashcan": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "backpack": {
+        "dustyable": {},
+        "openable": {},
+        "stainable": {}
+    },
+    "ball": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "banana": {
+        "breakable": {},
+        "burnable": {
+            "burn_temperature": 1100.0
+        },
+        "cookable": {
+            "cook_temperature": 100.0
+        },
+        "dustyable": {},
+        "freezable": {},
+        "perishable": {},
+        "stainable": {}
+    },
+    "basket": {
+        "breakable": {},
+        "dustyable": {},
+        "stainable": {}
+    },
+    "bed": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "beef": {
+        "burnable": {
+            "burn_temperature": 1100.0
+        },
+        "cookable": {
+            "cook_temperature": 71.11111111111111
+        },
+        "freezable": {},
+        "perishable": {}
+    },
+    "bin": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "blender": {
+        "breakable": {},
+        "dustyable": {},
+        "stainable": {},
+        "toggleable": {}
+    },
+    "book": {
+        "dustyable": {}
+    },
+    "bow": {
+        "breakable": {},
+        "dustyable": {}
+    },
+    "bread": {
+        "breakable": {},
+        "burnable": {},
+        "cookable": {},
+        "freezable": {},
+        "perishable": {}
+    },
+    "broom": {
+        "cleaningTool": {},
+        "dustyable": {}
+    },
+    "bucket": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "cabinet": {
+        "dustyable": {},
+        "openable": {},
+        "stainable": {}
+    },
+    "cake": {
+        "breakable": {},
+        "burnable": {},
+        "cookable": {},
+        "freezable": {},
+        "perishable": {}
+    },
+    "calculator": {
+        "breakable": {},
+        "dustyable": {},
+        "toggleable": {}
+    },
+    "candy": {
+        "burnable": {},
+        "cookable": {}
+    },
+    "car": {
+        "dustyable": {},
+        "openable": {},
+        "stainable": {}
+    },
+    "carton": {
+        "breakable": {},
+        "dustyable": {},
+        "openable": {}
+    },
+    "carving_knife": {
+        "dustyable": {},
+        "slicer": {},
+        "stainable": {}
+    },
+    "casserole": {
+        "breakable": {},
+        "burnable": {
+            "burn_temperature": 93.33333333333333
+        },
+        "cookable": {
+            "cook_temperature": 65.55555555555556
+        },
+        "freezable": {},
+        "perishable": {},
+        "stainable": {}
+    },
+    "chicken": {
+        "burnable": {
+            "burn_temperature": 1100.0
+        },
+        "cookable": {
+            "cook_temperature": 73.88888888888889
+        },
+        "freezable": {},
+        "perishable": {}
+    },
+    "chip": {
+        "breakable": {},
+        "burnable": {
+            "burn_temperature": 232.22222222222223
+        },
+        "cookable": {
+            "cook_temperature": 204.44444444444446
+        },
+        "perishable": {}
+    },
+    "cookie": {
+        "breakable": {},
+        "burnable": {},
+        "cookable": {},
+        "freezable": {},
+        "perishable": {}
+    },
+    "countertop": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "date": {
+        "breakable": {},
+        "burnable": {
+            "burn_temperature": 260.0
+        },
+        "cookable": {
+            "cook_temperature": 218.33333333333334
+        },
+        "freezable": {},
+        "perishable": {}
+    },
+    "door": {
+        "dustyable": {},
+        "openable": {},
+        "stainable": {}
+    },
+    "dustpan": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "egg": {
+        "breakable": {},
+        "burnable": {
+            "burn_temperature": 1100.0
+        },
+        "cookable": {
+            "cook_temperature": 100.0
+        },
+        "freezable": {},
+        "liquid": {},
+        "perishable": {}
+    },
+    "electric_refrigerator": {
+        "coldSource": {
+            "heating_rate": 0.02,
+            "requires_closed": true,
+            "requires_inside": true,
+            "requires_toggled_on": false,
+            "temperature": -18
+        },
+        "dustyable": {},
+        "openable": {},
+        "stainable": {}
+    },
+    "fish": {
+        "burnable": {},
+        "cookable": {},
+        "freezable": {},
+        "perishable": {}
+    },
+    "floor": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "folder": {
+        "breakable": {},
+        "dustyable": {},
+        "openable": {}
+    },
+    "fork": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "gym_shoe": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "hamburger": {
+        "burnable": {
+            "burn_temperature": 260.0
+        },
+        "cookable": {
+            "cook_temperature": 176.66666666666666
+        },
+        "freezable": {},
+        "perishable": {}
+    },
+    "hammer": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "highlighter": {
+        "breakable": {},
+        "dustyable": {},
+        "stainable": {}
+    },
+    "jar": {
+        "breakable": {},
+        "dustyable": {},
+        "openable": {},
+        "screwable": {},
+        "stainable": {}
+    },
+    "jewelry": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "juice": {
+        "freezable": {},
+        "liquid": {},
+        "perishable": {}
+    },
+    "kettle": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "knife": {
+        "dustyable": {},
+        "slicer": {},
+        "stainable": {}
+    },
+    "lemon": {
+        "burnable": {
+            "burn_temperature": 1100.0
+        },
+        "cookable": {
+            "cook_temperature": 100.0
+        },
+        "freezable": {},
+        "perishable": {},
+        "sliceable": {}
+    },
+    "lettuce": {
+        "freezable": {},
+        "perishable": {}
+    },
+    "necklace": {
+        "breakable": {},
+        "dustyable": {},
+        "stainable": {}
+    },
+    "notebook": {
+        "dustyable": {}
+    },
+    "olive": {
+        "burnable": {
+            "burn_temperature": 260.0
+        },
+        "cookable": {
+            "cook_temperature": 232.22222222222223
+        },
+        "freezable": {},
+        "perishable": {}
+    },
+    "package": {
+        "breakable": {},
+        "dustyable": {},
+        "openable": {}
+    },
+    "pan": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "pen": {
+        "breakable": {},
+        "dustyable": {},
+        "screwable": {},
+        "stainable": {}
+    },
+    "pencil": {
+        "breakable": {},
+        "dustyable": {},
+        "stainable": {}
+    },
+    "plate": {
+        "breakable": {},
+        "dustyable": {},
+        "stainable": {}
+    },
+    "plywood": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "pop": {
+        "freezable": {},
+        "liquid": {},
+        "perishable": {}
+    },
+    "printer": {
+        "breakable": {},
+        "dustyable": {},
+        "toggleable": {}
+    },
+    "radish": {
+        "burnable": {
+            "burn_temperature": 287.77777777777777
+        },
+        "cookable": {
+            "cook_temperature": 232.22222222222223
+        },
+        "freezable": {},
+        "perishable": {},
+        "stainable": {}
+    },
+    "rag": {
+        "breakable": {},
+        "cleaningTool": {},
+        "soakable": {},
+        "stainable": {}
+    },
+    "salad": {
+        "burnable": {},
+        "cookable": {},
+        "freezable": {},
+        "perishable": {}
+    },
+    "sandwich": {
+        "burnable": {
+            "burn_temperature": 260.0
+        },
+        "cookable": {
+            "cook_temperature": 176.66666666666666
+        },
+        "freezable": {},
+        "perishable": {}
+    },
+    "saw": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "scrub_brush": {
+        "cleaningTool": {},
+        "dustyable": {},
+        "soakable": {},
+        "stainable": {}
+    },
+    "shelf": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "shoe": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "shower": {
+        "stainable": {}
+    },
+    "sink": {
+        "dustyable": {},
+        "stainable": {},
+        "toggleable": {},
+        "waterSource": {}
+    },
+    "soap": {
+        "liquid": {}
+    },
+    "sock": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "sofa": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "soup": {
+        "burnable": {},
+        "cookable": {},
+        "freezable": {},
+        "liquid": {},
+        "perishable": {}
+    },
+    "spoon": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "stove": {
+        "dustyable": {},
+        "heatSource": {
+            "distance_threshold": 0.2,
+            "heating_rate": 0.02,
+            "requires_closed": false,
+            "requires_inside": false,
+            "requires_toggled_on": true,
+            "temperature": 500
+        },
+        "openable": {},
+        "stainable": {},
+        "toggleable": {}
+    },
+    "strawberry": {
+        "burnable": {
+            "burn_temperature": 1100.0
+        },
+        "cookable": {
+            "cook_temperature": 100.0
+        },
+        "freezable": {},
+        "perishable": {},
+        "sliceable": {}
+    },
+    "table": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "tea_bag": {
+        "dustyable": {},
+        "soakable": {},
+        "stainable": {}
+    },
+    "teapot": {
+        "breakable": {},
+        "dustyable": {},
+        "stainable": {}
+    },
+    "toilet": {
+        "dustyable": {},
+        "stainable": {}
+    },
+    "tomato": {
+        "burnable": {
+            "burn_temperature": 1100.0
+        },
+        "cookable": {
+            "cook_temperature": 232.22222222222223
+        },
+        "freezable": {},
+        "perishable": {},
+        "sliceable": {}
+    },
+    "towel": {
+        "cleaningTool": {},
+        "soakable": {},
+        "stainable": {}
+    },
+    "vegetable_oil": {
+        "burnable": {
+            "burn_temperature": 210.0
+        },
+        "cookable": {
+            "cook_temperature": 176.66666666666666
+        },
+        "freezable": {},
+        "liquid": {}
+    },
+    "water": {
+        "freezable": {},
+        "liquid": {}
+    },
+    "window": {
+        "breakable": {},
+        "dustyable": {},
+        "openable": {},
+        "stainable": {}
+    }
+}
