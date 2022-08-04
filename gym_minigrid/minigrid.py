@@ -418,6 +418,7 @@ class MiniGridEnv(gym.Env):
         see_through_walls=False,
         seed=1337,
         agent_view_size=7,
+        highlight=True,
         load_from=None
     ):
         # Can't set both grid_size and width/height
@@ -482,6 +483,7 @@ class MiniGridEnv(gym.Env):
         self.height = height
         self.max_steps = max_steps
         self.see_through_walls = see_through_walls
+        self.highlight=highlight
 
         # Initialize the RNG
         self.seed(seed=seed)
@@ -966,13 +968,15 @@ class MiniGridEnv(gym.Env):
         This method also outputs a visibility mask telling us which grid
         cells the agent can actually see.
         """
+        if self.agent.view_size >= max(self.width, self.height):
+            grid = self.grid
+        else:
+            topX, topY, botX, botY = self.agent.get_view_exts()
 
-        topX, topY, botX, botY = self.agent.get_view_exts()
+            grid = self.grid.slice(topX, topY, self.agent.view_size, self.agent.view_size)
 
-        grid = self.grid.slice(topX, topY, self.agent.view_size, self.agent.view_size)
-
-        for i in range(self.agent.dir + 1):
-            grid = grid.rotate_left()
+            for i in range(self.agent.dir + 1):
+                grid = grid.rotate_left()
 
         # Process occluders and visibility
         # Note that this incurs some performance cost
@@ -1038,6 +1042,8 @@ class MiniGridEnv(gym.Env):
         """
         Render the whole-grid human view
         """
+        highlight=self.highlight
+        print(f'highlight: {highlight}')
 
         if close:
             if self.window:

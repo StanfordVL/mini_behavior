@@ -3,7 +3,7 @@ import numpy as np
 from gym_minigrid.minigrid import Grid, MiniGridEnv
 from gym_minigrid.register import register
 from gym_minigrid.objects import Wall
-from gym_minigrid.scene_to_grid import img_to_array
+from gym_minigrid.utils.scene_to_grid import img_to_array
 
 
 # generate grid

@@ -90,8 +90,10 @@ class RoomGrid(MiniGridEnv):
         num_rows=2,
         num_cols=2,
         max_steps=1e5,
+        see_through_walls=False,
         seed=500,
         agent_view_size=7,
+        highlight=True
     ):
         assert room_size > 0
         assert room_size >= 3
@@ -100,11 +102,6 @@ class RoomGrid(MiniGridEnv):
         self.room_size = room_size
         self.num_rows = num_rows
         self.num_cols = num_cols
-
-        # self.room_idx = {}
-        # for i in range(num_rows):
-        #     for j in range(num_cols):
-        #         self.room_idx[i * num_cols + j] = (i, j)
 
         height = (room_size - 1) * num_rows + 1
         width = (room_size - 1) * num_cols + 1
@@ -117,9 +114,10 @@ class RoomGrid(MiniGridEnv):
             height=height,
             num_objs=num_objs,
             max_steps=max_steps,
-            see_through_walls=False,
+            see_through_walls=see_through_walls,
             seed=seed,
-            agent_view_size=agent_view_size
+            agent_view_size=agent_view_size,
+            highlight=highlight
         )
 
     def room_num_from_pos(self, x, y):
