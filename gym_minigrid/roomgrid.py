@@ -1,7 +1,7 @@
 # FROM MINIGRID REPO
 
 from .minigrid import *
-
+from .bddl.objs import OBJECTS
 
 def reject_next_to(env, pos):
     """
@@ -246,13 +246,8 @@ class RoomGrid(MiniGridEnv):
             color = self._rand_color()
 
         # TODO: we probably want to add an Object.make helper function
-        assert kind in ['key', 'ball', 'box']
-        if kind == 'key':
-            obj = Key(color)
-        elif kind == 'ball':
-            obj = Ball(color)
-        elif kind == 'box':
-            obj = Box(color)
+        assert kind in OBJECTS
+        obj = OBJECT_CLASS[kind]()
 
         return self.place_in_room(i, j, obj)
 
@@ -282,7 +277,7 @@ class RoomGrid(MiniGridEnv):
         room.locked = locked
 
         name = 'door_{}'.format(len(self.doors))
-        door = Door(color, name=name, is_open=True, is_locked=False)
+        door = Door(color, name=name, is_open=True)
         self.doors.append(door)
 
         pos = room.door_pos[door_idx]

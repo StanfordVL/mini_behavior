@@ -68,14 +68,31 @@ class Pickup(BaseAction):
         return True
 
     def do(self, obj):
+        def pick(obj1):
+            # if obj1 was in obj2, then no longer inside (unless obj2 is also being picked up)
+            # for obj2 in obj1.states['inside'].inside_of:
+            #     if not obj2.states['inhandofrobot'].get_value(self.env):
+            #         obj1.states['inside'].set_value(obj2, False)
+
+            self.env.grid.remove(*obj1.cur_pos, obj1)  # remove obj from the grid
+            obj1.cur_pos = np.array([-1, -1])  # update cur_pos of obj
+            # self.env.agent.carrying.append(obj) # update list of objects being carried by agent
+
+            # check dependencies
+            assert obj.states['inhandofrobot'].get_value(self.env)
+            assert not obj.states['onfloor'].get_value(self.env)
+
         super().do(obj)
+        pick(obj)
 
-        self.env.grid.remove(*obj.cur_pos, obj)  # remove obj from the grid
-        obj.cur_pos = np.array([-1, -1]) # update cur_pos of obj
-        # self.env.agent.carrying.append(obj) # update list of objects being carried by agent
+        # if obj1 was in obj2, then no longer inside (unless obj2 is also being picked up)
+        if obj.states['inside'].inside_of:
+            obj2 = obj.states['inside'].inside_of
+            obj.states['inside'].set_value(obj2, False)
 
-        # check dependencies
-        assert not obj.states['onfloor'].get_value(self.env)
+        if obj.can_contain:
+            for other in obj.contains:
+                pick(other)
 
 
 class Drop(BaseAction):
@@ -87,36 +104,68 @@ class Drop(BaseAction):
         if not super().can(obj):
             return False
 
-        return self.env.agent.is_carrying(obj)
+        return obj.states['inhandofrobot'].get_value(self.env)
 
     def do(self, obj):
+        fwd_pos = self.env.agent.front_pos
+
+        def drop(obj1):
+            # change object properties
+            obj1.cur_pos = fwd_pos
+            # change agent / grid
+            self.env.grid.set(*fwd_pos, obj1)
+
         super().do(obj)
+        drop(obj)
+
+        inside = obj.states['inside'].inside_of
+        if inside:
+            obj.states['inside'].set_value(inside, False) # could have been in an obj when agent was carrying
+
+        # all objs inside obj get dropped too. they stay inside obj
+        if obj.can_contain:
+            for other in obj.contains:
+                drop(other)
+
+
+class DropIn(Drop):
+    def __init__(self, env):
+        super(DropIn, self).__init__(env)
+        self.key = 'drop_in'
+        self.drop_in_obj = None
+
+    def can(self, obj):
+        """
+        possible if agent can drop obj
+        and if there is an object in the front cell that can_contain
+        """
+        if not super().can(obj):
+            return False
 
         fwd_pos = self.env.agent.front_pos
         cell = self.env.grid.get(*fwd_pos)
 
-        # change object properties
-        obj.cur_pos = fwd_pos
+        if cell is None:
+            return False
 
-        # change agent / grid
-        self.env.grid.set(*fwd_pos, obj)
-        # self.env.agent.carrying.remove(obj)
+        front_can_contain = False
+        cell = cell if isinstance(cell, list) else [cell]
+        for obj2 in cell:
+            if obj2.can_contain:
+                if 'openable' not in obj2.state_keys or obj2.states['openable'].get_value(self.env):
+                    front_can_contain = True
+                    self.drop_in_obj = obj2
 
-        if isinstance(cell, list):
-            for other_obj in cell:
-                if other_obj.can_contain:
-                    other_obj.contains.append(obj)
-        elif cell is not None:
-            if cell.can_contain:
-                cell.contains.append(obj)
-        # check dependencies
-        # if cell == [] or cell is None:
-        #     assert obj.states['onfloor'].get_value(self.env)
-        # else:
-        #     assert not obj.states['onfloor'].get_value(self.env)
+        return front_can_contain
+
+    def do(self, obj):
+        # drop
+        super().do(obj)
+
+        # drop in
+        obj.states['inside'].set_value(self.drop_in_obj, True)
 
 
-# TODO: check this works
 class Toggle(BaseAction):
     # "blender", "calculator", "printer", "sink", "stove"
     def __init__(self, env):
@@ -141,7 +190,8 @@ class Open(BaseAction):
 
     def do(self, obj):
         super().do(obj)
-        obj.Open.set_value(True)
+        obj.states['openable'].set_value(True)
+        obj.update(self.env)
 
 
 # TODO: check this works
@@ -153,8 +203,8 @@ class Close(BaseAction):
 
     def do(self, obj):
         super().do(obj)
-        obj.Open.set_value(False)
-
+        obj.states['openable'].set_value(False)
+        obj.update(self.env)
 
 # class Unlock(BaseAction):
 #     # "door"
@@ -163,7 +213,6 @@ class Close(BaseAction):
 #         self.key = 'unlock'
 
 
-# TODO: check this works
 class Slice(BaseAction):
     # "apple", "lemon", "strawberry", "tomato"
     def __init__(self, env):
@@ -180,7 +229,7 @@ class Slice(BaseAction):
 
     def do(self, obj):
         super().do(obj)
-        obj.Sliced.set_value()
+        obj.states['sliceable'].set_value()
 
 
 # TODO: check this works
@@ -205,21 +254,21 @@ class Cook(BaseAction):
         has_a_tool, _ = find_tool(self.env, self.tools)
 
         if has_a_tool:
-            front_cell = self.env.grid.get(self.env.agent.front_pos())
+            front_cell = self.env.grid.get(*self.env.agent.front_pos)
             if isinstance(front_cell, list):
-                for obj in front_cell:
-                    if obj.type in self.heat_sources:
-                        return has_a_tool and obj.states['toggleable'].get_value(self.env)
+                for obj2 in front_cell:
+                    if obj2.type in self.heat_sources:
+                        return has_a_tool and obj2.states['toggleable'].get_value(self.env)
             elif front_cell:
                 if front_cell.type in self.heat_sources:
-                    return has_a_tool and obj.states['toggleable'].get_value(self.env)
+                    return has_a_tool and front_cell.states['toggleable'].get_value(self.env)
 
         return False
 
     def do(self, obj):
         super().do(obj)
-        obj.states['cookable'].set_value()
+        obj.states['cookable'].set_value(True)
 
-        # if the agent was carrying the obj, drop it after cooking
-        if self.env.agent.is_carrying(obj):
-            self.env.agent.Drop.do(obj)
+        # # if the agent was carrying the obj, drop it after cooking
+        # if self.env.agent.is_carrying(obj):
+        #     self.env.agent.actions['drop'].do(obj)

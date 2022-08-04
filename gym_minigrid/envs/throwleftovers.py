@@ -1,6 +1,6 @@
 from gym_minigrid.roomgrid import *
 from gym_minigrid.register import register
-from gym_minigrid.bddl import _CONTROLS
+from gym_minigrid.bddl.actions import CONTROLS
 
 
 class ThrowLeftoversEnv(RoomGrid):
@@ -18,7 +18,7 @@ class ThrowLeftoversEnv(RoomGrid):
             num_objs=None
     ):
         if num_objs is None:
-            num_objs = {'counter': 4,
+            num_objs = {'countertop': 4,
                         'plate': 4,
                         'hamburger': 3,
                         'ashcan': 1}
@@ -44,7 +44,7 @@ class ThrowLeftoversEnv(RoomGrid):
 
         # # generate counter
         # place all objects
-        counters = self.objs['counter']
+        counters = self.objs['countertop']
         plates = self.objs['plate']
         hamburgers = self.objs['hamburger']
         ashcans = self.objs['ashcan']
@@ -187,7 +187,7 @@ class ThrowLeftoversNavigation(ThrowLeftoversEnv):
                          )
 
     def _reward(self):
-        if self.last_action.name in _CONTROLS:
+        if self.last_action.name in CONTROLS:
             self.reward += 0.01
 
         # for counter in self.objs['counter']:

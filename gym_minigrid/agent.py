@@ -1,5 +1,5 @@
 import numpy as np
-from .bddl import _ALL_ACTIONS, _ACTION_FUNC_MAPPING
+from .bddl import ALL_ACTIONS, ACTION_FUNC_MAPPING
 from .globals import DIR_TO_VEC
 
 
@@ -22,8 +22,8 @@ class Agent:
 
         self.actions = {} # NOTE: dict with key = action_key, value = action class
 
-        for action in _ALL_ACTIONS:
-            self.actions[action] = _ACTION_FUNC_MAPPING[action](env)
+        for action in ALL_ACTIONS:
+            self.actions[action] = ACTION_FUNC_MAPPING[action](env)
 
     def reset(self):
         self.dir = None

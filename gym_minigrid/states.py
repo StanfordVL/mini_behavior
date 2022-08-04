@@ -31,8 +31,14 @@ class InHandOfRobot(AbsoluteObjectState):
 class InReachOfRobot(AbsoluteObjectState):
     # return true if obj is reachable by agent
     def _get_value(self, env):
+        # obj not reachable if inside closed obj2
+        inside = self.obj.states['inside'].inside_of
+        if inside is not None and 'openable' in inside.state_keys and not inside.states['openable'].get_value(env):
+            return False
+
         carrying = env.agent.is_carrying(self.obj)
         in_front = np.all(self.obj.cur_pos == env.agent.front_pos)
+
         return carrying or in_front
 
 
@@ -70,10 +76,9 @@ class Cooked(AbsoluteObjectState):
 class Dusty(AbsoluteObjectState):
     def __init__(self, obj):
         """
-        Always init True
+        not reversible
         """
         super(Dusty, self).__init__(obj)
-        self.value = True
         self.tools = ["broom", "rag", "scrub_brush", "towel"]
 
     def _update(self, env):
@@ -140,7 +145,7 @@ class Soaked(AbsoluteObjectState):
         """
         for tool_type in self.tools:
             for water_source in env.objs.get(tool_type, []):
-                if water_source.ToggledOn.get_value(env):
+                if water_source.states['toggleable'].get_value(env):
                     if self.obj.states['atsamelocation'].get_value(water_source, env):
                         self.value = True
 
@@ -152,7 +157,6 @@ class Stained(AbsoluteObjectState):
         Always init True
         """
         super(Stained, self).__init__(obj)
-        self.value = True
         self.tools = ['rag', 'scrub_brush', 'towel']
 
     def _update(self, env):
@@ -162,9 +166,9 @@ class Stained(AbsoluteObjectState):
         """
         for tool_type in self.tools:
             for cleaning_tool in env.objs.get(tool_type, []):
-                if cleaning_tool.Soaked.get_value(env):
+                if cleaning_tool.states['soakable'].get_value(env):
                     if self.obj.states['atsamelocation'].get_value(cleaning_tool, env):
-                        self.value = True
+                        self.value = False
 
 
 # TODO: check this works
@@ -185,16 +189,35 @@ class AtSameLocation(RelativeObjectState):
 
 
 class Inside(RelativeObjectState):
-    def _update(self, other, env):
-        same_location = np.all(self.obj.cur_pos == other.cur_pos)
+    """
+    Inside(obj1, obj2) change ONLY IF Pickup(obj1) or Drop(obj1) is called
+    """
+    def __init__(self, obj): # env
+        super(RelativeObjectState, self).__init__(obj)
+        self.type = 'relative'
+        # self.inside_of = set()
+        self.inside_of = None
 
-        if same_location:
-            if 'openable' not in other.state_keys:
-                self.value = True
-            elif other.Open.get_value(env):
-                self.value = True
+    def _get_value(self, other, env):
+        # return other in self.inside_of
+        if self.obj == other:
+            return False
+
+        return other == self.inside_of
+
+    def _set_value(self, other, new_value):
+        # if new_value:
+        #     self.inside_of.add(other)
+        #     other.contains.add(self.obj)
+        # else:
+        #     self.inside_of.discard(other)
+        #     other.contains.discard(self.obj)
+        if new_value:
+            self.inside_of = other
+            other.contains.add(self.obj)
         else:
-            self.value = False
+            self.inside_of = None
+            other.contains.discard(self.obj)
 
 
 class NextTo(RelativeObjectState):
@@ -215,10 +238,14 @@ class NextTo(RelativeObjectState):
 
 class OnFloor(AbsoluteObjectState):
     def _update(self, env):
-        if 'pickup' in self.obj.actions and self.obj.states['inhandofrobot'].get_value(env):
+        if env.agent.is_carrying(self.obj):
             self.value = False
         else:
             self.value = True
+        # if 'pickup' in self.obj.actions and self.obj.states['inhandofrobot'].get_value(env):
+        #     self.value = False
+        # else:
+        #     self.value = True
 
 
 class OnTop(AtSameLocation):

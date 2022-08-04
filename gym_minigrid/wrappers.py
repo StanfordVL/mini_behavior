@@ -6,8 +6,8 @@ from functools import reduce
 import numpy as np
 import gym
 from gym import error, spaces, utils
-from .globals import OBJECT_TO_IDX, COLOR_TO_IDX
-from .objects import Goal
+from .globals import COLOR_TO_IDX
+from .objects import Goal, OBJECT_TO_IDX
 
 
 class ReseedWrapper(gym.core.Wrapper):

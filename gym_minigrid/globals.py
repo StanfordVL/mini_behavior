@@ -10,7 +10,8 @@ COLORS = {
     'grey'  : np.array([100, 100, 100]),
     'orange': np.array([255, 165, 0]),
     'white' : np.array([255, 255, 255]),
-    'l_green': np.array([204, 255, 204])
+    'l_green': np.array([204, 255, 204]),
+    'brown': np.array([101, 67, 33])
 }
 
 COLOR_NAMES = sorted(list(COLORS.keys()))
@@ -25,31 +26,11 @@ COLOR_TO_IDX = {
     'grey': 5,
     'orange': 6,
     'white': 7,
-    'l_green': 8
+    'l_green': 8,
+    'brown': 9
 }
 
 IDX_TO_COLOR = dict(zip(COLOR_TO_IDX.values(), COLOR_TO_IDX.keys()))
-
-# Map of object type to integers
-OBJECT_TO_IDX = {
-    'unseen': 0,
-    'empty': 1,
-    'wall': 2,
-    'floor': 3,
-    'door': 4,
-    'key': 5,
-    'ball': 6,
-    'box': 7,
-    'goal': 8,
-    'lava': 9,
-    'agent': 10,
-    'counter': 11,
-    's_ball': 12,
-    'ashcan': 13,
-    'square': 14
-}
-
-IDX_TO_OBJECT = dict(zip(OBJECT_TO_IDX.values(), OBJECT_TO_IDX.keys()))
 
 # Map of agent direction indices to vectors
 DIR_TO_VEC = [

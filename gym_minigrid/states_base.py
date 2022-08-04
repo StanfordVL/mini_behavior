@@ -35,13 +35,13 @@ class BaseObjectState:
         self.obj = obj
         self.value = False
 
-    def update(self, *args, **kwargs):
-        # assert self._initialized, "Cannot update uninitalized state."
-        self._update(*args, **kwargs)
+    # def update(self, *args, **kwargs):
+    #     # assert self._initialized, "Cannot update uninitalized state."
+    #     self._update(*args, **kwargs)
 
     def get_value(self, *args, **kwargs):
         # assert self._initialized
-        self.update(*args, **kwargs)
+        self._update(*args, **kwargs)
         return self._get_value(*args, **kwargs)
 
     def set_value(self, *args, **kwargs):
@@ -96,6 +96,10 @@ class ObjectProperty(BaseObjectState):
     def __init__(self, obj): # env
         super(ObjectProperty, self).__init__(obj)
         self.type = 'absolute'
+
+    @staticmethod
+    def _update(self):
+        pass
 
     @staticmethod
     def _get_value(self, env=None):

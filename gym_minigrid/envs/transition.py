@@ -1,6 +1,6 @@
 from gym_minigrid.roomgrid import *
 from gym_minigrid.register import register
-from gym_minigrid.objects import _OBJECT_CLASS, _OBJECT_COLOR
+from gym_minigrid.objects import OBJECT_CLASS, OBJECT_COLOR
 
 DEFAULT_OBJS = ['counter', 'plate', 'ashcan', 'hamburger', 'ball', 'apple', 'milk', 'juice', 'kiwi', 'grape', 'orange', 'bowl', 'egg', 'cucumber']
 
@@ -93,7 +93,7 @@ class TransitionEnv(RoomGrid):
             self.objs[obj] = []
             for i in range(num_objs[obj]):
                 obj_name = '{}_{}'.format(obj, i)
-                obj_instance = _OBJECT_CLASS[obj](_OBJECT_COLOR[obj], obj_name)
+                obj_instance = OBJECT_CLASS[obj](OBJECT_COLOR[obj], obj_name)
                 self.objs[obj].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 

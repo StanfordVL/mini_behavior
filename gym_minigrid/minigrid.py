@@ -8,11 +8,10 @@ import pickle as pkl
 from enum import IntEnum
 from gym import spaces
 from gym.utils import seeding
-from .objects import _OBJECT_CLASS, _OBJECT_COLOR
 from .globals import COLOR_NAMES
-from .objects import *
-from .bddl import _ALL_ACTIONS, _CONTROLS
 from .agent import Agent
+# from .bddl.objs import *
+from .objects import *
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
@@ -403,11 +402,12 @@ class MiniGridEnv(gym.Env):
         forward = 2
         pickup = 3
         drop = 4
-        toggle = 5
-        open = 6
-        close = 7
-        slice = 8
-        cook = 9
+        drop_in = 5
+        toggle = 6
+        open = 7
+        close = 8
+        slice = 9
+        cook = 10
 
     def __init__(
         self,
@@ -445,7 +445,7 @@ class MiniGridEnv(gym.Env):
             self.objs[obj] = []
             for i in range(num_objs[obj]):
                 obj_name = '{}_{}'.format(obj, i)
-                obj_instance = _OBJECT_CLASS[obj](_OBJECT_COLOR[obj], obj_name)
+                obj_instance = OBJECT_CLASS[obj](OBJECT_COLOR[obj], obj_name)
                 self.objs[obj].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 
@@ -603,20 +603,6 @@ class MiniGridEnv(gym.Env):
         A grid cell is represented by seed 0_2-character string, the first one for
         the object and the second one for the color.
         """
-
-        # Map of object types to short string
-        OBJECT_TO_STR = {
-            'wall'          : 'W',
-            'floor'         : 'F',
-            'door'          : 'D',
-            'key'           : 'K',
-            'ball'          : 'A',
-            'box'           : 'B',
-            'goal'          : 'G',
-            'lava'          : 'V',
-            'counter'       : 'C',
-            's_ball'        : 'S'
-        }
 
         # Short string for opened door
         OPENDED_DOOR_IDS = '_'
@@ -969,12 +955,12 @@ class MiniGridEnv(gym.Env):
         for obj in self.obj_instances.values():
             for name, state in obj.states.items():
                 if state.type == 'absolute':
-                    state.update(self)
-                elif name == 'inside' and not self.agent.is_carrying(obj):
-                    cell = self.grid.get(*obj.cur_pos)
-                    if isinstance(cell, list):
-                        for other_obj in cell:
-                            state.update(other_obj, self)
+                    state._update(self)
+                # elif name == 'inside' and not self.agent.is_carrying(obj):
+                #     cell = self.grid.get(*obj.cur_pos)
+                #     if isinstance(cell, list):
+                #         for other_obj in cell:
+                #             state.update(other_obj, self)
 
     def gen_obs_grid(self):
         """
