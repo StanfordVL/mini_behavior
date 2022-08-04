@@ -3,7 +3,7 @@
 import argparse
 from gym_minigrid.wrappers import *
 from gym_minigrid.window import Window
-from save_utils import get_step, save_demo
+from gym_minigrid.utils.save import get_step, save_demo
 
 def redraw(img):
     if not args.agent_view:

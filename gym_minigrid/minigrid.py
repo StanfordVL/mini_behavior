@@ -4,13 +4,11 @@ import hashlib
 import gym
 import os
 import pickle as pkl
-# import dill as pkl
 from enum import IntEnum
 from gym import spaces
 from gym.utils import seeding
-from .globals import COLOR_NAMES
+from .utils.globals import COLOR_NAMES
 from .agent import Agent
-# from .bddl.objs import *
 from .objects import *
 
 # Size in pixels of a tile in the full-scale human view

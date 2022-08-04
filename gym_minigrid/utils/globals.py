@@ -1,4 +1,4 @@
-from .actions import *
+from mini_behavior.gym_minigrid.actions import *
 
 # Map of color names to RGB values
 COLORS = {

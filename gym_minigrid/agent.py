@@ -1,6 +1,6 @@
 import numpy as np
 from .bddl import ALL_ACTIONS, ACTION_FUNC_MAPPING
-from .globals import DIR_TO_VEC
+from .utils.globals import DIR_TO_VEC
 
 
 class Agent:

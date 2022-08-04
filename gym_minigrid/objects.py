@@ -1,7 +1,7 @@
 from .rendering import *
 from .bddl import DEFAULT_STATES, STATE_FUNC_MAPPING, DEFAULT_ACTIONS, OBJECT_COLOR, OBJECT_TO_IDX, IDX_TO_OBJECT
-from .globals import COLOR_TO_IDX, IDX_TO_COLOR, COLORS
-from .utils import load_json
+from .utils.globals import COLOR_TO_IDX, IDX_TO_COLOR, COLORS
+from .utils.load import load_json
 
 
 class WorldObj:
@@ -21,13 +21,13 @@ class WorldObj:
                  ):
 
         if action_keys is None:
-            object_actions = load_json('/Users/emilyjin/Code/behavior/mini_behavior/object_actions.json')
+            object_actions = load_json('gym_minigrid/utils/object_actions.json')
             if type in object_actions.keys():
                 action_keys = object_actions[type]
             else:
                 action_keys = []
         if state_keys is None:
-            object_properties = load_json('/Users/emilyjin/Code/behavior/mini_behavior/object_properties.json')
+            object_properties = load_json('gym_minigrid/utils/object_properties.json')
             if type in object_properties.keys():
                 state_keys = object_properties[type]
             else:

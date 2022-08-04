@@ -7,7 +7,7 @@ import torch_ac
 import tensorboardX
 import sys
 
-sys.path.append('../mini_behavior')
+sys.path.append('..')
 import utils
 from model import ACModel
 from utils import device

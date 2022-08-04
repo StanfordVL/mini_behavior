@@ -5,8 +5,8 @@ from functools import reduce
 
 import numpy as np
 import gym
-from gym import error, spaces, utils
-from .globals import COLOR_TO_IDX
+from gym import spaces
+from .utils.globals import COLOR_TO_IDX
 from .objects import Goal, OBJECT_TO_IDX
 
 

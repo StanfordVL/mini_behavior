@@ -1,5 +1,5 @@
 import argparse
-from gym_minigrid.scene_to_grid import gen_grid_from_img
+from .gym_minigrid.utils.scene_to_grid import gen_grid_from_img
 import os
 
 # run this to convert iGibson floor plan image to grid image
