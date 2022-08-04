@@ -1043,7 +1043,6 @@ class MiniGridEnv(gym.Env):
         Render the whole-grid human view
         """
         highlight=self.highlight
-        print(f'highlight: {highlight}')
 
         if close:
             if self.window:

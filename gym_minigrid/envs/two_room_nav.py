@@ -21,8 +21,8 @@ class TwoRoomNavigationEnv(RoomGrid):
         super().__init__(mode='human',
                          num_objs={},
                          room_size=8,
-                         num_rows=2,
-                         num_cols=1,
+                         num_rows=1,
+                         num_cols=2,
                          max_steps=max_steps,
                          see_through_walls=True,
                          agent_view_size=3,
@@ -31,21 +31,12 @@ class TwoRoomNavigationEnv(RoomGrid):
 
     def _gen_grid(self, width, height):
         self._gen_rooms(width, height)
-
-        # generate goal position
-        # goal = self.objs['goal'][0]
-        # _, self.target_pos = self.place_in_room(0, 0, goal, reject_fn=None)
-
         # randomize the agent start position and orientation
         self.place_agent()
-        self.mission = 'navigate between rooms'
         self.connect_all()
+        self.mission = 'navigate between rooms'
 
     def _end_conditions(self):
-        # if np.all(self.agent.cur_pos == self.target_pos):
-        #     return True
-        # else:
-        #     return False
         return False
 
     def _reward(self):
