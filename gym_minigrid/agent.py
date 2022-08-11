@@ -1,5 +1,4 @@
 import numpy as np
-from .bddl import ALL_ACTIONS, ACTION_FUNC_MAPPING
 from .utils.globals import DIR_TO_VEC
 
 
@@ -7,7 +6,6 @@ class Agent:
     """
     Base class for agent
     """
-
     def __init__(self, env, agent_view_size):
         # Initial position of agent
         self.init_pos = None
@@ -17,18 +15,6 @@ class Agent:
         # Current position of agent
         self.cur_pos = None
         self.dir = None
-        # self.obj = None
-        # self.carrying = []
-
-        self.actions = {} # NOTE: dict with key = action_key, value = action class
-
-        for action in ALL_ACTIONS:
-            self.actions[action] = ACTION_FUNC_MAPPING[action](env)
-
-    def reset(self):
-        self.dir = None
-        self.cur_pos = None
-        # self.carrying = []
 
     def copy(self):
         from copy import deepcopy
@@ -36,13 +22,13 @@ class Agent:
                  'cur_pos': self.cur_pos}
         return deepcopy(agent)
 
-    def load(self, agent, obj_instances):
+    def load(self, agent):
         self.dir = agent['dir']
         self.cur_pos = agent['cur_pos']
 
-        # for obj in obj_instances.values():
-            # if self.is_carrying(obj):
-                # self.carrying.append(obj)
+    def reset(self):
+        self.dir = None
+        self.cur_pos = None
 
     @property
     def dir_vec(self):
@@ -110,7 +96,6 @@ class Agent:
 
         return vx, vy
 
-
     def get_view_exts(self):
         """
         Get the extents of the square set of tiles visible to the agent
@@ -147,16 +132,6 @@ class Agent:
         """
         return self.relative_coords(x, y) is not None
 
-    # NEW
-    # def reachable(self, obj):
-    #     # true if the agent can reach the object
-    #     carrying = self.is_carrying(obj)
-    #     in_front = np.all(obj.cur_pos == self.front_pos)
-    #     return carrying or in_front
-
     def all_reachable(self):
-        return [obj for obj in self.env.obj_instances.values() if obj.states['inreachofrobot'].get_value(self.env)]
+        return [obj for obj in self.env.obj_instances.values() if obj.check_abs_state(self.env, 'inreachofrobot')]
 
-    # NEW
-    def is_carrying(self, obj):
-        return np.all(obj.cur_pos == [-1, -1])

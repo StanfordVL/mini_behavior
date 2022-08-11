@@ -2,9 +2,9 @@ OBJECTS = [
     "apple", "ashcan",
     "backpack", "ball", "banana", "basket", "bed", "beef", "bin", "blender", "book", "bow", "bread", "broom", "bucket",
     "cabinet", "cake", "calculator", "candy", "car", "carton", "carving_knife", "casserole", "chicken", "chip", "cookie", "countertop",
-    "date", "door", "dustpan",
+    "date", "dustpan", # door
     "egg", "electric_refrigerator",
-    "fish", "floor", "folder", "fork",
+    "fish", "folder", "fork", # "floor",
     "gym_shoe",
     "hamburger", "hammer", "highlighter",
     "jar", "jewelry", "juice",
@@ -20,6 +20,7 @@ OBJECTS = [
     "water", "window"
 ]
 
+FURNITURE = ['bed', 'cabinet', 'countertop', 'electric_refrigerator', 'shelf', 'sofa', 'stove', 'table', 'sink', 'shower']
 
 OBJECT_COLOR = {
     "apple": "red",

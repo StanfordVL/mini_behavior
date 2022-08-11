@@ -10,7 +10,7 @@ from gym_minigrid.utils.scene_to_grid import img_to_array
 class FloorPlanEnv(MiniGridEnv):
     def __init__(self,
                  mode='human',
-                 img_path='grids/beechwood_0_int_floor_trav_no_obj_0.png',
+                 img_path='floorplans/beechwood_0_int_floor_trav_no_obj_0.png',
                  num_objs=None,
                  max_steps=1e5,
                  ):
@@ -64,8 +64,8 @@ class FloorPlanEnv(MiniGridEnv):
             return False
 
 
-# register environments of all floorplans in grids dir
-all_scenes_path = os.path.join(os.path.dirname('gym_minigrid'), 'gym_minigrid/grids')
+# register environments of all floorplans in floorplans dir
+all_scenes_path = os.path.join(os.path.dirname('gym_minigrid'), 'gym_minigrid/floorplans')
 all_scenes = os.listdir(all_scenes_path)
 
 for img in all_scenes:

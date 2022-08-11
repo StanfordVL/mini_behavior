@@ -10,370 +10,11 @@ from gym.utils import seeding
 from .utils.globals import COLOR_NAMES
 from .agent import Agent
 from .objects import *
+from .bddl import FURNITURE, ABILITIES, ACTION_FUNC_MAPPING, CONTROLS
+from .grid import Grid, is_obj
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
-
-
-class Grid:
-    """
-    Represent a grid and operations on it
-    """
-
-    # Static cache of pre-renderer tiles
-    tile_cache = {}
-
-    def __init__(self, width, height):
-        assert width >= 3
-        assert height >= 3
-
-        self.width = width
-        self.height = height
-
-        self.grid = [None] * width * height
-
-    def __contains__(self, key):
-        if isinstance(key, WorldObj):
-            for e in self.grid:
-                if e is key:
-                    return True
-        elif isinstance(key, tuple):
-            for e in self.grid:
-                if e is None:
-                    continue
-                if (e.color, e.type) == key:
-                    return True
-                if key[0] is None and key[1] == e.type:
-                    return True
-        return False
-
-    def __eq__(self, other):
-        grid1 = self.encode()
-        grid2 = other.encode()
-        return np.array_equal(grid2, grid1)
-
-    def __ne__(self, other):
-        return not self == other
-
-    def copy(self):
-        from copy import deepcopy
-        return deepcopy(self)
-
-    def load(self, grid, env):
-        for x in range(self.width):
-            for y in range(self.height):
-                self.clear(x, y)
-                cell = grid.get(x, y)
-                if cell:
-                    if isinstance(cell, list):
-                        for obj in cell:
-                            if obj.type != 'wall' and obj.type != 'door':
-                                new_obj = env.obj_instances[obj.name]
-                                env.grid.set(x, y, new_obj)
-                    elif cell.type != 'wall' and cell.type != 'door':
-                        new_obj = env.obj_instances[cell.name]
-                        env.grid.set(x, y, new_obj)
-
-    def set(self, i, j, v):
-        assert 0 <= i < self.width
-        assert 0 <= j < self.height
-        if v is None or self.grid[j * self.width + i] is None:
-            self.grid[j * self.width + i] = v
-        elif isinstance(self.grid[j * self.width + i], list):
-            self.grid[j * self.width + i].append(v)
-        else:
-            self.grid[j * self.width + i] = [self.grid[j * self.width + i], v]
-
-    def remove(self, i, j, v):
-        assert 0 <= i < self.width
-        assert 0 <= j < self.height
-        cur_objs = self.grid[j * self.width + i]
-        if cur_objs:
-            if isinstance(cur_objs, list):
-                if len(cur_objs) == 1:
-                    self.grid[j * self.width + i] = None
-                else:
-                    self.grid[j * self.width + i].remove(v)
-            else:
-                self.grid[j * self.width + i] = None
-
-    def clear(self, i, j):
-        cur_objs = self.grid[j * self.width + i]
-        self.grid[j * self.width + i] = None
-
-        if cur_objs:
-            if isinstance(cur_objs, list):
-                for obj in cur_objs:
-                    if obj.type == 'wall' or obj.type == 'door':
-                        self.set(i, j, obj)
-            elif cur_objs.type == 'wall' or cur_objs.type == 'door':
-                self.set(i, j, cur_objs)
-
-    def get(self, i, j):
-        assert 0 <= i < self.width
-        assert 0 <= j < self.height
-        return self.grid[j * self.width + i]
-
-    def horz_wall(self, x, y, length=None, obj_type=Wall):
-        if length is None:
-            length = self.width - x
-        for i in range(0, length):
-            self.set(x + i, y, obj_type())
-
-    def vert_wall(self, x, y, length=None, obj_type=Wall):
-        if length is None:
-            length = self.height - y
-        for j in range(0, length):
-            self.set(x, y + j, obj_type())
-
-    def wall_rect(self, x, y, w, h):
-        self.horz_wall(x, y, w)
-        self.horz_wall(x, y+h-1, w)
-        self.vert_wall(x, y, h)
-        self.vert_wall(x+w-1, y, h)
-
-    def rotate_left(self):
-        """
-        Rotate the grid to the left (counter-clockwise)
-        """
-
-        grid = Grid(self.height, self.width)
-
-        for i in range(self.width):
-            for j in range(self.height):
-                v = self.get(i, j)
-                grid.set(j, grid.height - 1 - i, v)
-
-        return grid
-
-    def slice(self, topX, topY, width, height):
-        """
-        Get a subset of the grid
-        """
-
-        grid = Grid(width, height)
-
-        for j in range(0, height):
-            for i in range(0, width):
-                x = topX + i
-                y = topY + j
-
-                if 0 <= x < self.width and 0 <= y < self.height:
-                    v = self.get(x, y)
-                else:
-                    v = Wall()
-
-                grid.set(i, j, v)
-
-        return grid
-
-    @classmethod
-    def render_tile(
-        cls,
-        objs,
-        agent_dir=None,
-        highlight=False,
-        tile_size=TILE_PIXELS,
-        subdivs=3,
-    ):
-        """
-        Render a tile and cache the result
-        """
-
-        # Hash map lookup key for the cache
-        key = (agent_dir, highlight, tile_size)
-
-        if isinstance(objs, list):
-            keys = [obj.encode() for obj in objs if obj is not None]
-            key = tuple(keys) + key
-        elif objs:
-            key = objs.encode() + key
-
-        if key in cls.tile_cache:
-            return cls.tile_cache[key]
-
-        img = np.zeros(shape=(tile_size * subdivs, tile_size * subdivs, 3), dtype=np.uint8)
-
-        # Draw the grid lines (top and left edges)
-        fill_coords(img, point_in_rect(0, 0.031, 0, 1), (100, 100, 100))
-        fill_coords(img, point_in_rect(0, 1, 0, 0.031), (100, 100, 100))
-
-        if isinstance(objs, list):
-            for obj in objs:
-                obj.render(img)
-        elif objs:
-            objs.render(img)
-
-        # Overlay the agent on top
-        if agent_dir is not None:
-            tri_fn = point_in_triangle(
-                (0.12, 0.19),
-                (0.87, 0.50),
-                (0.12, 0.81),
-            )
-
-            # Rotate the agent based on its direction
-            tri_fn = rotate_fn(tri_fn, cx=0.5, cy=0.5, theta=0.5*math.pi*agent_dir)
-            fill_coords(img, tri_fn, (255, 0, 0))
-
-        # Highlight the cell if needed
-        if highlight:
-            highlight_img(img)
-
-        # Downsample the image to perform supersampling/anti-aliasing
-        img = downsample(img, subdivs)
-
-        # Cache the rendered tile
-        cls.tile_cache[key] = img
-
-        return img
-
-    def render(
-        self,
-        tile_size,
-        agent_pos=None,
-        agent_dir=None,
-        highlight_mask=None
-    ):
-        """
-        Render this grid at a given scale
-        :param r: target renderer object
-        :param tile_size: tile size in pixels
-        """
-
-        if highlight_mask is None:
-            highlight_mask = np.zeros(shape=(self.width, self.height), dtype=bool)
-
-        # Compute the total grid size
-        width_px = self.width * tile_size
-        height_px = self.height * tile_size
-
-        img = np.zeros(shape=(height_px, width_px, 3), dtype=np.uint8)
-
-        # Render the grid
-        for j in range(0, self.height):
-            for i in range(0, self.width):
-                cell = self.get(i, j)
-
-                agent_here = np.array_equal(agent_pos, (i, j))
-                tile_img = Grid.render_tile(
-                    cell,
-                    agent_dir=agent_dir if agent_here else None,
-                    highlight=highlight_mask[i, j],
-                    tile_size=tile_size,
-                )
-
-                ymin = j * tile_size
-                ymax = (j+1) * tile_size
-                xmin = i * tile_size
-                xmax = (i+1) * tile_size
-                img[ymin:ymax, xmin:xmax, :] = tile_img
-
-        return img
-
-    def encode(self, vis_mask=None):
-        """
-        Produce a compact numpy encoding of the grid
-        """
-
-        if vis_mask is None:
-            vis_mask = np.ones((self.width, self.height), dtype=bool)
-
-        array = np.zeros((self.width, self.height, 3), dtype='uint8')
-
-        for i in range(self.width):
-            for j in range(self.height):
-                if vis_mask[i, j]:
-                    v = self.get(i, j)
-
-                    if v is None:
-                        array[i, j, 0] = OBJECT_TO_IDX['empty']
-                        array[i, j, 1] = 0
-                        array[i, j, 2] = 0
-                    # else:
-                    #     array[i, j, :] = v.encode()
-                    elif isinstance(v, list):
-                        for obj in v:
-                            array[i, j, :] = np.add(array[i, j, :], obj.encode())
-                    elif not isinstance(v, list):
-                        array[i, j, :] = v.encode()
-
-        return array
-
-    @staticmethod
-    def decode(array):
-        """
-        Decode an array grid encoding back into a grid
-        """
-
-        width, height, channels = array.shape
-        assert channels == 3
-
-        vis_mask = np.ones(shape=(width, height), dtype=bool)
-
-        grid = Grid(width, height)
-        for i in range(width):
-            for j in range(height):
-                type_idx, color_idx, state = array[i, j]
-                v = WorldObj.decode(type_idx, color_idx, state)
-                grid.set(i, j, v)
-                vis_mask[i, j] = (type_idx != OBJECT_TO_IDX['unseen'])
-
-        return grid, vis_mask
-
-    def process_vis(grid, agent_pos):
-        # agent_pos=(self.agent.view_size // 2 , self.agent.view_size - 1)
-        mask = np.zeros(shape=(grid.width, grid.height), dtype=bool)
-
-        mask[agent_pos[0], agent_pos[1]] = True
-
-        for j in reversed(range(0, grid.height)):
-            for i in range(0, grid.width-1):
-                if not mask[i, j]:
-                    continue
-
-                cell = grid.get(i, j)
-
-                if isinstance(cell, list):
-                    for obj in cell:
-                        if obj and not obj.can_seebehind:
-                            break
-                    break
-                else:
-                    if cell and not cell.can_seebehind:
-                        break
-
-                mask[i+1, j] = True
-                if j > 0:
-                    mask[i+1, j-1] = True
-                    mask[i, j-1] = True
-
-            for i in reversed(range(1, grid.width)):
-                if not mask[i, j]:
-                    continue
-
-                cell = grid.get(i, j)
-                # if cell and not cell.see_behind():
-                if isinstance(cell, list):
-                    for obj in cell:
-                        if obj and not obj.can_seebehind:
-                            break
-                    break
-                else:
-                    if cell and not cell.can_seebehind:
-                        break
-
-                mask[i-1, j] = True
-                if j > 0:
-                    mask[i-1, j-1] = True
-                    mask[i, j-1] = True
-
-        for j in range(0, grid.height):
-            for i in range(0, grid.width):
-                if not mask[i, j]:
-                    grid.set(i, j, None)
-
-        return mask
 
 
 class MiniGridEnv(gym.Env):
@@ -385,12 +26,6 @@ class MiniGridEnv(gym.Env):
         'render.modes': ['human', 'rgb_array'],
         'video.frames_per_second': 10
     }
-
-    # def actions(self):
-    #     all_actions = _ALL_ACTIONS + _CONTROLS
-    #
-    #     actions = {action: i for i, action in enumerate(all_actions)}
-    #     self.actions = IntEnum('Actions', actions)
 
     # Enumeration of possible actions
     class Actions(IntEnum):
@@ -406,6 +41,8 @@ class MiniGridEnv(gym.Env):
         close = 8
         slice = 9
         cook = 10
+        drop_on = 11
+        drop_under = 12
 
     def __init__(
         self,
@@ -419,43 +56,38 @@ class MiniGridEnv(gym.Env):
         seed=1337,
         agent_view_size=7,
         highlight=True,
-        load_from=None
     ):
-        # Can't set both grid_size and width/height
         self.episode = 0
+        self.mode = mode
+        self.last_action = None
+        self.action_done = None
 
+        # Can't set both grid_size and width/height
         if grid_size:
             assert width is None and height is None
             width = grid_size
             height = grid_size
 
-        self.mode = mode
-        self.last_action = None
-        self.action_done = None
-
         if num_objs is None:
             num_objs = {}
-        self.num_objs = num_objs
 
-        # TODO: get rid of self.objs
         self.objs = {}
         self.obj_instances = {}
+
         for obj in num_objs.keys():
             self.objs[obj] = []
             for i in range(num_objs[obj]):
                 obj_name = '{}_{}'.format(obj, i)
-                obj_instance = OBJECT_CLASS[obj](OBJECT_COLOR[obj], obj_name)
+                obj_instance = OBJECT_CLASS[obj](name=obj_name)
                 self.objs[obj].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 
-        # Action enumeration for this environment
+        # Action enumeration for this environment, actions are discrete int
         self.actions = MiniGridEnv.Actions
-        # Actions are discrete integer values
         self.action_space = spaces.Discrete(len(self.actions))
 
         # Number of cells (width and height) in the agent view
-        assert agent_view_size % 2 == 1
-        assert agent_view_size >= 3
+        assert agent_view_size % 2 == 1 and agent_view_size >= 3
 
         # initialize agent
         self.agent = Agent(self, agent_view_size)
@@ -492,6 +124,7 @@ class MiniGridEnv(gym.Env):
         self.reset()
 
         self.mission = ''
+        self.furniture_view = None
 
     def copy_objs(self):
         from copy import deepcopy
@@ -550,6 +183,9 @@ class MiniGridEnv(gym.Env):
         # To keep the same grid for each episode, call env.seed() with
         # the same seed before calling env.reset()
         self._gen_grid(self.width, self.height)
+
+        # generate furniture view
+        self.furniture_view = self.grid.render_furniture(tile_size=TILE_PIXELS, objs=self.objs)
 
         # These fields should be defined by _gen_grid
         assert self.agent.cur_pos is not None
@@ -623,22 +259,23 @@ class MiniGridEnv(gym.Env):
                     str += 2 * AGENT_DIR_TO_STR[self.agent.dir]
                     continue
 
-                c = self.grid.get(i, j)
+                objs = self.grid.get(i, j)
 
-                if c is None:
-                    str += '  '
-                    continue
+                for c in objs:
+                    if c is None:
+                        str += '  '
+                        continue
 
-                if c.type == 'door':
-                    if c.is_open:
-                        str += '__'
-                    elif c.is_locked:
-                        str += 'L' + c.color[0].upper()
-                    else:
-                        str += 'D' + c.color[0].upper()
-                    continue
+                    if c.type == 'door':
+                        if c.is_open:
+                            str += '__'
+                        elif c.is_locked:
+                            str += 'L' + c.color[0].upper()
+                        else:
+                            str += 'D' + c.color[0].upper()
+                        continue
 
-                str += OBJECT_TO_STR[c.type] + c.color[0].upper()
+                    str += OBJECT_TO_STR[c.type] + c.color[0].upper()
 
             if j < self.grid.height - 1:
                 str += '\n'
@@ -767,30 +404,45 @@ class MiniGridEnv(gym.Env):
 
             num_tries += 1
 
+            width = 1 if obj is None else obj.width
+            height = 1 if obj is None else obj.height
+
             pos = np.array((
-                self._rand_int(top[0], min(top[0] + size[0], self.grid.width)),
-                self._rand_int(top[1], min(top[1] + size[1], self.grid.height))
+                self._rand_int(top[0], min(top[0] + size[0], self.grid.width - width + 1)),
+                self._rand_int(top[1], min(top[1] + size[1], self.grid.height - height + 1))
             ))
 
-            # Don't place the object on top of another object
-            if self.grid.get(*pos) is not None:
-                continue
+            valid = True
 
-            # Don't place the object where the agent is
-            if np.array_equal(pos, self.agent.cur_pos):
-                continue
+            for dx in range(width):
+                for dy in range(height):
+                    x = pos[0] + dx
+                    y = pos[1] + dy
 
-            # Check if there is a filtering criterion
-            if reject_fn and reject_fn(self, pos):
+                    # Don't place the object on top of another object
+                    if self.grid.get_dim(x, y, 0) is not None:
+                        valid = False
+                        break
+
+                    # Don't place the object where the agent is
+                    if np.array_equal((x, y), self.agent.cur_pos):
+                        valid = False
+                        break
+
+                    # Check if there is a filtering criterion
+                    if reject_fn and reject_fn(self, (x, y)):
+                        valid = False
+                        break
+
+            if not valid:
                 continue
 
             break
 
         self.grid.set(*pos, obj)
 
-        if obj is not None:
-            obj.init_pos = pos
-            obj.cur_pos = pos
+        if obj:
+            self.put_obj(obj, *pos)
 
         return pos
 
@@ -800,7 +452,11 @@ class MiniGridEnv(gym.Env):
         """
         self.grid.set(i, j, obj)
         obj.init_pos = (i, j)
-        obj.cur_pos = (i, j)
+        obj.update_pos((i, j))
+
+        if obj.is_furniture():
+            for pos in obj.all_pos:
+                self.grid.set(*pos, obj)
 
     def place_agent(
         self,
@@ -815,15 +471,7 @@ class MiniGridEnv(gym.Env):
 
         self.agent.cur_pos = None
 
-        next_to = True
-        while next_to:
-            pos = self.place_obj(None, top, size, max_tries=max_tries)
-            self.agent.cur_pos = pos
-            next_to = False
-            for obj in self.obj_instances.values():
-                if obj.check_rel_state(self, self.agent, 'nextto'):
-                    next_to = True
-
+        pos = self.place_obj(None, top, size, max_tries=max_tries)
         self.agent.cur_pos = pos
 
         if rand_dir:
@@ -846,8 +494,7 @@ class MiniGridEnv(gym.Env):
         obs_cell = obs_grid.get(vx, vy)
         world_cell = self.grid.get(x, y)
 
-        # TODO: change this to work if isinstance(obs_cell, list)
-        return obs_cell is not None and obs_cell.type == world_cell.type
+        return obs_cell != [] and [obj.type for obj in obs_cell] == [obj.type for obj in world_cell]
 
     def step(self, action):
         # keep track of last action
@@ -875,26 +522,15 @@ class MiniGridEnv(gym.Env):
 
         # Move forward
         elif action == self.actions.forward:
-            if isinstance(fwd_cell, list):
-                can_overlap = True
-                obj_types = [obj.type for obj in fwd_cell]
-                # TODO: change door
-                if 'door' in obj_types:
-                    can_overlap = True
-                else:
-                    for obj in fwd_cell:
-                        if not obj.can_overlap:
-                            can_overlap = False
-                            break
-                if can_overlap:
-                    self.agent.cur_pos = fwd_pos
-                else:
-                    self.action_done = False
+            can_overlap = True
+            for obj in fwd_cell:
+                if not obj.can_overlap:
+                    can_overlap = False
+                    break
+            if can_overlap:
+                self.agent.cur_pos = fwd_pos
             else:
-                if fwd_cell is None or fwd_cell.can_overlap:
-                    self.agent.cur_pos = fwd_pos
-                else:
-                    self.action_done = False
+                self.action_done = False
 
         else:
             if self.mode == 'human':
@@ -905,42 +541,40 @@ class MiniGridEnv(gym.Env):
                         print("No reachable objects")
                     else:
                         # get all reachable objects
-                        print('Reachable objects')
-                        text = ""
-                        for i in range(len(choices)):
-                            text += "{}) {} \n".format(i, choices[i].name)
-                        obj = input("Choose one of the following objects: \n{}".format(text))
+                        text = ''.join('{}) {} \n'.format(i, choices[i].name) for i in range(len(choices)))
+                        obj = input("Choose one of the following reachable objects: \n{}".format(text))
                         obj = choices[int(obj)]
                         assert obj is not None, "No object chosen"
 
                         actions = []
-                        for action in self.agent.actions:
-                            if self.agent.actions[action].can(obj):
-                                actions.append(action)
+                        for action in self.actions:
+                            action_class = ACTION_FUNC_MAPPING.get(action.name, None)
+                            if action_class and action_class(self).can(obj):
+                                actions.append(action.name)
 
                         if len(actions) == 0:
                             print("No actions available")
                         else:
-                            text = ""
-                            for i in range(len(actions)):
-                                text += "{}) {} \n".format(i, actions[i])
+                            text = ''.join('{}) {} \n'.format(i, actions[i]) for i in range(len(actions)))
 
-                            action = int(input("Choose one of the following actions: \n{}".format(text)))
-                            action = actions[action] # action key
-                            self.agent.actions[action].do(obj) # perform action
+                            action = input("Choose one of the following actions: \n{}".format(text))
+                            action = actions[int(action)] # action name
+                            ACTION_FUNC_MAPPING[action](self).do(obj) # perform action
                             self.last_action = self.actions[action]
+
                 # Done action (not used by default)
                 else:
                     assert False, "unknown action {}".format(action)
             else:
-                # action = self.actions(action).name
                 # TODO: with agent centric, how does agent choose which obj to do the action on
                 obj_action = self.actions(action).name.split('/') # list: [obj, action]
 
                 # try to perform action
                 obj = self.obj_instances[obj_action[0]]
-                if self.agent.actions[obj_action[1]].can(obj):
-                    self.agent.actions[obj_action[1]].do(obj)
+                action_class = ACTION_FUNC_MAPPING[obj_action[1]]
+
+                if action_class(self).can(obj):
+                    action_class(self).do(obj)
                 else:
                     self.action_done = False
 
@@ -956,11 +590,6 @@ class MiniGridEnv(gym.Env):
             for name, state in obj.states.items():
                 if state.type == 'absolute':
                     state._update(self)
-                # elif name == 'inside' and not self.agent.is_carrying(obj):
-                #     cell = self.grid.get(*obj.cur_pos)
-                #     if isinstance(cell, list):
-                #         for other_obj in cell:
-                #             state.update(other_obj, self)
 
     def gen_obs_grid(self):
         """
@@ -985,15 +614,13 @@ class MiniGridEnv(gym.Env):
         else:
             vis_mask = np.ones(shape=(grid.width, grid.height), dtype=bool)
 
-        # Make it so the agent sees what it's carrying
-        # We do this by placing the carried object at the agent's position
-        # in the agent's partially observable view
-        agent_pos = grid.width // 2, grid.height - 1
-        # TODO: commented out below. otherwise, there is error with multiroom when you carry an object through door
+        # TODO: Make it so the agent sees what it's carrying
+        # We do this by placing the carried object at the agent's position in the agent's partially observable view
+        # agent_pos = grid.width // 2, grid.height - 1
         # if self.agent.carrying:
         #     grid.set(*agent_pos, self.agent.carrying)
-        # else:
-        #     grid.set(*agent_pos, None)
+        # for obj in self.agent.all_reachable():
+        #      grid.set(*agent_pos, None)
 
         return grid, vis_mask
 
@@ -1042,7 +669,7 @@ class MiniGridEnv(gym.Env):
         """
         Render the whole-grid human view
         """
-        highlight=self.highlight
+        highlight = self.highlight
 
         if close:
             if self.window:
@@ -1100,6 +727,43 @@ class MiniGridEnv(gym.Env):
             self.window.show_img(img)
 
         return img
+
+    def render_furniture(self):
+        img = np.copy(self.furniture_view)
+        img = self.grid.render_agent(img, agent_pos=self.agent.cur_pos, agent_dir=self.agent.dir)
+        return img
+
+    def render_obj_states(self, obj, tile_size):
+        img = np.zeros(shape=(tile_size, tile_size, 3), dtype=np.uint8)
+
+        if obj is False:
+            fill_coords(img, point_in_rect(0, 1, 0, 1), [255, 255, 255])
+        elif is_obj(obj):
+            if obj.check_abs_state(self, 'inreachofrobot'):
+                states = [state for state in obj.states if state in ABILITIES]
+                obj_size = int(tile_size * 3 / 4)
+                obj_img = img[: obj_size, : obj_size, :]
+
+                obj.render(obj_img)
+
+                for i in range(len(states)):
+                    state = states[i]
+                    y_min = int(i * tile_size / 4)
+                    y_max = int((i + 1) * tile_size / 4)
+                    sub_img = img[y_min: y_max, obj_size:, :]
+                    value = obj.check_abs_state(self, state)
+                    obj.states[state].render(sub_img, value)
+            else:
+                fill_coords(img, point_in_rect(0, 1, 0, 1), [50, 50, 50])
+
+        return img
+
+    def render_states(self, tile_size=100):
+        pos = self.agent.front_pos
+        objs = self.grid.get_all_dims(*pos)
+        imgs = [self.render_obj_states(obj, tile_size) for obj in objs]
+
+        return imgs
 
     def close(self):
         if self.window:

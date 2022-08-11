@@ -91,7 +91,7 @@ def gen_grid_from_array(img_array):
     return grid
 
 
-def gen_grid_from_img(img='rs_int_floor_trav_no_obj_0.png', img_dir='scenes', save_dir='grids'):
+def gen_grid_from_img(img='rs_int_floor_trav_no_obj_0.png', img_dir='scenes', save_dir='floorplans'):
     # load and process img into grid
     img_path = os.path.join(img_dir, img)
     img_array = img_to_array(img_path)

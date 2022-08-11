@@ -139,50 +139,13 @@ def img_to_array(img_path):
     return array
 
 
-def square_img(img_path):
-    img_array = img_to_array(img_path)
+def point_in_icon(img, img_array):
+    def fn(x, y):
+        x = x * img.shape[1] - 0.5
+        y = y * img.shape[0] - 0.5
+        x = int(x / np.shape(img)[1] * np.shape(img_array)[1])
+        y = int(y / np.shape(img)[0] * np.shape(img_array)[0])
 
-    # 0 = black, 255 = white
-    img_array = img_array[:, :, 0]
-    height, width = np.shape(img_array)
-    start_row = 0
-    end_row = height - 1
-    start_col = 0
-    end_col = width - 1
+        return np.all(img_array[y, x] != 255)
 
-    while np.all(img_array[start_row, :] == 255):
-        start_row += 1
-
-    while np.all(img_array[end_row, :] == 255):
-        end_row -= 1
-
-    while np.all(img_array[:, start_col] == 255):
-        start_col += 1
-
-    while np.all(img_array[:, end_col] == 255):
-        end_col -= 1
-
-    assert start_row <= end_row, 'incorrect start/end row'
-    assert start_col <= end_col, 'incorrect start/end col'
-
-    crop = img_array[start_row: end_row, start_col: end_col]
-
-    new_height, new_width = np.shape(crop)
-    expand_first = abs(new_height - new_width) // 2
-    expand_sec = abs(new_height - new_width) - expand_first
-
-    if new_height > new_width:
-        # expand the width by expand_by on both sides
-        expand_first = np.full((new_height, expand_first), 255)
-        expand_sec = np.full((new_height, expand_sec), 255)
-        square = np.hstack((expand_first, crop, expand_sec))
-        print(np.shape(square))
-    elif new_height < new_width:
-        expand_first = np.full((expand_first, new_width), 255)
-        expand_sec = np.full((expand_sec, new_width), 255)
-        square = np.vstack((expand_first, crop, expand_sec))
-        print(np.shape(square))
-    else:
-        square = crop
-
-    return square.astype(np.uint8)
+    return fn

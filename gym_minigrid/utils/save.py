@@ -22,8 +22,6 @@ def all_state_values(env):
     """
     states = {}
     for obj_name, obj_instance in env.obj_instances.items():
-        # print(obj_instance.cur_pos)
-        # print(obj_instance)
         obj_states = obj_instance.get_all_state_values(env)
         states.update(obj_states)
     return states

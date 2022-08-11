@@ -110,7 +110,7 @@ class ThrowLeftoversEnv(RoomGrid):
             if True in is_inside:
                 num_thrown += 1
 
-        return num_thrown / self.num_objs['hamburger']
+        return num_thrown / len(self.objs['hamburger'])
 
     def _end_conditions(self):
         for hamburger in self.objs['hamburger']:

@@ -3,6 +3,7 @@
 from .minigrid import *
 from .bddl.objs import OBJECTS
 
+
 def reject_next_to(env, pos):
     """
     Function to filter out object positions that are right next to
@@ -343,7 +344,7 @@ class RoomGrid(MiniGridEnv):
             front_cell = self.grid.get(*self.agent.front_pos)
             # agent_cell = self.grid.get(*self.agent.cur_pos)
             # if not isinstance(agent_cell, list):
-            if front_cell is None:
+            if front_cell == []:
                 break
             # elif isinstance(front_cell, list):
             #

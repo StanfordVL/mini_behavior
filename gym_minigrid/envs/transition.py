@@ -1,8 +1,8 @@
 from gym_minigrid.roomgrid import *
 from gym_minigrid.register import register
-from gym_minigrid.objects import OBJECT_CLASS, OBJECT_COLOR
+from gym_minigrid.objects import OBJECT_CLASS
 
-DEFAULT_OBJS = ['counter', 'plate', 'ashcan', 'hamburger', 'ball', 'apple', 'milk', 'juice', 'kiwi', 'grape', 'orange', 'bowl', 'egg', 'cucumber']
+DEFAULT_OBJS = ['countertop', 'plate', 'ashcan', 'hamburger', 'ball', 'apple', 'carton', 'juice']
 
 
 def create_transition_matrices(objs, num_rooms):

@@ -8,7 +8,7 @@ import os
 dir_path = os.path.dirname('gym_minigrid')
 img_dir = os.path.join(dir_path, 'gym_minigrid/scenes')
 list_scenes = os.listdir(img_dir)
-grids_dir = os.path.join(dir_path, 'gym_minigrid/grids')
+grids_dir = os.path.join(dir_path, 'gym_minigrid/floorplans')
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--imgs", nargs='+', default=list_scenes,

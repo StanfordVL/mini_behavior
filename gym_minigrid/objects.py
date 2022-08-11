@@ -1,155 +1,7 @@
 from .rendering import *
-from .bddl import DEFAULT_STATES, STATE_FUNC_MAPPING, DEFAULT_ACTIONS, OBJECT_COLOR, OBJECT_TO_IDX, IDX_TO_OBJECT
-from .utils.globals import COLOR_TO_IDX, IDX_TO_COLOR, COLORS
-from .utils.load import load_json
-
-
-class WorldObj:
-    """
-    Base class for grid world objects
-    """
-
-    def __init__(self,
-                 type,
-                 color=None,
-                 name=None,
-                 state_keys=None,
-                 action_keys=None,
-                 can_contain=False,
-                 can_overlap=False,
-                 can_seebehind=True,
-                 ):
-
-        if action_keys is None:
-            object_actions = load_json('gym_minigrid/utils/object_actions.json')
-            if type in object_actions.keys():
-                action_keys = object_actions[type]
-            else:
-                action_keys = []
-        if state_keys is None:
-            object_properties = load_json('gym_minigrid/utils/object_properties.json')
-            if type in object_properties.keys():
-                state_keys = object_properties[type]
-            else:
-                state_keys = []
-
-        assert type in OBJECT_TO_IDX, type
-        self.type = type
-
-        self.color = OBJECT_COLOR[type] if color is None else color
-        assert self.color in COLOR_TO_IDX, self.color
-
-        # Initial position of the object
-        self.init_pos = None
-
-        # Current position of the object
-        self.cur_pos = None
-
-        # Name of the object (type_number)
-        self.name = name
-
-        self.state_keys = DEFAULT_STATES + state_keys
-        self.states = {}
-
-        for key in self.state_keys:
-            self.states[key] = STATE_FUNC_MAPPING[key](self)
-
-        self.actions = DEFAULT_ACTIONS + action_keys
-
-        # OBJECT PROPERTIES
-        # ALWAYS STATIC
-        self.can_contain = can_contain
-        # NOT ALWAYS STATIC
-        self.can_overlap = can_overlap
-        self.can_seebehind = can_seebehind
-        self.contains = set()
-
-    def reset(self):
-        self.contains = set()
-
-    def load(self, obj, grid, env):
-        self.reset()
-        self.cur_pos = obj.cur_pos
-        self.can_overlap = obj.can_overlap
-        self.can_seebehind = obj.can_seebehind
-
-        # TODO: may not need this if statement anymore
-        if obj.can_contain:
-            cell = grid.get(*obj.cur_pos)
-            if isinstance(cell, list):
-                cell_names = [obj.name for obj in cell]
-                obj_idx = cell_names.index(obj.name)
-                for i in range(obj_idx+1, len(cell)):
-                    self.contains.add(env.obj_instances[cell_names[i]])
-
-        inside = obj.states['inside'].inside_of
-        if inside:
-            name = inside.name
-            new_inside = env.obj_instances[name]
-            self.states['inside'].set_value(new_inside, True)
-
-    def get_class(self):
-        # ex: obj name = plate_0, class = plate
-        return self.name.split('_')[0]
-
-    def possible_action(self, action):
-        # whether the obj is able to have the action performed on it
-        return action in self.actions
-
-    def check_abs_state(self, env, state):
-        return state in self.state_keys and self.states[state].get_value(env)
-
-    def check_rel_state(self, env, other, state):
-        return state in self.state_keys and self.states[state].get_value(other, env)
-
-    def get_all_state_values(self, env):
-        states = {}
-        for state, instance in self.states.items():
-            if instance.type == 'absolute':
-                name = '{}/{}'.format(self.name, state)
-                val = instance.get_value(env)
-                states[name] = val
-            elif instance.type == 'relative':
-                for obj_name, obj_instance in env.obj_instances.items():
-                    if state in obj_instance.states:
-                        name = '{}/{}/{}'.format(self.name, obj_name, state)
-                        val = instance.get_value(obj_instance, env)
-                        states[name] = val
-        return states
-
-    def update(self, env):
-        """Method to trigger/toggle an action this object performs"""
-        pass
-
-    def encode(self):
-        """Encode the a description of this object as a seed 10_3-tuple of integers"""
-        return OBJECT_TO_IDX[self.type], COLOR_TO_IDX[self.color], 0
-
-    @staticmethod
-    def decode(type_idx, color_idx, state):
-        """Create an object from a seed 10_3-tuple state description"""
-
-        obj_type = IDX_TO_OBJECT[type_idx]
-        color = IDX_TO_COLOR[color_idx]
-
-        if obj_type == 'empty' or obj_type == 'unseen':
-            return None
-
-        if obj_type == 'door':
-            # State, 0: open, seed 0_2: closed, seed 0_2: locked
-            is_open = state == 0
-            is_locked = state == 2
-            v = Door(color, is_open, is_locked)
-        else:
-            v = OBJECT_CLASS[obj_type](color)
-
-        return v
-
-    # def render(self, r):
-    #     """Draw this object with the given renderer"""
-    #     raise NotImplementedError
-    def render(self, img):
-        fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
+from .bddl import OBJECT_TO_IDX
+from .utils.globals import COLOR_TO_IDX, COLORS
+from .utils.objects_base import WorldObj, FurnitureObj
 
 
 class Goal(WorldObj):
@@ -171,12 +23,6 @@ class Ashcan(WorldObj):
     def __init__(self, color=None, name='ashcan'):
         super(Ashcan, self).__init__('ashcan', color, name, can_contain=True)
 
-    def render(self, img):
-        c = COLORS[self.color]
-
-        fill_coords(img, point_in_rect(0.12, 0.88, 0.12, 0.88), c)
-        fill_coords(img, point_in_rect(0.25, 0.82, 0.18, 0.82), (0,0,0))
-
 
 class Backpack(WorldObj):
     def __init__(self, color=None, name='backpack'):
@@ -187,9 +33,6 @@ class Ball(WorldObj):
     def __init__(self, color=None, name='ball'):
         super(Ball, self).__init__('ball', color, name)
 
-    def render(self, img):
-        fill_coords(img, point_in_circle(0.5, 0.5, 0.4), COLORS[self.color])
-
 
 class Banana(WorldObj):
     def __init__(self, color=None, name='banana'):
@@ -199,11 +42,6 @@ class Banana(WorldObj):
 class Basket(WorldObj):
     def __init__(self, color=None, name='basket'):
         super(Basket, self).__init__('basket', color, name, can_contain=True)
-
-
-class Bed(WorldObj):
-    def __init__(self, color=None, name='bed'):
-        super(Bed, self).__init__('bed', color, name)
 
 
 class Beef(WorldObj):
@@ -244,11 +82,6 @@ class Broom(WorldObj):
 class Bucket(WorldObj):
     def __init__(self, color=None, name='bucket'):
         super(Bucket, self).__init__('bucket', color, name, can_contain=True)
-
-
-class Cabinet(WorldObj):
-    def __init__(self, color=None, name='cabinet'):
-        super(Cabinet, self).__init__('cabinet', color, name, can_contain=True, can_overlap=False)
 
 
 class Cake(WorldObj):
@@ -300,14 +133,6 @@ class Cookie(WorldObj):
         super(Cookie, self).__init__('cookie', color, name)
 
 
-class Countertop(WorldObj):
-    def __init__(self, color='purple', name='countertop'):
-        super(Countertop, self).__init__('countertop', color, name)
-
-    def render(self, img):
-        fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
-
-
 class Date(WorldObj):
     def __init__(self, color=None, name='date'):
         super(Date, self).__init__('date', color, name)
@@ -316,8 +141,8 @@ class Date(WorldObj):
 class Door(WorldObj):
     def __init__(self, color, is_open=False, name='door'):
         self.is_open = is_open
-        # self.is_locked = False
         super().__init__('door', name=name, color=color, can_overlap=is_open, can_seebehind=is_open)
+        self.block_idx = {1, 2, 3}
 
     def update(self, env):
         self.is_open = self.states['openable'].get_value(env)
@@ -365,11 +190,6 @@ class Egg(WorldObj):
         super(Egg, self).__init__('egg', color, name)
 
 
-class ElectricRefrigerator(WorldObj):
-    def __init__(self, color=None, name='electric_refrigerator'):
-        super(ElectricRefrigerator, self).__init__('electric_refrigerator', color, name, can_contain=True)
-
-
 class Fish(WorldObj):
     def __init__(self, color=None, name='fish'):
         super(Fish, self).__init__('fish', color, name)
@@ -379,7 +199,7 @@ class Floor(WorldObj):
     """
     Colored floor tile the agent can walk over
     """
-    def __init__(self, color='blue'):
+    def __init__(self, color='white'):
         super().__init__('floor', color, can_overlap=True)
 
     def render(self, img):
@@ -407,9 +227,6 @@ class Hamburger(WorldObj):
     def __init__(self, color=None, name='hamburger'):
         super(Hamburger, self).__init__('hamburger', color, name)
 
-    # TODO: delete this later
-    def render(self, img):
-        fill_coords(img, point_in_circle(0.5, 0.5, 0.2), COLORS['red'])
 
 class Hammer(WorldObj):
     def __init__(self, color=None, name='hammer'):
@@ -494,10 +311,6 @@ class Plate(WorldObj):
     def __init__(self, color=None, name='plate'):
         super(Plate, self).__init__('plate', color, name)
 
-    # TODO: delete this later
-    def render(self, img):
-        fill_coords(img, point_in_circle(0.5, 0.5, 0.4), COLORS['yellow'])
-
 
 class Plywood(WorldObj):
     def __init__(self, color=None, name='plywood'):
@@ -543,24 +356,9 @@ class ScrubBrush(WorldObj):
         super(ScrubBrush, self).__init__('scrub_brush', color, name)
 
 
-class Shelf(WorldObj):
-    def __init__(self, color=None, name='shelf'):
-        super(Shelf, self).__init__('shelf', color, name, can_seebehind=False)
-
-
 class Shoe(WorldObj):
     def __init__(self, color=None, name='shoe'):
         super(Shoe, self).__init__('shoe', color, name)
-
-
-class Shower(WorldObj):
-    def __init__(self, color=None, name='shower'):
-        super(Shower, self).__init__('shower', color, name)
-
-
-class Sink(WorldObj):
-    def __init__(self, color=None, name='sink'):
-        super(Sink, self).__init__('sink', color, name, can_contain=True)
 
 
 class Soap(WorldObj):
@@ -573,11 +371,6 @@ class Sock(WorldObj):
         super(Sock, self).__init__('sock', color, name)
 
 
-class Sofa(WorldObj):
-    def __init__(self, color=None, name='sofa'):
-        super(Sofa, self).__init__('sofa', color, name)
-
-
 class Soup(WorldObj):
     def __init__(self, color=None, name='soup'):
         super(Soup, self).__init__('soup', color, name)
@@ -588,19 +381,9 @@ class Spoon(WorldObj):
         super(Spoon, self).__init__('spoon', color, name)
 
 
-class Stove(WorldObj):
-    def __init__(self, color=None, name='stove'):
-        super(Stove, self).__init__('stove', color, name)
-
-
 class Strawberry(WorldObj):
     def __init__(self, color=None, name='strawberry'):
         super(Strawberry, self).__init__('strawberry', color, name)
-
-
-class Table(WorldObj):
-    def __init__(self, color=None, name='table'):
-        super(Table, self).__init__('table', color, name)
 
 
 class TeaBag(WorldObj):
@@ -616,6 +399,7 @@ class Teapot(WorldObj):
 class Toilet(WorldObj):
     def __init__(self, color=None, name='toilet'):
         super(Toilet, self).__init__('toilet', color, name)
+        self.block_idx = {2, 3}
 
 
 class Tomato(WorldObj):
@@ -637,9 +421,13 @@ class VegetableOil(WorldObj):
 class Wall(WorldObj):
     def __init__(self, color='grey'):
         super().__init__('wall', color=color, can_seebehind=False)
+        self.height = 1
+        self.width = 1
+        self.valid_idx = [0]
+        self.block_idx = {1, 2, 3}
 
     def render(self, img):
-        fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
+        fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS['grey'])
 
 
 class Water(WorldObj):
@@ -650,6 +438,69 @@ class Water(WorldObj):
 class Window(WorldObj):
     def __init__(self, color=None, name='window'):
         super(Window, self).__init__('window', color, name)
+
+
+#######################################################################################################################
+
+
+class Bed(FurnitureObj):
+    def __init__(self, width=3, height=2, color='purple', name='bed'):
+        super(Bed, self).__init__('bed', width, height, color, name, can_overlap=True)
+        self.block_idx = {2, 3}
+
+
+class Cabinet(FurnitureObj):
+    def __init__(self, width=2, height=3, color='brown', name='cabinet'):
+        super(Cabinet, self).__init__('cabinet', width, height, color, name, can_contain=True, can_seebehind=False)
+        self.block_idx ={3}
+
+
+class Countertop(FurnitureObj):
+    def __init__(self, width=3, height=2, color='tan', name='countertop'):
+        super(Countertop, self).__init__('countertop', width, height, color, name, can_seebehind=True)
+        self.block_idx = {2, 3}
+
+
+class ElectricRefrigerator(FurnitureObj):
+    def __init__(self, width=2, height=3, color='l_blue', name='electric_refrigerator'):
+        super(ElectricRefrigerator, self).__init__('electric_refrigerator', width, height, color, name, can_contain=True, can_seebehind=False)
+        self.block_idx = {3}
+
+
+class Shelf(FurnitureObj):
+    def __init__(self, width=2, height=3, color='brown', name='shelf'):
+        super(Shelf, self).__init__('shelf', width, height, color, name, can_contain=True, can_seebehind=False)
+        self.block_idx = {2, 3}
+
+
+class Shower(FurnitureObj):
+    def __init__(self, width=3, height=2, color='l_blue', name='shower'):
+        super(Shower, self).__init__('shower', width, height, color, name)
+        self.block_idx = {2, 3}
+
+
+class Sink(FurnitureObj):
+    def __init__(self, width=2, height=2, color='blue', name='sink'):
+        super(Sink, self).__init__('sink', width, height, color, name, can_overlap=False, can_seebehind=True)
+        self.block_idx = {2, 3}
+
+
+class Sofa(FurnitureObj):
+    def __init__(self, width=3, height=2, color='red', name='sofa'):
+        super(Sofa, self).__init__('sofa', width=width, height=height, color=color, name=name)
+        self.block_idx = {2, 3}
+
+
+class Stove(FurnitureObj):
+    def __init__(self, width=3, height=2, color='grey', name='stove'):
+        super(Stove, self).__init__('stove', width, height, color, name)
+        self.block_idx = {2, 3}
+
+
+class Table(FurnitureObj):
+    def __init__(self, width=3, height=2, color='tan', name='table'):
+        super(Table, self).__init__('table', width, height, color, name)
+        self.block_idx = {2, 3}
 
 
 OBJECT_CLASS = {

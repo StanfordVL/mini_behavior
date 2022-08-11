@@ -41,8 +41,20 @@ DEFAULT_STATES = [
     'onfloor',
     'ontop',
     'under'
-    # 'touching', TODO: uncomment once implemented
 ]
+
+
+ABILITIES = [
+    'cookable',
+    'dustyable',
+    'freezable',
+    'openable',
+    'sliceable',
+    'soakable',
+    'stainable',
+    'toggleable',
+]
+
 
 # state (str) to state (function) mapping
 STATE_FUNC_MAPPING = {
@@ -71,6 +83,19 @@ STATE_FUNC_MAPPING = {
     'waterSource': WaterSource
     # 'touching', TODO: uncomment once implemented
 }
+
+# # state (str) to state (function) mapping
+# FUNC_ABILITY_MAPPING = {
+#     Cooked: 'cookable',
+#     Dusty: 'dustyable',
+#     Frozen: 'freezable',
+#     Opened: 'openable',
+#     Sliced: 'sliceable',
+#     Slicer: 'slicer',
+#     Soaked: 'soakable',
+#     Stained: 'stainable',
+#     ToggledOn: 'toggleable',
+# }
 
 ########################################################################################################################
 

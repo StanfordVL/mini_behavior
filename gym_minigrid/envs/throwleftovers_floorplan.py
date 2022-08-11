@@ -10,7 +10,7 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
     def __init__(
             self,
             mode='human',
-            img_path='/Users/emilyjin/Code/behavior/mini_behavior/gym_minigrid/grids/rs_int_floor_trav_no_obj_0.png',
+            img_path='/Users/emilyjin/Code/behavior/mini_behavior/gym_minigrid/floorplans/rs_int_floor_trav_no_obj_0.png',
             num_objs=None,
             max_steps=1e5,
     ):
@@ -105,7 +105,7 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
             if True in is_inside:
                 num_thrown += 1
 
-        return num_thrown / self.num_objs['hamburger']
+        return num_thrown / len(self.objs['hamburger'])
 
     def _end_conditions(self):
         for hamburger in self.objs['hamburger']:

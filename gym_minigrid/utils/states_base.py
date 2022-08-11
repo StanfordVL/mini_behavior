@@ -1,6 +1,7 @@
 # MODIFIED FROM IGIBSON REPO
 
 from abc import abstractmethod
+from gym_minigrid.rendering import *
 
 class BaseObjectState:
     """
@@ -30,10 +31,10 @@ class BaseObjectState:
         """
         return []
 
-    def __init__(self, obj): # env
+    def __init__(self, obj, key): # env
         super(BaseObjectState, self).__init__()
         self.obj = obj
-        self.value = False
+        self.name = key
 
     # def update(self, *args, **kwargs):
     #     # assert self._initialized, "Cannot update uninitalized state."
@@ -56,14 +57,15 @@ class AbsoluteObjectState(BaseObjectState):
     """
     track object states that are absolute (require seed 0_2 object)
     """
-    def __init__(self, obj): # env
-        super(AbsoluteObjectState, self).__init__(obj)
+    def __init__(self, obj, key): # env
+        super(AbsoluteObjectState, self).__init__(obj, key)
         self.type = 'absolute'
+        self.value = False
 
-    def _update(self, env):
+    def _update(self, env=None):
         pass
 
-    def _get_value(self, env):
+    def _get_value(self, env=None):
         return self.value
 
     def _set_value(self, new_value):
@@ -75,15 +77,15 @@ class RelativeObjectState(BaseObjectState):
     This class is used to track object states that are relative, e.g. require two objects to compute a value.
     Note that subclasses will typically compute values on-the-fly.
     """
-    def __init__(self, obj): # env
-        super(RelativeObjectState, self).__init__(obj)
+    def __init__(self, obj, key): # env
+        super(RelativeObjectState, self).__init__(obj, key)
         self.type = 'relative'
 
-    def _update(self, other, env):
+    def _update(self, other, env=None):
         pass
 
-    def _get_value(self, other, env):
-        return self.value
+    def _get_value(self, other, env=None):
+        raise NotImplementedError
 
     def _set_value(self, other, new_value):
         pass
@@ -93,8 +95,8 @@ class ObjectProperty(BaseObjectState):
     """
     track object states that are absolute (require seed 0_2 object)
     """
-    def __init__(self, obj): # env
-        super(ObjectProperty, self).__init__(obj)
+    def __init__(self, obj, key): # env
+        super(ObjectProperty, self).__init__(obj, key)
         self.type = 'absolute'
 
     @staticmethod
@@ -104,3 +106,14 @@ class ObjectProperty(BaseObjectState):
     @staticmethod
     def _get_value(self, env=None):
         return True
+
+
+class AbilityState(AbsoluteObjectState):
+    def __init__(self, obj, key):
+        super().__init__(obj, key)
+        icon_path = f'gym_minigrid/utils/state_icons/{key}.jpg'
+        self.icon = img_to_array(icon_path)
+
+    def render(self, img, value=False):
+        color = [0, 255, 0] if value else [255, 255, 255]
+        fill_coords(img, point_in_icon(img, self.icon), color)

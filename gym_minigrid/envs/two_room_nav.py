@@ -19,7 +19,7 @@ class TwoRoomNavigationEnv(RoomGrid):
             max_steps=1e5,
     ):
         super().__init__(mode='human',
-                         num_objs={},
+                         num_objs={'ball': 1},
                          room_size=8,
                          num_rows=1,
                          num_cols=2,
@@ -32,9 +32,14 @@ class TwoRoomNavigationEnv(RoomGrid):
     def _gen_grid(self, width, height):
         self._gen_rooms(width, height)
         # randomize the agent start position and orientation
+        self._gen_objs()
         self.place_agent()
         self.connect_all()
         self.mission = 'navigate between rooms'
+
+    def _gen_objs(self):
+        for obj in self.obj_instances.values():
+            self.place_obj(obj)
 
     def _end_conditions(self):
         return False

@@ -5,12 +5,34 @@ from gym_minigrid.wrappers import *
 from gym_minigrid.window import Window
 from gym_minigrid.utils.save import get_step, save_demo
 
+# Size in pixels of a tile in the full-scale human view
+TILE_PIXELS = 32
+show_furniture = False
+
 def redraw(img):
     if not args.agent_view:
         img = env.render('rgb_array', tile_size=args.tile_size)
 
+    window.no_closeup()
     window.set_inventory(env)
     window.show_img(img)
+
+
+def switch_view():
+    global show_furniture
+    show_furniture = not show_furniture
+
+    if show_furniture:
+        img = env.render_furniture()
+        window.show_img(img)
+    else:
+        obs = env.gen_obs()
+        redraw(obs)
+
+
+def show_states():
+    imgs = env.render_states()
+    window.show_closeup(imgs)
 
 
 def reset():
@@ -42,6 +64,7 @@ def load():
 
 def step(action):
     obs, reward, done, info = env.step(action)
+
     print('step=%s, reward=%.2f' % (env.step_count, reward))
 
     if args.save:
@@ -76,7 +99,7 @@ def key_handler(event):
         return
     # Spacebar
     if event.key == ' ':
-        step(env.actions.toggle)
+        switch_view()
         return
     if event.key == 'pageup':
         step('choose')
@@ -84,14 +107,22 @@ def key_handler(event):
     if event.key == 'enter':
         env.save_state()
         return
+    if event.key == 'pagedown':
+        show_states()
+        return
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--env",
     help="gym environment to load",
-    default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
+    # default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
     # default='MiniGrid-FloorPlanEnv-16x16-N1-v0'
+    # default='MiniGrid-TestObjects-16x16-N1-v0'
+    # default='MiniGrid-TestFurniture-16x16-N1-v0'
+    # default='MiniGrid-TestInside-16x16-N1-v0'
+    default='MiniGrid-TestAbilities-16x16-N1-v0'
+    # default='MiniGrid-TwoRoomNavigation-8x8-N2-v0'
 )
 parser.add_argument(
     "--seed",
@@ -127,6 +158,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 env = gym.make(args.env)
+
 
 all_steps = {}
 
