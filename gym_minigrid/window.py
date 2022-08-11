@@ -25,7 +25,7 @@ class Window:
         self.imshow_obj = None
         self.closeup_obj = {'base': None,
                             'top': None,
-                            'middle': None,
+                            'inside': None,
                             'bottom': None
                             }
 
@@ -54,7 +54,7 @@ class Window:
 
         self.closeup_axes = {'base': base_ax,
                              'top': ontop_ax,
-                             'middle': inside_ax,
+                             'inside': inside_ax,
                              'bottom': under_ax
                              }
 
@@ -139,7 +139,7 @@ class Window:
 
     def show_closeup(self, imgs):
         for name, ax in self.closeup_axes.items():
-            NAME_INT_MAP = {'base': 0, 'top': 1, 'middle': 2, 'bottom': 3}
+            NAME_INT_MAP = {'base': 0, 'top': 1, 'inside': 2, 'bottom': 3}
             img = imgs[NAME_INT_MAP[name]]
 
             # Update the image data

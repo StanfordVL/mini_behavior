@@ -38,7 +38,7 @@ class ThrowLeftoversEnv(RoomGrid):
         def invalid_counter(env, cell):
             x, y = cell
             for i in range(3):
-                if env.grid.get(x+i, y) is not None:
+                if env.grid.get_dim(x+i, y, 0) is not None:
                     return True
             return False
 
@@ -56,17 +56,15 @@ class ThrowLeftoversEnv(RoomGrid):
             y = init_counter[1]
             self.put_obj(counters[i], x, y)
 
-        # # TODO: generate floor
-
         # place plates
         for i in range(len(plates)):
-            self.put_obj(plates[i], *counters[i].cur_pos)
+            self.put_obj(plates[i], *counters[i].cur_pos, 1)
 
         # place all hamburgers
         i = 0
         for plate in self._rand_subset(plates, len(hamburgers)):
         # for plate in random.sample(plates, len(hamburgers)):
-            self.put_obj(hamburgers[i], *plate.cur_pos)
+            self.put_obj(hamburgers[i], *plate.cur_pos, 2)
             i += 1
 
         # generate ashcan on floor

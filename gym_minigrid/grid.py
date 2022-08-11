@@ -200,10 +200,15 @@ class Grid:
         Render a tile and cache the result
         """
 
+        # if obj is inside closed obj, don't render it
+        render_objs = [obj for obj in objs]
+        if is_obj(objs[2]) and 'openable' in objs[0].states.keys() and not objs[0].check_abs_state(state='openable'):
+            render_objs[2] = None
+
         # Hash map lookup key for the cache
         key = (agent_dir, highlight, tile_size)
 
-        keys = [obj.encode() for obj in objs if is_obj(obj)]
+        keys = [obj.encode() for obj in render_objs if is_obj(obj)]
         key = tuple(keys) + key
 
         if key in cls.tile_cache:
@@ -215,23 +220,23 @@ class Grid:
         fill_coords(img, point_in_rect(0, 0.031, 0, 1), (100, 100, 100))
         fill_coords(img, point_in_rect(0, 1, 0, 0.031), (100, 100, 100))
 
-        if is_obj(objs[0]) and objs[0].type == 'wall':
-            objs[0].render(img)
+        if is_obj(render_objs[0]) and render_objs[0].type == 'wall':
+            render_objs[0].render(img)
         else:
-            if is_obj(objs[0]) and objs[0].is_furniture():
-                objs[0].render_background(img)
-            objs = [obj for obj in objs if is_obj(obj) and not obj.is_furniture()]
+            if is_obj(render_objs[0]) and render_objs[0].is_furniture():
+                render_objs[0].render_background(img)
+            render_objs = [obj for obj in render_objs if is_obj(obj) and not obj.is_furniture()]
 
-            if len(objs) == 1:
-                objs[0].render(img)
+            if len(render_objs) == 1:
+                render_objs[0].render(img)
             else:
                 # split up the cell for multiple objs
                 full, half = np.shape(img)[0], int(np.shape(img)[0] / 2)
                 y_coords = [(0, half), (0, half), (half, full), (half, full)]
                 x_coords = [(0, half), (half, full), (0, half), (half, full)]
 
-                for i in range(len(objs)):
-                    obj = objs[i]
+                for i in range(len(render_objs)):
+                    obj = render_objs[i]
                     x_1, x_2 = x_coords[i]
                     y_1, y_2 = y_coords[i]
                     sub_img = img[y_1: y_2, x_1: x_2, :]

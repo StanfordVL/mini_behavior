@@ -1,6 +1,5 @@
 from gym_minigrid.roomgrid import *
 from gym_minigrid.register import register
-from gym_minigrid.bddl.actions import CONTROLS
 
 
 class NavigationEnv(RoomGrid):

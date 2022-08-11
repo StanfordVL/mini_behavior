@@ -240,10 +240,14 @@ class Open(BaseAction):
         obj.update(self.env)
 
         if obj.check_abs_state(self.env, 'onfloor'):
-            self.env.grid.set(*obj.cur_pos, None, 2)
+            middle = self.env.grid.get_dim(*obj.cur_pos, 2)
+            if not middle:
+                self.env.grid.set(*obj.cur_pos, None, 2)
             if obj.is_furniture():
                 for pos in obj.all_pos:
-                    self.env.grid.set(*pos, None, 2)
+                    middle = self.env.grid.get_dim(*pos, 2)
+                    if not middle:
+                        self.env.grid.set(*pos, None, 2)
 
 
 class Pickup(BaseAction):

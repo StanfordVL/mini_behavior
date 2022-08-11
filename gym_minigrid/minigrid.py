@@ -10,7 +10,7 @@ from gym.utils import seeding
 from .utils.globals import COLOR_NAMES
 from .agent import Agent
 from .objects import *
-from .bddl import FURNITURE, ABILITIES, ACTION_FUNC_MAPPING, CONTROLS
+from .bddl import ABILITIES, ACTION_FUNC_MAPPING
 from .grid import Grid, is_obj
 
 # Size in pixels of a tile in the full-scale human view
@@ -446,7 +446,7 @@ class MiniGridEnv(gym.Env):
 
         return pos
 
-    def put_obj(self, obj, i, j):
+    def put_obj(self, obj, i, j, dim=0):
         """
         Put an object at a specific position in the grid
         """
@@ -456,7 +456,7 @@ class MiniGridEnv(gym.Env):
 
         if obj.is_furniture():
             for pos in obj.all_pos:
-                self.grid.set(*pos, obj)
+                self.grid.set(*pos, obj, dim)
 
     def place_agent(
         self,

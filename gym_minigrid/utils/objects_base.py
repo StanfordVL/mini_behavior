@@ -86,8 +86,9 @@ class WorldObj:
                 block_idx.add(2)
         return block_idx
 
-    def check_abs_state(self, env, state):
-        return state in self.states.keys() and self.states[state].get_value(env)
+    def check_abs_state(self, env=None, state=None):
+        if state is not None:
+            return state in self.states.keys() and self.states[state].get_value(env)
 
     def check_rel_state(self, env, other, state):
         return other is not None and state in self.states.keys() and self.states[state].get_value(other, env)
