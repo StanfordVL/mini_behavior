@@ -1,5 +1,6 @@
 from gym_minigrid.envs.floorplan import FloorPlanEnv
 from gym_minigrid.register import register
+import os
 
 
 class ThrowLeftoversSceneEnv(FloorPlanEnv):
@@ -10,7 +11,7 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
     def __init__(
             self,
             mode='human',
-            img_path='/Users/emilyjin/Code/behavior/mini_behavior/gym_minigrid/floorplans/rs_int_floor_trav_no_obj_0.png',
+            img_path=os.path.join(os.path.dirname(__file__), '../floorplans/rs_int_floor_trav_no_obj_0.png'),
             num_objs=None,
             max_steps=1e5,
     ):
