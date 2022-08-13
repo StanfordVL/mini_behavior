@@ -307,6 +307,9 @@ class Countertop(WorldObj):
     def render(self, img):
         fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
 
+class Cucumber(WorldObj):
+    def __init__(self, color=None, name='cucumber'):
+        super(Cucumber, self).__init__('cucumber', color, name)
 
 class Date(WorldObj):
     def __init__(self, color=None, name='date'):
@@ -402,6 +405,9 @@ class GymShoe(WorldObj):
     def __init__(self, color=None, name='gym_shoe'):
         super(GymShoe, self).__init__('gym_shoe', color, name)
 
+class Grape(WorldObj):
+    def __init__(self, color=None, name='grape'):
+        super(Grape, self).__init__('grape', color, name)
 
 class Hamburger(WorldObj):
     def __init__(self, color=None, name='hamburger'):
@@ -469,6 +475,9 @@ class Olive(WorldObj):
     def __init__(self, color=None, name='olive'):
         super(Olive, self).__init__('olive', color, name)
 
+class Orange(WorldObj):
+    def __init__(self, color=None, name='orange'):
+        super(Orange, self).__init__('orange', color, name)
 
 class Package(WorldObj):
     def __init__(self, color=None, name='package'):
@@ -689,6 +698,7 @@ OBJECT_CLASS = {
     "floor": Floor,
     "folder": Folder,
     "fork": Fork,
+    "grape": Grape,
     "gym_shoe": GymShoe,
     "hamburger": Hamburger,
     "hammer": Hammer,
@@ -738,4 +748,6 @@ OBJECT_CLASS = {
     "wall": Wall,
     "water": Water,
     "window ": Window,
+    "cucumber": Cucumber,
+    "orange": Orange,
 }

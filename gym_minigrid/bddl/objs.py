@@ -59,6 +59,7 @@ OBJECT_COLOR = {
     "folder": "yellow",
     "fork": "grey",
     "gym_shoe": "yellow",
+    "grape": "purple",
     "hamburger": "red",
     "hammer": "brown",
     "highlighter": "yellow",
@@ -107,6 +108,8 @@ OBJECT_COLOR = {
     "wall": "yellow",
     "water": "yellow",
     "window ": "yellow",
+    "cucumber" : "green",
+    "orange" : "orange"
 }
 
 # Map of object type to integers
@@ -198,6 +201,9 @@ OBJECT_TO_IDX = {
     "wall": 84,
     "water": 85,
     "window ": 86,
+    "grape": 87,
+    "cucumber": 88,
+    "orange": 89,
 }
 
 IDX_TO_OBJECT = dict(zip(OBJECT_TO_IDX.values(), OBJECT_TO_IDX.keys()))

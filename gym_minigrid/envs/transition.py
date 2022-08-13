@@ -97,7 +97,9 @@ class TransitionEnv(RoomGrid):
                 self.objs[obj].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 
-        super().reset()
+        obs = super(TransitionEnv, self).reset()
+        obs = {"image": obs["image"]}
+        return obs
 
     def _gen_objs(self):
         # randomly place objs on the grid
