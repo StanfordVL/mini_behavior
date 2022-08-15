@@ -93,7 +93,7 @@ class TransitionEnv(RoomGrid):
             self.objs[obj] = []
             for i in range(num_objs[obj]):
                 obj_name = '{}_{}'.format(obj, i)
-                obj_instance = OBJECT_CLASS[obj](OBJECT_COLOR[obj], obj_name)
+                obj_instance = OBJECT_CLASS[obj](obj_name)
                 self.objs[obj].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 
