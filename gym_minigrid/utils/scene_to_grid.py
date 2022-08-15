@@ -3,12 +3,15 @@ import numpy as np
 import math
 import os
 
+FLOORPLANS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "floorplans")
 
 def img_to_array(img_path):
     img = Image.open(img_path)
     array = np.asarray(img)
     return array
 
+def get_floorplan(scene_id) :
+    return os.path.join(FLOORPLANS_DIR, f"{scene_id}_floor_trav_no_obj_0.png")
 
 def crop_img(img_array):
     # 0 = black, 255 = white

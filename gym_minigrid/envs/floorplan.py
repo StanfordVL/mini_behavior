@@ -3,7 +3,7 @@ import numpy as np
 from gym_minigrid.minigrid import Grid, MiniGridEnv
 from gym_minigrid.register import register
 from gym_minigrid.objects import Wall
-from gym_minigrid.utils.scene_to_grid import img_to_array
+from gym_minigrid.utils.scene_to_grid import img_to_array, FLOORPLANS_DIR
 
 
 # generate grid
@@ -65,8 +65,7 @@ class FloorPlanEnv(MiniGridEnv):
 
 
 # register environments of all floorplans in floorplans dir
-all_scenes_path = os.path.join(os.path.dirname('gym_minigrid'), 'gym_minigrid/floorplans')
-all_scenes = os.listdir(all_scenes_path)
+all_scenes = os.listdir(FLOORPLANS_DIR)
 
 for img in all_scenes:
     img_name = img
@@ -79,5 +78,5 @@ for img in all_scenes:
     register(
         id=env_id,
         entry_point='gym_minigrid.envs:FloorPlanEnv',
-        kwargs={'img_path': '{}/{}'.format(all_scenes_path, img)}
+        kwargs={'img_path': '{}/{}'.format(FLOORPLANS_DIR, img)}
     )

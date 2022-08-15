@@ -1,5 +1,6 @@
 # MODIFIED FROM IGIBSON REPO
 
+import os
 from abc import abstractmethod
 from gym_minigrid.rendering import *
 
@@ -111,7 +112,7 @@ class ObjectProperty(BaseObjectState):
 class AbilityState(AbsoluteObjectState):
     def __init__(self, obj, key):
         super().__init__(obj, key)
-        icon_path = f'gym_minigrid/utils/state_icons/{key}.jpg'
+        icon_path = os.path.join(os.path.dirname(__file__), f'../utils/state_icons/{key}.jpg')
         self.icon = img_to_array(icon_path)
 
     def render(self, img, value=False):

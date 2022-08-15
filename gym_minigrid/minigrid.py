@@ -129,7 +129,7 @@ class MiniGridEnv(gym.Env):
 
         self.mission = ''
         self.furniture_view = None
-        self.state_icons = {state: img_to_array(f'gym_minigrid/utils/state_icons/{state}.jpg') for state in ABILITIES}
+        self.state_icons = {state: img_to_array(os.path.join(os.path.dirname(__file__), f'utils/state_icons/{state}.jpg')) for state in ABILITIES}
 
     def copy_objs(self):
         from copy import deepcopy
