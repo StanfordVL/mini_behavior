@@ -53,13 +53,14 @@ class Close(BaseAction):
         obj.states['openable'].set_value(False)
         obj.update(self.env)
 
-        if self.env.grid.get_dim(*obj.cur_pos, 2) is None:
-            self.env.grid.set(*obj.cur_pos, False, 2)
-
-        if obj.is_furniture():
+        if obj.can_contain:
             for pos in obj.all_pos:
-                if self.env.grid.get_dim(*pos, 2) is None:
-                    self.env.grid.set(*pos, False, 2)
+                objs = self.env.grid.get_all_objs(*pos)
+                set_objs = [obj for obj in objs]
+                for dim in obj.can_contain:
+                    if objs[dim] is None:
+                        set_objs[dim] = obj
+                self.env.grid.set_all_objs(*pos, set_objs)
 
 
 class Cook(BaseAction):
@@ -81,10 +82,10 @@ class Cook(BaseAction):
             return False
 
         if find_tool(self.env, self.tools):
-            front_cell = self.env.grid.get(*self.env.agent.front_pos)
+            front_cell = self.env.grid.get_all_objs(*self.env.agent.front_pos)
             # if isinstance(front_cell, list):
             for obj2 in front_cell:
-                if obj2.type in self.heat_sources:
+                if obj2 is not None and obj2.type in self.heat_sources:
                     return obj2.check_abs_state(self.env, 'toggleable')
         return False
 
@@ -97,6 +98,7 @@ class Drop(BaseAction):
     def __init__(self, env):
         super(Drop, self).__init__(env)
         self.key = 'drop'
+        self.drop_dim = None
 
     def can(self, obj):
         """
@@ -107,35 +109,34 @@ class Drop(BaseAction):
         if not super().can(obj):
             return False
 
-        fwd_pos = self.env.agent.front_pos
-        base = self.env.grid.get_dim(*fwd_pos, 0)
+        if not obj.check_abs_state(self.env, 'inhandofrobot'):
+            return False
 
-        return obj.check_abs_state(self.env, 'inhandofrobot') and base is None
+        fwd_pos = self.env.agent.front_pos
+        self.drop_dim = None
+        for i in range(3):
+            furniture, dim_obj = self.env.grid.get_dim(*fwd_pos, i)
+            if furniture is None and dim_obj is None:
+                self.drop_dim = i
+                return True
+
+        return False
 
     def do(self, obj):
         super().do(obj)
-
         fwd_pos = self.env.agent.front_pos
 
         # change object properties
         obj.cur_pos = fwd_pos
         # change agent / grid
-        self.env.grid.set(*fwd_pos, obj, 0)
-
-        # if obj2 in obj, also drop obj2
-        if obj.contains:
-            obj.contains.cur_pos = fwd_pos
-            self.env.grid.set(*fwd_pos, obj.contains, 2)
-
-        # if inside obj2, obj no longer inside
-        if obj.inside_of:
-            obj.states['inside'].set_value(obj.inside_of, False)
+        self.env.grid.set(*fwd_pos, obj, self.drop_dim)
 
 
 class DropIn(BaseAction):
     def __init__(self, env):
         super(DropIn, self).__init__(env)
         self.key = 'drop_in'
+        self.drop_dim = None
 
     def can(self, obj):
         """
@@ -147,86 +148,29 @@ class DropIn(BaseAction):
         if not super().can(obj):
             return False
 
-        fwd_pos = self.env.agent.front_pos
-        middle = self.env.grid.get_dim(*fwd_pos, 2)
+        if not obj.check_abs_state(self.env, 'inhandofrobot'):
+            return False
 
-        return obj.check_abs_state(self.env, 'inhandofrobot') and middle is None and obj.contains is None
+        fwd_pos = self.env.agent.front_pos
+        self.drop_dim = None
+        for i in range(3):
+            furniture, dim_obj = self.env.grid.get_dim(*fwd_pos, i)
+            if furniture is not None and furniture.can_contain and dim_obj is None:
+                self.drop_dim = i
+                return True
+
+        return False
 
     def do(self, obj):
         # drop
         super().do(obj)
         fwd_pos = self.env.agent.front_pos
         obj.cur_pos = fwd_pos
-        self.env.grid.set(*fwd_pos, obj, 2)
-
-        if obj.inside_of:
-            obj.states['inside'].set_value(obj.inside_of, False)
+        self.env.grid.set(*fwd_pos, obj, self.drop_dim)
 
         # drop in and update
-        base = self.env.grid.get_dim(*fwd_pos, 0)
-        obj.states['inside'].set_value(base, True)
-
-
-class DropOn(BaseAction):
-    def __init__(self, env):
-        super(DropOn, self).__init__(env)
-        self.key = 'drop_on'
-
-    def can(self, obj):
-        """
-        can drop obj on top if:
-        - agent is carrying obj
-        - there is no obj in top of forward cell
-        - obj does not contain another obj
-        """
-        if not super().can(obj):
-            return False
-
-        fwd_pos = self.env.agent.front_pos
-        top = self.env.grid.get_dim(*fwd_pos, 1)
-
-        return obj.check_abs_state(self.env, 'inhandofrobot') and top is None and obj.contains is None
-
-    def do(self, obj):
-        # drop
-        super().do(obj)
-        fwd_pos = self.env.agent.front_pos
-        obj.cur_pos = fwd_pos
-        self.env.grid.set(*fwd_pos, obj, 1)
-
-        if obj.inside_of:
-            obj.states['inside'].set_value(obj.inside_of, False)
-
-
-class DropUnder(BaseAction):
-    def __init__(self, env):
-        super(DropUnder, self).__init__(env)
-        self.key = 'drop_under'
-
-    def can(self, obj):
-        """
-        can drop obj under if:
-        - agent is carrying obj
-        - bottom of forward cell is open
-        - obj does not contain another obj
-        """
-        if not super().can(obj):
-            return False
-
-        fwd_pos = self.env.agent.front_pos
-        bottom = self.env.grid.get_dim(*fwd_pos, 3)
-
-        return obj.check_abs_state(self.env, 'inhandofrobot') and bottom is None and obj.contains is None
-
-    def do(self, obj):
-        # drop
-        super().do(obj)
-        fwd_pos = self.env.agent.front_pos
-        obj.cur_pos = fwd_pos
-        self.env.grid.set(*fwd_pos, obj, 3)
-
-        if obj.inside_of:
-            obj.states['inside'].set_value(obj.inside_of, False)
+        furniture = self.env.grid.get_furniture(*fwd_pos, self.drop_dim)
+        obj.states['inside'].set_value(furniture, True)
 
 
 class Open(BaseAction):
@@ -239,15 +183,14 @@ class Open(BaseAction):
         obj.states['openable'].set_value(True)
         obj.update(self.env)
 
-        if obj.check_abs_state(self.env, 'onfloor'):
-            middle = self.env.grid.get_dim(*obj.cur_pos, 2)
-            if not middle:
-                self.env.grid.set(*obj.cur_pos, None, 2)
-            if obj.is_furniture():
-                for pos in obj.all_pos:
-                    middle = self.env.grid.get_dim(*pos, 2)
-                    if not middle:
-                        self.env.grid.set(*pos, None, 2)
+        if obj.can_contain:
+            for pos in obj.all_pos:
+                objs = self.env.grid.get_all_objs(*pos)
+                set_objs = [obj for obj in objs]
+                for dim in obj.can_contain:
+                    if objs[dim] == obj:
+                        set_objs[dim] = None
+                self.env.grid.set_all_objs(*pos, set_objs)
 
 
 class Pickup(BaseAction):
@@ -264,8 +207,9 @@ class Pickup(BaseAction):
             return False
 
         # cannot pickup if inside closed obj
-        base = self.env.grid.get_dim(*obj.cur_pos, 0)
-        if obj.check_rel_state(self.env, base, 'inside') and not base.check_abs_state(self.env, 'openable'):
+        # dim = self.env.grid.get_obj_dim(obj)
+        # furniture = self.env.grid.get_furniture(*obj.cur_pos, dim)
+        if obj.inside_of and not obj.inside_of.check_abs_state(self.env, 'openable'):
             return False
 
         return True

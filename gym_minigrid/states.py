@@ -5,14 +5,14 @@ from .bddl.objs import FURNITURE
 
 def get_obj_cell(self, env):
     obj = self.obj
-    cell = env.grid.get(*obj.cur_pos)
+    cell = env.grid.get_all_items(*obj.cur_pos)
     return obj, cell
 
 
 ###########################################################################################################
 # ROBOT RELATED STATES
 
-# TODO: CHANGE THIS
+# TODO: check that .in_view works correctly
 class InFOVOfRobot(AbsoluteObjectState):
     # return true if obj is in front of agent
     def _get_value(self, env):
@@ -27,7 +27,7 @@ class InHandOfRobot(AbsoluteObjectState):
 
 class InReachOfRobot(AbsoluteObjectState):
     # return true if obj is reachable by agent
-    def _get_value(self, env=None):
+    def _get_value(self, env):
         # obj not reachable if inside closed obj2
         inside = self.obj.inside_of
         if inside is not None and 'openable' in inside.states.keys() and not inside.check_abs_state(env, 'openable'):
@@ -35,7 +35,7 @@ class InReachOfRobot(AbsoluteObjectState):
 
         carrying = self.obj.check_abs_state(env, 'inhandofrobot')
 
-        if self.obj.type in FURNITURE:
+        if self.obj.is_furniture():
             in_front = False
             for pos in self.obj.all_pos:
                 if np.all(pos == env.agent.front_pos):
@@ -207,20 +207,28 @@ class Inside(RelativeObjectState):
 class NextTo(RelativeObjectState):
     # return true if objs are next to each other
     def _get_value(self, other, env=None):
-        if other is None:
+        if other is None or self.obj == other:
             return False
 
-        pos_1 = self.obj.cur_pos
-        pos_2 = other.cur_pos
+        left_1, bottom_1 = self.obj.cur_pos
+        right_1 = left_1 + self.obj.width - 1
+        top_1 = bottom_1 + self.obj.height - 1
+
+        left_2, bottom_2 = other.cur_pos
+        right_2 = left_2 + other.width - 1
+        top_2 = bottom_2 + other.height - 1
 
         # above, below
-        if pos_1[0] == pos_2[0] and abs(pos_1[1] - pos_2[1]) == 1:
-            return True
+        if left_1 <= right_2 and left_2 <= right_1:
+            if bottom_2 - top_1 == 1 or bottom_1 - top_2 == 1:
+                return True
+
         # left, right
-        elif pos_1[1] == pos_2[1] and abs(pos_1[0] - pos_2[0]) == 1:
-            return True
-        else:
-            return False
+        if top_1 >= bottom_2 and top_2 >= bottom_1:
+            if left_1 - right_2 == 1 or left_2 - right_1 == 1:
+                return True
+
+        return False
 
 
 # TODO: fix for 3D
@@ -237,26 +245,7 @@ class OnTop(RelativeObjectState):
         super(OnTop, self).__init__(obj, key)
 
     def _get_value(self, other, env=None):
-        if other is None:
-            return False
-
-        obj, cell = get_obj_cell(self, env)
-
-        obj_idx = cell.index(obj)
-        other_idx = cell.index(other)
-
-        if obj_idx > 0 and other_idx > 0:
-            return obj_idx < other_idx
-
-        return False
-
-
-class Under(RelativeObjectState):
-    def __init__(self, obj, key):
-        super(Under, self).__init__(obj, key)
-
-    def _get_value(self, other, env=None):
-        if other is None:
+        if other is None or self.obj == other:
             return False
 
         obj, cell = get_obj_cell(self, env)
@@ -266,6 +255,25 @@ class Under(RelativeObjectState):
 
         if obj_idx > 0 and other_idx > 0:
             return obj_idx > other_idx
+
+        return False
+
+
+class Under(RelativeObjectState):
+    def __init__(self, obj, key):
+        super(Under, self).__init__(obj, key)
+
+    def _get_value(self, other, env=None):
+        if other is None or self.obj == other:
+            return False
+
+        obj, cell = get_obj_cell(self, env)
+
+        obj_idx = cell.index(obj)
+        other_idx = cell.index(other)
+
+        if obj_idx > 0 and other_idx > 0:
+            return obj_idx < other_idx
 
         return False
 

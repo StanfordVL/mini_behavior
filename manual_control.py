@@ -80,6 +80,13 @@ def step(action):
         redraw(obs)
 
 
+def switch_dim(dim):
+    env.switch_dim(dim)
+    print(f'switching to dim: {env.render_dim}')
+    obs = env.gen_obs()
+    redraw(obs)
+
+
 def key_handler(event):
     print('pressed', event.key)
     if event.key == 'escape':
@@ -110,18 +117,30 @@ def key_handler(event):
     if event.key == 'pagedown':
         show_states()
         return
+    if event.key == '0':
+        switch_dim(None)
+        return
+    if event.key == '1':
+        switch_dim(0)
+        return
+    if event.key == '2':
+        switch_dim(1)
+        return
+    if event.key == '3':
+        switch_dim(2)
+        return
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--env",
     help="gym environment to load",
-    default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
+    # default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
     # default='MiniGrid-FloorPlanEnv-16x16-N1-v0'
     # default='MiniGrid-TestObjects-16x16-N1-v0'
     # default='MiniGrid-TestFurniture-16x16-N1-v0'
     # default='MiniGrid-TestInside-16x16-N1-v0'
-    # default='MiniGrid-TestAbilities-16x16-N1-v0'
+    default='MiniGrid-TestAbilities-16x16-N1-v0'
     # default='MiniGrid-TwoRoomNavigation-8x8-N2-v0'
 )
 parser.add_argument(

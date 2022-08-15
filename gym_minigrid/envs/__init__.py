@@ -5,6 +5,5 @@ from gym_minigrid.envs.throwleftovers_floorplan import *
 from gym_minigrid.envs.transition import *
 from gym_minigrid.envs.test_inside import *
 from gym_minigrid.envs.test_abilities import *
-from gym_minigrid.envs.test_objs import *
 from gym_minigrid.envs.two_room_nav import *
 from gym_minigrid.envs.test_furniture import *

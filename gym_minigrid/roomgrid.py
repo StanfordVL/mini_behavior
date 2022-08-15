@@ -276,11 +276,10 @@ class RoomGrid(MiniGridEnv):
         room.locked = locked
 
         name = 'door_{}'.format(len(self.doors))
-        door = Door(color, name=name, is_open=True)
+        door = Door(is_open=True)
         self.doors.append(door)
 
         pos = room.door_pos[door_idx]
-        self.grid.set(*pos, None)
         self.grid.set(*pos, door)
         door.cur_pos = pos
 
@@ -341,15 +340,8 @@ class RoomGrid(MiniGridEnv):
         # Find a position that is not right in front of an object
         while True:
             super().place_agent(room.top, room.size, rand_dir, max_tries=1000)
-            front_cell = self.grid.get(*self.agent.front_pos)
-            # agent_cell = self.grid.get(*self.agent.cur_pos)
-            # if not isinstance(agent_cell, list):
-            if front_cell == []:
+            if self.grid.is_empty(*self.agent.front_pos):
                 break
-            # elif isinstance(front_cell, list):
-            #
-            # elif front_cell.type == 'wall':
-            #     break
 
         return self.agent.cur_pos
 
@@ -359,7 +351,6 @@ class RoomGrid(MiniGridEnv):
         Make sure that all rooms are reachable by the agent from its
         starting position
         """
-
         start_room = self.room_from_pos(*self.agent.cur_pos)
 
         added_doors = []

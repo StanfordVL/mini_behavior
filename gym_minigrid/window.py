@@ -23,10 +23,10 @@ class Window:
         self.fig = None
 
         self.imshow_obj = None
-        self.closeup_obj = {'base': None,
-                            'top': None,
-                            'inside': None,
-                            'bottom': None
+        self.closeup_obj = {'top': None,
+                            'middle': None,
+                            'bottom': None,
+                            'container': None,
                             }
 
         # Create the figure and axes
@@ -47,15 +47,15 @@ class Window:
         self.on_grid_ax.set_title('on grid', fontsize=8, pad=3)
         self.carrying_ax.set_title('carrying', fontsize=8, pad=3)
 
-        base_ax = self.fig.add_subplot(self.closeup[:1, :])
-        ontop_ax = self.fig.add_subplot(self.closeup[1:2, :])
-        inside_ax = self.fig.add_subplot(self.closeup[2:3, :])
-        under_ax = self.fig.add_subplot(self.closeup[3:4, :])
+        top_ax = self.fig.add_subplot(self.closeup[:1, :])
+        middle_ax = self.fig.add_subplot(self.closeup[1:2, :])
+        bottom_ax = self.fig.add_subplot(self.closeup[2:3, :])
+        container_ax = self.fig.add_subplot(self.closeup[3:4, :])
 
-        self.closeup_axes = {'base': base_ax,
-                             'top': ontop_ax,
-                             'inside': inside_ax,
-                             'bottom': under_ax
+        self.closeup_axes = {'top': top_ax,
+                             'middle': middle_ax,
+                             'bottom': bottom_ax,
+                             'container': container_ax,
                              }
 
         for name, ax in self.closeup_axes.items():
@@ -105,7 +105,6 @@ class Window:
         """
         Set/update the caption text below the image
         """
-        # plt.xlabel(text)
         self.grid_ax.set_xlabel(text, labelpad=10)
 
     # NEW
@@ -139,20 +138,21 @@ class Window:
 
     def show_closeup(self, imgs):
         for name, ax in self.closeup_axes.items():
-            NAME_INT_MAP = {'base': 0, 'top': 1, 'inside': 2, 'bottom': 3}
+            NAME_INT_MAP = {'container': 0, 'bottom': 1, 'middle': 2, 'top': 3}
             img = imgs[NAME_INT_MAP[name]]
-
             # Update the image data
             self.closeup_obj[name].set_data(img)
+            self.closeup_axes[name].set_title(name, fontsize=8, pad=3)
 
             # Request the window be redrawn
             self.fig.canvas.draw_idle()
             self.fig.canvas.flush_events()
 
     def no_closeup(self):
-        for ax in self.closeup_obj.values():
-            if ax is not None:
-                ax.set_data(np.zeros(shape=(1,1,3)))
+        for name, ax in self.closeup_axes.items():
+            ax.set_title('')
+            if self.closeup_obj[name] is not None:
+                self.closeup_obj[name].set_data(np.ones(shape=(1,1,3)))
 
     def reg_key_handler(self, key_handler):
         """

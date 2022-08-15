@@ -11,7 +11,7 @@ from .utils.globals import COLOR_NAMES
 from .agent import Agent
 from .objects import *
 from .bddl import ABILITIES, ACTION_FUNC_MAPPING
-from .grid import Grid, is_obj
+from .grid import Grid, GridDimension, is_obj
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
@@ -41,8 +41,8 @@ class MiniGridEnv(gym.Env):
         close = 8
         slice = 9
         cook = 10
-        drop_on = 11
-        drop_under = 12
+        # drop_on = 11
+        # drop_under = 12
 
     def __init__(
         self,
@@ -61,6 +61,8 @@ class MiniGridEnv(gym.Env):
         self.mode = mode
         self.last_action = None
         self.action_done = None
+
+        self.render_dim = None
 
         # Can't set both grid_size and width/height
         if grid_size:
@@ -125,6 +127,7 @@ class MiniGridEnv(gym.Env):
 
         self.mission = ''
         self.furniture_view = None
+        self.state_icons = {state: img_to_array(f'gym_minigrid/utils/state_icons/{state}.jpg') for state in ABILITIES}
 
     def copy_objs(self):
         from copy import deepcopy
@@ -195,11 +198,10 @@ class MiniGridEnv(gym.Env):
         start_cell = self.grid.get(*self.agent.cur_pos)
 
         can_overlap = True
-        if start_cell is not None:
-            if not isinstance(start_cell, list):
-                start_cell = [start_cell]
-            for obj in start_cell:
-                if not obj.can_overlap:
+
+        for dim in start_cell:
+            for obj in dim:
+                if is_obj(obj) and not obj.can_overlap:
                     can_overlap = False
 
         assert start_cell is None or can_overlap is True
@@ -420,9 +422,14 @@ class MiniGridEnv(gym.Env):
                     y = pos[1] + dy
 
                     # Don't place the object on top of another object
-                    if self.grid.get_dim(x, y, 0) is not None:
-                        valid = False
-                        break
+                    if isinstance(obj, FurnitureObj):
+                        if self.grid.get_furniture(x, y) is not None:
+                            valid = False
+                            break
+                    else:
+                        if self.grid.get_obj(x, y, 0) is not None:
+                            valid = False
+                            break
 
                     # Don't place the object where the agent is
                     if np.array_equal((x, y), self.agent.cur_pos):
@@ -450,7 +457,7 @@ class MiniGridEnv(gym.Env):
         """
         Put an object at a specific position in the grid
         """
-        self.grid.set(i, j, obj)
+        self.grid.set(i, j, obj, dim)
         obj.init_pos = (i, j)
         obj.update_pos((i, j))
 
@@ -508,7 +515,7 @@ class MiniGridEnv(gym.Env):
 
         # Get the position and contents in front of the agent
         fwd_pos = self.agent.front_pos
-        fwd_cell = self.grid.get(*fwd_pos)
+        fwd_cell = self.grid.get_all_items(*fwd_pos)
 
         # Rotate left
         if action == self.actions.left:
@@ -524,7 +531,7 @@ class MiniGridEnv(gym.Env):
         elif action == self.actions.forward:
             can_overlap = True
             for obj in fwd_cell:
-                if not obj.can_overlap:
+                if is_obj(obj) and not obj.can_overlap:
                     can_overlap = False
                     break
             if can_overlap:
@@ -660,7 +667,7 @@ class MiniGridEnv(gym.Env):
             tile_size,
             agent_pos=(self.agent.view_size // 2, self.agent.view_size - 1),
             agent_dir=3,
-            highlight_mask=vis_mask
+            highlight_mask=vis_mask,
         )
 
         return img
@@ -715,55 +722,80 @@ class MiniGridEnv(gym.Env):
                 highlight_mask[abs_i, abs_j] = True
 
         # Render the whole grid
-        img = self.grid.render(
-            tile_size,
-            self.agent.cur_pos,
-            self.agent.dir,
-            highlight_mask=highlight_mask if highlight else None
-        )
+        if self.render_dim is None:
+            img = self.grid.render(
+                tile_size,
+                self.agent.cur_pos,
+                self.agent.dir,
+                highlight_mask=highlight_mask if highlight else None
+            )
 
+            img = self.render_furniture_states(img)
+        else:
+            state_values = {obj: obj.get_ability_values(self) for obj in self.obj_instances.values() if not obj.is_furniture()}
+            grid = self.grid.grid[self.render_dim]
+            img = grid.render(state_values,
+                              tile_size,
+                              self.agent.cur_pos,
+                              self.agent.dir,
+                              highlight_mask=highlight_mask if highlight else None)
+
+            img = self.render_furniture_states(img, dim=self.render_dim)
         if mode == 'human':
             self.window.set_caption(self.mission)
             self.window.show_img(img)
 
         return img
 
-    def render_furniture(self):
+    def render_furniture(self, tile_size=TILE_PIXELS):
         img = np.copy(self.furniture_view)
-        img = self.grid.render_agent(img, agent_pos=self.agent.cur_pos, agent_dir=self.agent.dir)
+
+        i, j = self.agent.cur_pos
+        ymin = j * tile_size
+        ymax = (j + 1) * tile_size
+        xmin = i * tile_size
+        xmax = (i + 1) * tile_size
+
+        img[ymin:ymax, xmin:xmax, :] = self.grid.render_agent(img[ymin:ymax, xmin:xmax, :], self.agent.dir)
+        img = self.render_furniture_states(img)
         return img
 
-    def render_obj_states(self, obj, tile_size):
-        img = np.zeros(shape=(tile_size, tile_size, 3), dtype=np.uint8)
-
-        if obj is False:
-            fill_coords(img, point_in_rect(0, 1, 0, 1), [255, 255, 255])
-        elif is_obj(obj):
-            if obj.check_abs_state(self, 'inreachofrobot'):
-                states = [state for state in obj.states if state in ABILITIES]
-                obj_size = int(tile_size * 3 / 4)
-                obj_img = img[: obj_size, : obj_size, :]
-
-                obj.render(obj_img)
-
-                for i in range(len(states)):
-                    state = states[i]
-                    y_min = int(i * tile_size / 4)
-                    y_max = int((i + 1) * tile_size / 4)
-                    sub_img = img[y_min: y_max, obj_size:, :]
-                    value = obj.check_abs_state(self, state)
-                    obj.states[state].render(sub_img, value)
-            else:
-                fill_coords(img, point_in_rect(0, 1, 0, 1), [50, 50, 50])
-
-        return img
-
-    def render_states(self, tile_size=100):
+    def render_states(self, tile_size=TILE_PIXELS):
         pos = self.agent.front_pos
-        objs = self.grid.get_all_dims(*pos)
-        imgs = [self.render_obj_states(obj, tile_size) for obj in objs]
+        imgs = []
+        furniture = self.grid.get_furniture(*pos)
+        img = np.zeros(shape=(tile_size, tile_size, 3), dtype=np.uint8)
+        if furniture:
+            furniture.render(img)
+            state_values = furniture.get_ability_values(self)
+            GridDimension.render_furniture_states(img, state_values)
+
+        imgs.append(img)
+
+        for grid in self.grid.grid:
+            furniture, obj = grid.get(*pos)
+            state_values = obj.get_ability_values(self) if obj else None
+            img = GridDimension.render_closeup(furniture, obj, state_values)
+            imgs.append(img)
 
         return imgs
+
+    def render_furniture_states(self, img, tile_size=TILE_PIXELS, dim=None):
+        for obj in self.obj_instances.values():
+            if obj.is_furniture():
+                if dim is None or dim in obj.dims:
+                    i, j = obj.cur_pos
+                    ymin = j * tile_size
+                    ymax = (j + obj.height) * tile_size
+                    xmin = i * tile_size
+                    xmax = (i + obj.width) * tile_size
+                    sub_img = img[ymin:ymax, xmin:xmax, :]
+                    state_values = obj.get_ability_values(self)
+                    GridDimension.render_furniture_states(sub_img, state_values)
+        return img
+
+    def switch_dim(self, dim):
+        self.render_dim = dim
 
     def close(self):
         if self.window:

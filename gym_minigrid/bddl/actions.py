@@ -6,9 +6,7 @@ DEFAULT_ACTIONS = []
 ACTION_FUNC_MAPPING = {
     'pickup': Pickup,
     'drop': Drop,
-    'drop_on': DropOn,
     'drop_in': DropIn,
-    'drop_under': DropUnder,
     'toggle': Toggle,
     'open': Open,
     'close': Close,

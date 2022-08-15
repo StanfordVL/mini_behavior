@@ -1,5 +1,5 @@
 from gym_minigrid.rendering import *
-from gym_minigrid.bddl import DEFAULT_STATES, STATE_FUNC_MAPPING, DEFAULT_ACTIONS, OBJECT_TO_IDX, IDX_TO_OBJECT, OBJECTS, FURNITURE
+from gym_minigrid.bddl import DEFAULT_STATES, STATE_FUNC_MAPPING, DEFAULT_ACTIONS, OBJECT_TO_IDX, IDX_TO_OBJECT, OBJECTS, FURNITURE, ABILITIES
 from .globals import COLOR_TO_IDX, IDX_TO_COLOR, COLORS
 from .load import load_json
 
@@ -132,8 +132,16 @@ class WorldObj:
                         states[name] = val
         return states
 
+    def get_ability_values(self, env):
+        states = {}
+        for state, instance in self.states.items():
+            if state in ABILITIES:
+                val = instance.get_value(env)
+                states[state] = val
+        return states
+
     def is_furniture(self):
-        return self.type in FURNITURE
+        return isinstance(self, FurnitureObj)
 
     # TODO: test function and clean up
     def load(self, obj, grid, env):
@@ -184,6 +192,7 @@ class FurnitureObj(WorldObj):
                  type,
                  width, # in cells
                  height,
+                 dims,
                  color,
                  name=None,
                  can_contain=False,
@@ -193,6 +202,7 @@ class FurnitureObj(WorldObj):
         super().__init__(type, color=color, name=name, can_contain=can_contain, can_overlap=can_overlap, can_seebehind=can_seebehind)
         self.width = width
         self.height = height
+        self.dims = dims
         self.all_pos = []
 
     def render_background(self, img):
