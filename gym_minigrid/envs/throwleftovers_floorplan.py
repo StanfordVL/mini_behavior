@@ -104,5 +104,6 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
 # human input env
 register(
     id='MiniGrid-ThrowLeftoversSceneEnv-0x0-N2-v0',
-    entry_point='gym_minigrid.envs:ThrowLeftoversSceneEnv'
+    entry_point='gym_minigrid.envs:ThrowLeftoversSceneEnv',
+    kwargs={}
 )
