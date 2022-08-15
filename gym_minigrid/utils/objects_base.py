@@ -1,3 +1,4 @@
+import os
 from gym_minigrid.rendering import *
 from gym_minigrid.bddl import DEFAULT_STATES, STATE_FUNC_MAPPING, DEFAULT_ACTIONS, OBJECT_TO_IDX, IDX_TO_OBJECT, OBJECTS, FURNITURE, ABILITIES
 from .globals import COLOR_TO_IDX, IDX_TO_COLOR, COLORS
@@ -21,13 +22,13 @@ class WorldObj:
                  ):
 
         if action_keys is None:
-            object_actions = load_json('gym_minigrid/utils/object_actions.json')
+            object_actions = load_json(os.path.join(os.path.dirname(__file__), 'object_actions.json'))
             if obj_type in object_actions.keys():
                 action_keys = object_actions[obj_type]
             else:
                 action_keys = []
         if state_keys is None:
-            object_properties = load_json('gym_minigrid/utils/object_properties.json')
+            object_properties = load_json(os.path.join(os.path.dirname(__file__), 'object_properties.json'))
             if obj_type in object_properties.keys():
                 state_keys = object_properties[obj_type]
             else:
@@ -41,7 +42,7 @@ class WorldObj:
 
         # TODO: change this
         if obj_type in OBJECTS:
-            icon_path = f'gym_minigrid/utils/object_icons/{self.type}.jpg'
+            icon_path = os.path.join(os.path.dirname(__file__), f'../utils/object_icons/{self.type}.jpg')
             self.icon = img_to_array(icon_path)
         else:
             self.icon = None
