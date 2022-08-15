@@ -103,7 +103,9 @@ class MiniGridEnv(gym.Env):
             dtype='uint8'
         )
         self.observation_space = spaces.Dict({
-            'image': self.observation_space
+            'image': self.observation_space,
+            'mission': spaces.Discrete(1),
+            'direction': spaces.Discrete(4),
         })
 
         # Range of possible rewards

@@ -156,6 +156,7 @@ class RoomGrid(MiniGridEnv):
         for row in self.room_grid:
             for room in row:
                 room.reset()
+        return self.gen_obs()
 
     def _gen_grid(self, width, height):
         self._gen_rooms(width, height)
