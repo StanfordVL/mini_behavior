@@ -16,7 +16,7 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
             max_steps=1e5,
     ):
         if num_objs is None:
-            num_objs = {'counter': 4,
+            num_objs = {'countertop': 1,
                         'plate': 4,
                         'hamburger': 3,
                         'ashcan': 1}
@@ -30,67 +30,51 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
                          )
 
     def _gen_objs(self):
-        # return True if not a valid counter space
-        def invalid_counter(env, cell):
-            x, y = cell
-            for i in range(3):
-                if env.grid.get(x+i, y) is not None:
-                    return True
-            return False
-
         # # generate counter
         # place all objects
-        counters = self.objs['counter']
+        countertop = self.objs['countertop'][0]
         plates = self.objs['plate']
         hamburgers = self.objs['hamburger']
-        ashcans = self.objs['ashcan']
+        ashcan = self.objs['ashcan'][0]
 
-        # place counters
-        init_counter = self.place_obj(counters[0], reject_fn=invalid_counter)
-        for i in range(1, len(counters)):
-            x = init_counter[0] + i
-            y = init_counter[1]
-            self.put_obj(counters[i], x, y)
-
-        # # TODO: generate floor
+        # place countertop
+        self.place_obj(countertop)
 
         # place plates
-        for i in range(len(plates)):
-            self.put_obj(plates[i], *counters[i].cur_pos)
+        i = 0
+        for pos in self._rand_subset(countertop.all_pos, len(plates)):
+            self.put_obj(plates[i], *pos, 1)
+            i += 1
 
-        # place all hamburgers
+        # place hamburgers
         i = 0
         for plate in self._rand_subset(plates, len(hamburgers)):
-        # for plate in random.sample(plates, len(hamburgers)):
-            self.put_obj(hamburgers[i], *plate.cur_pos)
+            self.put_obj(hamburgers[i], *plate.cur_pos, 2)
             i += 1
 
         # generate ashcan on floor
-        for ashcan in ashcans:
-            ashcan.on_floor = True
-            self.target_pos = self.place_obj(ashcan)
+        self.target_pos = self.place_obj(ashcan)
 
-    # TODO: automatically generate function from BDDL
     def _init_conditions(self):
-        assert 'counter' in self.objs.keys(), "No counter"
+        assert 'countertop' in self.objs.keys(), "No counter"
         assert 'ashcan' in self.objs.keys(), "No ashcan"
         assert 'plate' in self.objs.keys(), "No plates"
         assert 'hamburger' in self.objs.keys(), "No hamburgers"
 
-        for ashcan in self.objs['ashcan']:
-            assert ashcan.check_abs_state(self, 'onfloor'), "Ashcan not on floor"
+        countertop = self.objs['countertop'][0]
+        plates = self.objs['plate']
+        hamburgers = self.objs['hamburger']
+        ashcan = self.objs['ashcan'][0]
 
-        for plate in self.objs['plate']:
-            on_counter = False
-            for counter in self.objs['counter']:
-                on_counter = plate.check_rel_state(self, counter, 'ontop')
-                if on_counter:
-                    break
+        assert ashcan.check_abs_state(self, 'onfloor'), "Ashcan not on floor"
+
+        for plate in plates:
+            on_counter = plate.check_rel_state(self, countertop, 'ontop')
             assert on_counter, "Plate not on counter"
 
-        for hamburger in self.objs['hamburger']:
+        for hamburger in hamburgers:
             on_plate = False
-            for plate in self.objs['plate']:
+            for plate in plates:
                 on_plate = hamburger.check_rel_state(self, plate, 'ontop')
                 if on_plate:
                     break

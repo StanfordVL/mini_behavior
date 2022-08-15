@@ -251,9 +251,13 @@ class OnTop(RelativeObjectState):
         obj, cell = get_obj_cell(self, env)
 
         obj_idx = cell.index(obj)
+
+        if other not in cell:
+            return False
+
         other_idx = cell.index(other)
 
-        if obj_idx > 0 and other_idx > 0:
+        if obj_idx >= 0 and other_idx >= 0:
             return obj_idx > other_idx
 
         return False

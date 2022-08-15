@@ -140,8 +140,9 @@ parser.add_argument(
     # default='MiniGrid-TestObjects-16x16-N1-v0'
     # default='MiniGrid-TestFurniture-16x16-N1-v0'
     # default='MiniGrid-TestInside-16x16-N1-v0'
-    default='MiniGrid-TestAbilities-16x16-N1-v0'
+    # default='MiniGrid-TestAbilities-16x16-N1-v0'
     # default='MiniGrid-TwoRoomNavigation-8x8-N2-v0'
+    default='MiniGrid-ThrowLeftoversSceneEnv-0x0-N2-v0'
 )
 parser.add_argument(
     "--seed",
