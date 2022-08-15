@@ -1,0 +1,10 @@
+*.pyc
+*__pycache__
+*egg-info
+trained_models
+.DS_Store
+
+# PyPI
+build/*
+dist/*
+.idea/
