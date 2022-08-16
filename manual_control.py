@@ -5,6 +5,7 @@ from gym_minigrid.wrappers import *
 from mini_behavior.window import Window
 from mini_behavior.utils.save import get_step, save_demo
 from mini_behavior.grid import GridDimension
+import numpy as np
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32

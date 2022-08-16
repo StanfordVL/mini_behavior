@@ -1,0 +1,157 @@
+
+  _     ._   __/__   _ _  _  _ _/_   Recorded: 12:28:28  Samples:  14558
+ /_//_/// /_\ / //_// / //_'/ //     Duration: 20.850    CPU time: 17.168
+/   _/                      v4.2.0
+
+Program: manual_control.py
+
+20.849 <module>  <string>:1
+   [7 frames hidden]  <string>, runpy, <built-in>
+      20.847 _run_code  runpy.py:64
+      └─ 20.847 <module>  manual_control.py:3
+         ├─ 0.300 <module>  gym_minigrid/__init__.py:2
+         │     [1203 frames hidden]  gym_minigrid, <built-in>, hashlib, gy...
+         ├─ 0.642 <module>  mini_behavior/window.py:1
+         │  └─ 0.642 <module>  gym_minigrid/window.py:1
+         │        [3349 frames hidden]  gym_minigrid, <built-in>, matplotlib,...
+         ├─ 0.600 make  gym/envs/registration.py:234
+         │     [5 frames hidden]  gym, <built-in>
+         │        0.600 make  gym/envs/registration.py:74
+         │        └─ 0.598 __init__  mini_behavior/envs/test_abilities.py:26
+         │           └─ 0.597 __init__  mini_behavior/roomgrid.py:85
+         │              └─ 0.597 __init__  mini_behavior/minibehavior.py:43
+         │                 └─ 0.493 __init__  gym_minigrid/minigrid.py:645
+         │                       [6 frames hidden]  gym_minigrid, gym, contextlib, numpy
+         │                          0.492 reset  mini_behavior/roomgrid.py:153
+         │                          └─ 0.488 reset  mini_behavior/minibehavior.py:152
+         │                             └─ 0.468 render_furniture  mini_behavior/grid.py:290
+         │                                ├─ 0.255 fill_coords  gym_minigrid/rendering.py:18
+         │                                │     [122 frames hidden]  gym_minigrid
+         │                                └─ 0.213 render  mini_behavior/utils/objects_base.py:158
+         │                                   └─ 0.213 fill_coords  gym_minigrid/rendering.py:18
+         │                                         [20 frames hidden]  gym_minigrid
+         ├─ 1.070 reset  manual_control.py:52
+         │  ├─ 0.486 reset  gym/wrappers/order_enforcing.py:14
+         │  │  └─ 0.486 reset  mini_behavior/roomgrid.py:153
+         │  │     └─ 0.485 reset  mini_behavior/minibehavior.py:152
+         │  │        └─ 0.471 render_furniture  mini_behavior/grid.py:290
+         │  │           └─ 0.215 render  mini_behavior/utils/objects_base.py:158
+         │  │              └─ 0.215 fill_coords  gym_minigrid/rendering.py:18
+         │  │                    [12 frames hidden]  gym_minigrid
+         │  └─ 0.585 redraw  manual_control.py:15
+         │     └─ 0.374 render  gym/core.py:294
+         │        └─ 0.374 render  mini_behavior/minibehavior.py:416
+         │           └─ 0.374 render  gym_minigrid/minigrid.py:1238
+         │                 [2 frames hidden]  gym_minigrid
+         │                    0.373 render  mini_behavior/grid.py:235
+         │                    └─ 0.227 render_tile  mini_behavior/grid.py:162
+         └─ 17.990 show  gym_minigrid/window.py:77
+               [382 frames hidden]  gym_minigrid, matplotlib, <built-in>,...
+                  17.990 mainloop  matplotlib/backends/backend_macosx.py:129
+                  │  0.300 process  matplotlib/cbook/__init__.py:276
+                  │  └─ 0.300 key_handler  manual_control.py:104
+                  │     └─ 0.300 step  manual_control.py:79
+                  │        └─ 0.295 redraw  manual_control.py:15
+                  │  0.660 process  matplotlib/cbook/__init__.py:276
+                  │  └─ 0.659 key_handler  manual_control.py:104
+                  │     └─ 0.659 step  manual_control.py:79
+                  │        └─ 0.653 redraw  manual_control.py:15
+                  │           └─ 0.543 show_img  gym_minigrid/window.py:42
+                  │                 [472 frames hidden]  gym_minigrid, matplotlib, <built-in>,...
+                  │                    0.441 process  matplotlib/cbook/__init__.py:276
+                  │                    └─ 0.441 key_handler  manual_control.py:104
+                  │                       └─ 0.441 step  manual_control.py:79
+                  │                          └─ 0.439 redraw  manual_control.py:15
+                  │                             └─ 0.381 show_img  gym_minigrid/window.py:42
+                  │                                   [464 frames hidden]  gym_minigrid, matplotlib, <built-in>,...
+                  │                                      0.288 process  matplotlib/cbook/__init__.py:276
+                  │                                      └─ 0.288 key_handler  manual_control.py:104
+                  │                                         └─ 0.288 step  manual_control.py:79
+                  │                                            └─ 0.284 redraw  manual_control.py:15
+                  │                                               └─ 0.242 show_img  gym_minigrid/window.py:42
+                  │                                                     [450 frames hidden]  gym_minigrid, matplotlib, <built-in>,...
+                  │  0.268 process  matplotlib/cbook/__init__.py:276
+                  │  └─ 0.268 key_handler  manual_control.py:104
+                  │     └─ 0.268 step  manual_control.py:79
+                  │        └─ 0.262 redraw  manual_control.py:15
+                  │  3.411 process  matplotlib/cbook/__init__.py:276
+                  │  └─ 3.411 key_handler  manual_control.py:104
+                  │     └─ 3.411 switch_dim  manual_control.py:97
+                  │        └─ 3.401 redraw  manual_control.py:15
+                  │           └─ 3.276 render  gym/core.py:294
+                  │              └─ 3.276 render  mini_behavior/minibehavior.py:416
+                  │                 └─ 3.275 render  gym_minigrid/minigrid.py:1238
+                  │                       [3 frames hidden]  gym_minigrid
+                  │                          3.268 render  mini_behavior/grid.py:235
+                  │                          └─ 3.268 render  mini_behavior/grid.py:583
+                  │                             ├─ 0.657 render_tile  mini_behavior/grid.py:471
+                  │                             ├─ 0.775 render_tile  mini_behavior/grid.py:471
+                  │                             ├─ 0.383 render_tile  mini_behavior/grid.py:471
+                  │                             ├─ 0.635 render_tile  mini_behavior/grid.py:471
+                  │                             └─ 0.735 render_tile  mini_behavior/grid.py:471
+                  │  2.644 process  matplotlib/cbook/__init__.py:276
+                  │  └─ 2.644 key_handler  manual_control.py:104
+                  │     └─ 2.644 step  manual_control.py:79
+                  │        └─ 2.630 redraw  manual_control.py:15
+                  │           └─ 2.503 render  gym/core.py:294
+                  │              └─ 2.503 render  mini_behavior/minibehavior.py:416
+                  │                 └─ 2.503 render  gym_minigrid/minigrid.py:1238
+                  │                       [3 frames hidden]  gym_minigrid
+                  │                          2.494 render  mini_behavior/grid.py:235
+                  │                          └─ 2.494 render  mini_behavior/grid.py:583
+                  │                             ├─ 0.589 render_tile  mini_behavior/grid.py:471
+                  │                             ├─ 1.284 render_tile  mini_behavior/grid.py:471
+                  │                             │  └─ 0.475 fill_coords  gym_minigrid/rendering.py:18
+                  │                             │        [245 frames hidden]  gym_minigrid
+                  │                             ├─ 0.219 render_tile  mini_behavior/grid.py:471
+                  │                             │  └─ 0.219 fill_coords  gym_minigrid/rendering.py:18
+                  │                             │        [116 frames hidden]  gym_minigrid
+                  │                             └─ 0.399 render_tile  mini_behavior/grid.py:471
+                  │                                └─ 0.399 fill_coords  gym_minigrid/rendering.py:18
+                  │                                      [242 frames hidden]  gym_minigrid
+                  │  2.449 process  matplotlib/cbook/__init__.py:276
+                  │  └─ 2.449 key_handler  manual_control.py:104
+                  │     └─ 2.449 step  manual_control.py:79
+                  │        └─ 2.431 redraw  manual_control.py:15
+                  │           └─ 2.299 render  gym/core.py:294
+                  │              └─ 2.299 render  mini_behavior/minibehavior.py:416
+                  │                 └─ 2.299 render  gym_minigrid/minigrid.py:1238
+                  │                       [2 frames hidden]  gym_minigrid
+                  │                          2.287 render  mini_behavior/grid.py:235
+                  │                          └─ 2.287 render  mini_behavior/grid.py:583
+                  │                             ├─ 0.476 render_tile  mini_behavior/grid.py:471
+                  │                             │  └─ 0.315 fill_coords  gym_minigrid/rendering.py:18
+                  │                             │        [188 frames hidden]  gym_minigrid
+                  │                             ├─ 0.472 render_tile  mini_behavior/grid.py:471
+                  │                             │  └─ 0.472 fill_coords  gym_minigrid/rendering.py:18
+                  │                             │        [272 frames hidden]  gym_minigrid
+                  │                             ├─ 0.901 render_tile  mini_behavior/grid.py:471
+                  │                             │  └─ 0.901 fill_coords  gym_minigrid/rendering.py:18
+                  │                             │        [460 frames hidden]  gym_minigrid
+                  │                             └─ 0.435 render_tile  mini_behavior/grid.py:471
+                  │                                └─ 0.274 fill_coords  gym_minigrid/rendering.py:18
+                  │                                      [152 frames hidden]  gym_minigrid
+                  │  2.481 process  matplotlib/cbook/__init__.py:276
+                  │  └─ 2.481 key_handler  manual_control.py:104
+                  │     └─ 2.481 step  manual_control.py:79
+                  │        └─ 2.460 redraw  manual_control.py:15
+                  │           └─ 2.332 render  gym/core.py:294
+                  │              └─ 2.332 render  mini_behavior/minibehavior.py:416
+                  │                 └─ 2.332 render  gym_minigrid/minigrid.py:1238
+                  │                       [3 frames hidden]  gym_minigrid
+                  │                          2.315 render  mini_behavior/grid.py:235
+                  │                          └─ 2.315 render  mini_behavior/grid.py:583
+                  │                             ├─ 0.505 render_tile  mini_behavior/grid.py:471
+                  │                             │  ├─ 0.209 fill_coords  gym_minigrid/rendering.py:18
+                  │                             │  │     [107 frames hidden]  gym_minigrid
+                  │                             │  └─ 0.217 fill_coords  gym_minigrid/rendering.py:18
+                  │                             │        [125 frames hidden]  gym_minigrid
+                  │                             ├─ 0.603 render_tile  mini_behavior/grid.py:471
+                  │                             │  └─ 0.488 fill_coords  gym_minigrid/rendering.py:18
+                  │                             │        [260 frames hidden]  gym_minigrid
+                  │                             └─ 1.012 render_tile  mini_behavior/grid.py:471
+                  │                                ├─ 0.656 fill_coords  gym_minigrid/rendering.py:18
+                  │                                │     [367 frames hidden]  gym_minigrid
+                  │                                └─ 0.355 fill_coords  gym_minigrid/rendering.py:18
+                  │                                      [146 frames hidden]  gym_minigrid
+

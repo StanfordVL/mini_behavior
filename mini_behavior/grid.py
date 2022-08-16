@@ -20,12 +20,6 @@ class BehaviorGrid(Grid):
     tile_cache = {}
 
     def __init__(self, width, height):
-        # assert width >= 3
-        # assert height >= 3
-        #
-        # self.width = width
-        # self.height = height
-
         super().__init__(width, height)
 
         # 3 Grid Dimension classes
@@ -250,30 +244,27 @@ class BehaviorGrid(Grid):
         :param r: target renderer object
         :param tile_size: tile size in pixels
         """
-        print('rendering')
-        print(self.render_dim)
+        if highlight_mask is None:
+            highlight_mask = np.zeros(shape=(self.width, self.height), dtype=bool)
 
-        if self.render_dim is None:
-            if highlight_mask is None:
-                highlight_mask = np.zeros(shape=(self.width, self.height), dtype=bool)
+        # Compute the total grid size
+        width_px = self.width * tile_size
+        height_px = self.height * tile_size
 
-            # Compute the total grid size
-            width_px = self.width * tile_size
-            height_px = self.height * tile_size
+        img = np.zeros(shape=(height_px, width_px, 3), dtype=np.uint8)
 
-            img = np.zeros(shape=(height_px, width_px, 3), dtype=np.uint8)
+        # Render the grid
+        for j in range(0, self.height):
+            for i in range(0, self.width):
+                agent_here = np.array_equal(agent_pos, (i, j))
+                ymin = j * tile_size
+                ymax = (j + 1) * tile_size
+                xmin = i * tile_size
+                xmax = (i + 1) * tile_size
 
-            # Render the grid
-            for j in range(0, self.height):
-                for i in range(0, self.width):
+                if self.render_dim is None:
                     furniture = self.get_furniture(i, j)
                     objs = self.get_all_objs(i, j)
-
-                    agent_here = np.array_equal(agent_pos, (i, j))
-                    ymin = j * tile_size
-                    ymax = (j + 1) * tile_size
-                    xmin = i * tile_size
-                    xmax = (i + 1) * tile_size
 
                     img[ymin:ymax, xmin:xmax, :] = BehaviorGrid.render_tile(
                         furniture,
@@ -282,14 +273,19 @@ class BehaviorGrid(Grid):
                         highlight=highlight_mask[i, j],
                         tile_size=tile_size,
                     )
+                else:
+                    furniture, obj = self.grid[self.render_dim].get(i, j)
+                    state_values = self.state_values.get(obj, None)
 
-        else:
-            grid = self.grid[self.render_dim]
-            img = grid.render(self.state_values,
-                              tile_size,
-                              agent_pos,
-                              agent_dir,
-                              highlight_mask=highlight_mask)
+                    img[ymin:ymax, xmin:xmax, :] = GridDimension.render_tile(
+                        furniture,
+                        obj,
+                        state_values,
+                        agent_dir=agent_dir if agent_here else None,
+                        highlight=highlight_mask[i, j],
+                        tile_size=tile_size,
+                        draw_grid_lines=True
+                    )
 
         return img
 
@@ -490,28 +486,28 @@ class GridDimension(Grid):
         Render a tile and cache the result
         """
         # assert not is_obj(obj) or state_values is not None, 'no states passed in for obj'
-
-        img = np.zeros(shape=(tile_size * subdivs, tile_size * subdivs, 3), dtype=np.uint8)
         obj_size = int(tile_size * 7 / 8)
-
-        # Draw the grid lines (top and left edges)
-        if draw_grid_lines:
-            fill_coords(img, point_in_rect(0, 0.031, 0, 1), (100, 100, 100))
-            fill_coords(img, point_in_rect(0, 1, 0, 0.031), (100, 100, 100))
 
         # if obj is inside closed obj, don't render it
         if is_obj(obj) and obj.inside_of and 'openable' in obj.inside_of.states.keys() and not obj.inside_of.check_abs_state(state='openable'):
             obj = None
 
         # Hash map lookup key for the cache
-        furniture_encoding = furniture.encode if is_obj(furniture) else None
-        obj_encoding = obj.encode if is_obj(obj) else None
-        key = (furniture_encoding, obj_encoding, agent_dir, highlight, tile_size)
+        obj_encoding = obj.encode() if is_obj(obj) else None
+        furniture_encoding = furniture.encode() if is_obj(furniture) else None
+
+        key = (furniture_encoding, obj_encoding, agent_dir, highlight, tile_size, draw_grid_lines)
 
         if key in cls.tile_cache:
             img = cls.tile_cache[key]
-
         else:
+            img = np.zeros(shape=(tile_size * subdivs, tile_size * subdivs, 3), dtype=np.uint8)
+
+            # Draw the grid lines (top and left edges)
+            if draw_grid_lines:
+                fill_coords(img, point_in_rect(0, 0.031, 0, 1), (100, 100, 100))
+                fill_coords(img, point_in_rect(0, 1, 0, 0.031), (100, 100, 100))
+
             if furniture:
                 furniture.render_background(img)
 
@@ -519,18 +515,9 @@ class GridDimension(Grid):
             if is_obj(obj):
                 obj_img = img[: obj_size * 3, : obj_size * 3, :]
                 obj.render(obj_img)
-                states_img = img[:, obj_size * 3:, :]
-
-                # Draw the grid lines (top and left edges)
-                for i in range(len(ABILITIES)):
-                    y_min = int(i * tile_size / len(ABILITIES))
-                    y_max = int((i + 1) * tile_size / len(ABILITIES))
-                    sub_img = states_img[y_min: y_max, :, :]
-                    fill_coords(sub_img, point_in_rect(0.15, 1, 0.15, 1), (255, 204, 203))
-                    # fill_coords(states_img, point_in_rect(0.031, 1, 0.031, 1), (255, 204, 203))
 
             if agent_dir is not None:
-                cls.render_agent(img, agent_dir)
+                GridDimension.render_agent(img, agent_dir)
 
             # Highlight the cell if needed
             if highlight:
@@ -540,71 +527,29 @@ class GridDimension(Grid):
             img = downsample(img, subdivs)
 
             # Cache the rendered tile
-            cls.tile_cache[key] = img
+            cls.tile_cache[key] = img.astype(np.uint8)
 
         if is_obj(obj):
             img[:, obj_size:, :] = cls.render_obj_states(state_values, highlight, tile_size)
 
         return img.astype(np.uint8)
 
-    # TODO: delete and replace usages with: render_tile(furniture, obj, state_values, draw_grid_lines=False)
-    @classmethod
-    def render_closeup(
-        cls,
-        furniture,
-        obj,
-        state_values=None,
-        tile_size=TILE_PIXELS,
-        subdivs=3,
-    ):
-        """
-        Render a tile and cache the result
-        """
-        assert not is_obj(obj) or state_values is not None, 'no states passed in for obj'
-
-        img = np.zeros(shape=(tile_size * subdivs, tile_size * subdivs, 3), dtype=np.uint8)
-        # obj_size = int(tile_size * 7 / 8)
-
-        # if obj is inside closed obj, don't render it
-        if is_obj(obj) and obj.inside_of and 'openable' in obj.inside_of.states.keys() and not obj.inside_of.check_abs_state(state='openable'):
-            obj = None
-
-        if furniture:
-            furniture.render_background(img)
-
-        if is_obj(obj) and not isinstance(obj, FurnitureObj):
-            obj.render(img)
-
-            # Downsample the image to perform supersampling/anti-aliasing
-            img = downsample(img, subdivs)
-
-            states_img = cls.render_obj_states(state_values)
-            img = np.concatenate((img, states_img), axis=1)
-
-        return img.astype(np.uint8)
-
-
     @classmethod
     def render_obj_states(cls, state_values, highlight=False, tile_size=TILE_PIXELS):
         num = len(ABILITIES)
         img = np.zeros(shape=(tile_size, int(tile_size / num), 3), dtype=np.uint8)
 
-        # # Draw the grid lines (top and left edges)
         for i in range(len(ABILITIES)):
+            state = ABILITIES[i]
+
             y_min = int(i * tile_size / len(ABILITIES))
             y_max = int((i + 1) * tile_size / len(ABILITIES))
             sub_img = img[y_min: y_max, :, :]
-            fill_coords(sub_img, point_in_rect(0.15, 1, 0.15, 1), (255, 204, 203))
 
-        if state_values:
-            for i in range(len(ABILITIES)):
-                state = ABILITIES[i]
-                if state_values.get(state, False):
-                    y_min = int(i * tile_size / len(ABILITIES))
-                    y_max = int((i + 1) * tile_size / len(ABILITIES))
-                    sub_img = img[y_min: y_max, :, :]
-
-                    fill_coords(sub_img, point_in_rect(0.15, 1, 0.15, 1), COLORS['green'])
+            if state_values and state_values.get(state, False):
+                fill_coords(sub_img, point_in_rect(0.15, 1, 0.15, 1), COLORS['green'])
+            else:
+                fill_coords(sub_img, point_in_rect(0.15, 1, 0.15, 1), (255, 204, 203))
 
         # Highlight the cell if needed
         if highlight:
@@ -622,50 +567,6 @@ class GridDimension(Grid):
             fill_coords(img, point_in_rect(0.95, 1, 0, 1), [0, 255, 0])
         if state_values.get('toggleable', False):
             fill_coords(img, point_in_rect(0, 1, 0.95, 1), [0, 255, 0])
-
-    def render(
-        self,
-        state_values, # dict: key=obj, value=set of true states
-        tile_size,
-        agent_pos=None,
-        agent_dir=None,
-        highlight_mask=None,
-    ):
-        """
-        Render this grid at a given scale
-        :param r: target renderer object
-        :param tile_size: tile size in pixels
-        """
-
-        if highlight_mask is None:
-            highlight_mask = np.zeros(shape=(self.width, self.height), dtype=bool)
-
-        # Compute the total grid size
-        width_px = self.width * tile_size
-        height_px = self.height * tile_size
-
-        img = np.zeros(shape=(height_px, width_px, 3), dtype=np.uint8)
-
-        # Render the grid
-        for j in range(0, self.height):
-            for i in range(0, self.width):
-                furniture, obj = self.get(i, j)
-                agent_here = np.array_equal(agent_pos, (i, j))
-                ymin = j * tile_size
-                ymax = (j + 1) * tile_size
-                xmin = i * tile_size
-                xmax = (i + 1) * tile_size
-
-                img[ymin:ymax, xmin:xmax, :] = GridDimension.render_tile(
-                    furniture,
-                    obj,
-                    state_values.get(obj, None),
-                    agent_dir=agent_dir if agent_here else None,
-                    highlight=highlight_mask[i, j],
-                    tile_size=tile_size
-                )
-
-        return img
 
     def encode(self, vis_mask=None):
         """

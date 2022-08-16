@@ -8,6 +8,7 @@ from gym_minigrid.minigrid import MiniGridEnv
 from bddl import ACTION_FUNC_MAPPING
 from .objects import *
 from .grid import BehaviorGrid, GridDimension, is_obj
+from. states import Soaked
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
@@ -301,7 +302,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         vx, vy = coordinates
 
         obs = self.gen_obs()
-        obs_grid, _ = Grid.decode(obs['image'])
+        obs_grid, _ = BehaviorGrid.decode(obs['image'])
         obs_cell = obs_grid.get(vx, vy)
         world_cell = self.grid.get(x, y)
 
@@ -402,6 +403,9 @@ class MiniBehaviorEnv(MiniGridEnv):
         done = self._end_conditions() or self.step_count >= self.max_steps
         obs = self.gen_obs()
 
+        # print('towel soaked')
+        # print(self.objs['towel'][0].check_abs_state(self, 'soakable'))
+
         return obs, reward, done, {}
 
     def all_reachable(self):
@@ -413,14 +417,12 @@ class MiniBehaviorEnv(MiniGridEnv):
                 if state.type == 'absolute':
                     state._update(self)
 
+        self.grid.state_values = {obj: obj.get_ability_values(self) for obj in self.obj_instances.values() if not obj.is_furniture()}
+
     def render(self, mode='human', highlight=True, tile_size=TILE_PIXELS):
         """
         Render the whole-grid human view
         """
-        if self.render_dim is not None:
-            self.grid.state_values = {obj: obj.get_ability_values(self) for obj in self.obj_instances.values() if
-                            not obj.is_furniture()}
-
         img = super().render(mode='rgb_array', highlight=highlight, tile_size=tile_size)
 
         if self.render_dim is None:
@@ -451,7 +453,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         for grid in self.grid.grid:
             furniture, obj = grid.get(*pos)
             state_values = obj.get_ability_values(self) if obj else None
-            img = GridDimension.render_closeup(furniture, obj, state_values)
+            img = GridDimension.render_tile(furniture, obj, state_values, draw_grid_lines=False)
             imgs.append(img)
 
         return imgs
