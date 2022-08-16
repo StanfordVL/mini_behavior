@@ -1,6 +1,7 @@
 # MODIFIED FROM MINIGRID REPO
 from .objects import *
-from .bddl import FURNITURE, ABILITIES
+from bddl import ABILITIES
+from gym_minigrid.minigrid import Grid
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
@@ -10,7 +11,7 @@ def is_obj(obj):
     return isinstance(obj, WorldObj)
 
 
-class Grid:
+class BehaviorGrid(Grid):
     """
     Represent a grid and operations on it
     """
@@ -19,37 +20,21 @@ class Grid:
     tile_cache = {}
 
     def __init__(self, width, height):
-        assert width >= 3
-        assert height >= 3
+        # assert width >= 3
+        # assert height >= 3
+        #
+        # self.width = width
+        # self.height = height
 
-        self.width = width
-        self.height = height
+        super().__init__(width, height)
 
         # 3 Grid Dimension classes
         self.grid = [GridDimension(width, height) for i in range(3)]
 
         self.walls = []
 
-    def __contains__(self, key):
-        if isinstance(key, tuple):
-            for e in self.grid:
-                if e is None:
-                    continue
-                if (e.color, e.type) == key or (None, e.type) == key:
-                    return True
-        return False
-
-    def __eq__(self, other):
-        grid1 = self.encode()
-        grid2 = other.encode()
-        return np.array_equal(grid2, grid1)
-
-    def __ne__(self, other):
-        return not self == other
-
-    def copy(self):
-        from copy import deepcopy
-        return deepcopy(self)
+        self.render_dim = None
+        self.state_values = None
 
     # TODO: fix this
     def load(self, grid, env):
@@ -146,18 +131,12 @@ class Grid:
         for j in range(0, length):
             self.add_wall(obj_type(), x, y + j)
 
-    def wall_rect(self, x, y, w, h):
-        self.horz_wall(x, y, w)
-        self.horz_wall(x, y+h-1, w)
-        self.vert_wall(x, y, h)
-        self.vert_wall(x+w-1, y, h)
-
     def rotate_left(self):
         """
         Rotate the grid to the left (counter-clockwise)
         """
 
-        grid = Grid(self.height, self.width)
+        grid = BehaviorGrid(self.height, self.width)
 
         for i in range(self.width):
             for j in range(self.height):
@@ -171,7 +150,7 @@ class Grid:
         Get a subset of the grid
         """
 
-        grid = Grid(width, height)
+        grid = BehaviorGrid(width, height)
 
         for j in range(0, height):
             for i in range(0, width):
@@ -271,35 +250,46 @@ class Grid:
         :param r: target renderer object
         :param tile_size: tile size in pixels
         """
+        print('rendering')
+        print(self.render_dim)
 
-        if highlight_mask is None:
-            highlight_mask = np.zeros(shape=(self.width, self.height), dtype=bool)
+        if self.render_dim is None:
+            if highlight_mask is None:
+                highlight_mask = np.zeros(shape=(self.width, self.height), dtype=bool)
 
-        # Compute the total grid size
-        width_px = self.width * tile_size
-        height_px = self.height * tile_size
+            # Compute the total grid size
+            width_px = self.width * tile_size
+            height_px = self.height * tile_size
 
-        img = np.zeros(shape=(height_px, width_px, 3), dtype=np.uint8)
+            img = np.zeros(shape=(height_px, width_px, 3), dtype=np.uint8)
 
-        # Render the grid
-        for j in range(0, self.height):
-            for i in range(0, self.width):
-                furniture = self.get_furniture(i, j)
-                objs = self.get_all_objs(i, j)
+            # Render the grid
+            for j in range(0, self.height):
+                for i in range(0, self.width):
+                    furniture = self.get_furniture(i, j)
+                    objs = self.get_all_objs(i, j)
 
-                agent_here = np.array_equal(agent_pos, (i, j))
-                ymin = j * tile_size
-                ymax = (j + 1) * tile_size
-                xmin = i * tile_size
-                xmax = (i + 1) * tile_size
+                    agent_here = np.array_equal(agent_pos, (i, j))
+                    ymin = j * tile_size
+                    ymax = (j + 1) * tile_size
+                    xmin = i * tile_size
+                    xmax = (i + 1) * tile_size
 
-                img[ymin:ymax, xmin:xmax, :] = Grid.render_tile(
-                    furniture,
-                    objs,
-                    agent_dir=agent_dir if agent_here else None,
-                    highlight=highlight_mask[i, j],
-                    tile_size=tile_size,
-                )
+                    img[ymin:ymax, xmin:xmax, :] = BehaviorGrid.render_tile(
+                        furniture,
+                        objs,
+                        agent_dir=agent_dir if agent_here else None,
+                        highlight=highlight_mask[i, j],
+                        tile_size=tile_size,
+                    )
+
+        else:
+            grid = self.grid[self.render_dim]
+            img = grid.render(self.state_values,
+                              tile_size,
+                              agent_pos,
+                              agent_dir,
+                              highlight_mask=highlight_mask)
 
         return img
 
@@ -373,7 +363,7 @@ class Grid:
 
         vis_mask = np.ones(shape=(width, height), dtype=bool)
 
-        grid = Grid(width, height)
+        grid = BehaviorGrid(width, height)
         for i in range(width):
             for j in range(height):
                 type_idx, color_idx, state = array[i, j]
@@ -383,13 +373,12 @@ class Grid:
 
         return grid, vis_mask
 
-    # TODO: fix
+    # # TODO: fix
     def process_vis(grid, agent_pos):
-        # agent_pos=(self.agent.view_size // 2 , self.agent.view_size - 1)
         return np.ones(shape=(grid.width, grid.height), dtype=bool)
 
 
-class GridDimension:
+class GridDimension(Grid):
     """
     Represent a grid and operations on it
     """
@@ -398,32 +387,8 @@ class GridDimension:
     tile_cache = {}
 
     def __init__(self, width, height):
-        assert width >= 3
-        assert height >= 3
-
-        self.width = width
-        self.height = height
-
+        super().__init__(width, height)
         self.grid = [[None, None] for i in range(width * height)]
-
-    def __contains__(self, key):
-        if isinstance(key, WorldObj):
-            for e in self.grid:
-                if e is key:
-                    return True
-        return False
-
-    def __eq__(self, other):
-        grid1 = self.encode()
-        grid2 = other.encode()
-        return np.array_equal(grid2, grid1)
-
-    def __ne__(self, other):
-        return not self == other
-
-    def copy(self):
-        from copy import deepcopy
-        return deepcopy(self)
 
     # TODO: check this works
     def load(self, grid, env):
@@ -435,11 +400,6 @@ class GridDimension:
                     new_obj = env.obj_instances[obj.name] if is_obj(obj) else obj
                     env.grid.set(x, y, new_obj)
 
-    def get(self, i, j):
-        assert 0 <= i < self.width
-        assert 0 <= j < self.height
-        return self.grid[j * self.width + i]
-
     def get_furniture(self, i, j):
         assert 0 <= i < self.width
         assert 0 <= j < self.height
@@ -449,9 +409,6 @@ class GridDimension:
         assert 0 <= i < self.width
         assert 0 <= j < self.height
         return self.grid[j * self.width + i][1]
-
-    # def has_furniture(self, i, j):
-    #     return self.get_furniture(i, j) is not None
 
     def remove(self, i, j):
         assert 0 <= i < self.width
@@ -472,7 +429,7 @@ class GridDimension:
         Rotate the grid to the left (counter-clockwise)
         """
 
-        grid = Grid(self.height, self.width)
+        grid = GridDimension(self.height, self.width)
 
         for i in range(self.width):
             for j in range(self.height):
@@ -745,7 +702,7 @@ class GridDimension:
 
         vis_mask = np.ones(shape=(width, height), dtype=bool)
 
-        grid = Grid(width, height)
+        grid = GridDimension(width, height)
         for i in range(width):
             for j in range(height):
                 type_idx, color_idx, state = array[i, j]
@@ -754,8 +711,3 @@ class GridDimension:
                 vis_mask[i, j] = (type_idx != OBJECT_TO_IDX['unseen'])
 
         return grid, vis_mask
-
-    # TODO: fix
-    def process_vis(grid, agent_pos):
-        # agent_pos=(self.agent.view_size // 2 , self.agent.view_size - 1)
-        return np.ones(shape=(grid.width, grid.height), dtype=bool)

@@ -2,7 +2,7 @@
 
 import os
 from abc import abstractmethod
-from gym_minigrid.rendering import *
+from mini_behavior.rendering import *
 
 class BaseObjectState:
     """

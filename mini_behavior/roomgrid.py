@@ -1,8 +1,7 @@
 # FROM MINIGRID REPO
 
-from .minigrid import *
-from .bddl.objs import OBJECTS
-
+from .minibehavior import *
+from .utils.globals import COLOR_NAMES
 
 def reject_next_to(env, pos):
     """
@@ -10,7 +9,7 @@ def reject_next_to(env, pos):
     the agent's starting point
     """
 
-    sx, sy = env.agent.cur_pos
+    sx, sy = env.agent_pos
     x, y = pos
     d = abs(sx - x) + abs(sy - y)
     return d < 2
@@ -77,7 +76,7 @@ class Room:
         return True
 
 
-class RoomGrid(MiniGridEnv):
+class RoomGrid(MiniBehaviorEnv):
     """
     Environment with multiple rooms and random objects.
     This is meant to serve as a base class for other environments.
@@ -166,7 +165,7 @@ class RoomGrid(MiniGridEnv):
 
     def _gen_rooms(self, width, height):
         # Create the grid
-        self.grid = Grid(width, height)
+        self.grid = BehaviorGrid(width, height)
         self.room_grid = [] # list of lists
         self.doors = []
 
@@ -341,10 +340,10 @@ class RoomGrid(MiniGridEnv):
         # Find a position that is not right in front of an object
         while True:
             super().place_agent(room.top, room.size, rand_dir, max_tries=1000)
-            if self.grid.is_empty(*self.agent.front_pos):
+            if self.grid.is_empty(*self.front_pos):
                 break
 
-        return self.agent.cur_pos
+        return self.agent_pos
 
 
     def connect_all(self, door_colors=COLOR_NAMES, max_itrs=5000):
@@ -352,7 +351,7 @@ class RoomGrid(MiniGridEnv):
         Make sure that all rooms are reachable by the agent from its
         starting position
         """
-        start_room = self.room_from_pos(*self.agent.cur_pos)
+        start_room = self.room_from_pos(*self.agent_pos)
 
         added_doors = []
 

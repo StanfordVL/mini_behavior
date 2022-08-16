@@ -1,30 +1,28 @@
 # MODIFIED FROM MINIGRID REPO
 
-import hashlib
-import gym
 import os
 import pickle as pkl
 from enum import IntEnum
 from gym import spaces
-from gym.utils import seeding
-from .utils.globals import COLOR_NAMES
-from .agent import Agent
+from gym_minigrid.minigrid import MiniGridEnv
+from bddl import ACTION_FUNC_MAPPING
 from .objects import *
-from .bddl import ABILITIES, ACTION_FUNC_MAPPING
-from .grid import Grid, GridDimension, is_obj
+from .grid import BehaviorGrid, GridDimension, is_obj
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
 
 
-class MiniGridEnv(gym.Env):
+class MiniBehaviorEnv(MiniGridEnv):
     """
     2D grid world game environment
     """
-
     metadata = {
-        'render.modes': ['human', 'rgb_array'],
-        'video.frames_per_second': 10
+        # Deprecated: use 'render_modes' instead
+        "render.modes": ["human", "rgb_array"],
+        "video.frames_per_second": 10,  # Deprecated: use 'render_fps' instead
+        "render_modes": ["human", "rgb_array", "single_rgb_array"],
+        "render_fps": 10,
     }
 
     # Enumeration of possible actions
@@ -54,6 +52,7 @@ class MiniGridEnv(gym.Env):
         seed=1337,
         agent_view_size=7,
         highlight=True,
+        tile_size=TILE_PIXELS,
     ):
         self.episode = 0
         self.mode = mode
@@ -62,11 +61,12 @@ class MiniGridEnv(gym.Env):
 
         self.render_dim = None
 
-        # Can't set both grid_size and width/height
-        if grid_size:
-            assert width is None and height is None
-            width = grid_size
-            height = grid_size
+        self.highlight = highlight
+        self.tile_size = tile_size
+
+        # Initialize the RNG
+        self.seed(seed=seed)
+        self.furniture_view = None
 
         if num_objs is None:
             num_objs = {}
@@ -82,51 +82,21 @@ class MiniGridEnv(gym.Env):
                 self.objs[obj].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 
+        super().__init__(grid_size=grid_size,
+                         width=width,
+                         height=height,
+                         max_steps=max_steps,
+                         see_through_walls=see_through_walls,
+                         agent_view_size=agent_view_size,
+                         )
+
+        self.grid = BehaviorGrid(width, height)
+
         # Action enumeration for this environment, actions are discrete int
-        self.actions = MiniGridEnv.Actions
+        self.actions = MiniBehaviorEnv.Actions
         self.action_space = spaces.Discrete(len(self.actions))
 
-        # Number of cells (width and height) in the agent view
-        assert agent_view_size % 2 == 1 and agent_view_size >= 3
-
-        # initialize agent
-        self.agent = Agent(self, agent_view_size)
-
-        # Observations are dictionaries containing an
-        # encoding of the grid and a textual 'mission' string
-        self.observation_space = spaces.Box(
-            low=0,
-            high=255,
-            shape=(self.agent.view_size, self.agent.view_size, 3),
-            dtype='uint8'
-        )
-        self.observation_space = spaces.Dict({
-            'image': self.observation_space,
-            'mission': spaces.Discrete(1),
-            'direction': spaces.Discrete(4),
-        })
-
-        # Range of possible rewards
-        self.reward_range = (0, math.inf)
-
-        # Window to use for human rendering mode
-        self.window = None
-
-        # Environment configuration
-        self.width = width
-        self.height = height
-        self.max_steps = max_steps
-        self.see_through_walls = see_through_walls
-        self.highlight=highlight
-
-        # Initialize the RNG
-        self.seed(seed=seed)
-
-        # Initialize the state
-        self.reset()
-
-        # self.mission = ''
-        self.furniture_view = None
+        self.carrying = set()
         # self.state_icons = {state: img_to_array(os.path.join(os.path.dirname(__file__), f'utils/state_icons/{state}.jpg')) for state in ABILITIES}
 
     def copy_objs(self):
@@ -151,10 +121,12 @@ class MiniGridEnv(gym.Env):
     # TODO: check this works
     def get_state(self):
         grid = self.grid.copy()
-        agent = self.agent.copy()
+        agent_pos = self.agent_pos
+        agent_dir = self.agent_dir
         objs, obj_instances = self.copy_objs()
         state = {'grid': grid,
-                 'agent': agent,
+                 'agent_pos': agent_pos,
+                 'agent_dir': agent_dir,
                  'objs': objs,
                  'obj_instances': obj_instances
                 }
@@ -173,12 +145,19 @@ class MiniGridEnv(gym.Env):
             state = pkl.load(f)
             self.load_objs(state)
             self.grid.load(state['grid'], self)
-            self.agent.load(state['agent'], self.obj_instances)
+            self.agent_pos = state['agent_pos']
+            self.agent_dir = state['agent_dir']
         return self.grid
 
     def reset(self):
         # Current position and direction of the agent
-        self.agent.reset()
+        # self.agent.reset()
+
+        # Reinitialize episode-specific variables
+        self.agent_pos = (-1, -1)
+        self.agent_dir = -1
+
+        self.carrying = set()
 
         for obj in self.obj_instances.values():
             obj.reset()
@@ -194,13 +173,11 @@ class MiniGridEnv(gym.Env):
         self.furniture_view = self.grid.render_furniture(tile_size=TILE_PIXELS, obj_instances=self.obj_instances)
 
         # These fields should be defined by _gen_grid
-        assert self.agent.cur_pos is not None
-        assert self.agent.dir is not None
+        assert self.agent_pos is not None
+        assert self.agent_dir is not None
 
         # Check that the agent doesn't overlap with an object
-        # start_cell = self.grid.get(*self.agent.cur_pos)
-
-        assert self.grid.is_empty(*self.agent.cur_pos)
+        assert self.grid.is_empty(*self.agent_pos)
 
         # Step count since episode start
         self.step_count = 0
@@ -210,92 +187,13 @@ class MiniGridEnv(gym.Env):
         obs = self.gen_obs()
         return obs
 
-    def seed(self, seed=1337):
-        # Seed the random number generator
-        self.np_random, _ = seeding.np_random(seed)
-        return [seed]
-
-    def hash(self, size=16):
-        """Compute a hash that uniquely identifies the current state of the environment.
-        :param size: Size of the hashing
-        """
-        sample_hash = hashlib.sha256()
-
-        to_encode = [self.grid.encode().tolist(), self.agent.cur_pos, self.agent.dir]
-        for item in to_encode:
-            sample_hash.update(str(item).encode('utf8'))
-
-        return sample_hash.hexdigest()[:size]
-
-    @property
-    def steps_remaining(self):
-        return self.max_steps - self.step_count
-
-    def __str__(self):
-        """
-        Produce a pretty string of the environment's grid along with the agent.
-        A grid cell is represented by seed 0_2-character string, the first one for
-        the object and the second one for the color.
-        """
-
-        # Short string for opened door
-        OPENDED_DOOR_IDS = '_'
-
-        # Map agent's direction to short string
-        AGENT_DIR_TO_STR = {
-            0: '>',
-            1: 'V',
-            2: '<',
-            3: '^'
-        }
-
-        str = ''
-
-        for j in range(self.grid.height):
-            for i in range(self.grid.width):
-                if i == self.agent.cur_pos[0] and j == self.agent.cur_pos[1]:
-                    str += 2 * AGENT_DIR_TO_STR[self.agent.dir]
-                    continue
-
-                objs = self.grid.get(i, j)
-
-                for c in objs:
-                    if c is None:
-                        str += '  '
-                        continue
-
-                    if c.type == 'door':
-                        if c.is_open:
-                            str += '__'
-                        elif c.is_locked:
-                            str += 'L' + c.color[0].upper()
-                        else:
-                            str += 'D' + c.color[0].upper()
-                        continue
-
-                    str += OBJECT_TO_STR[c.type] + c.color[0].upper()
-
-            if j < self.grid.height - 1:
-                str += '\n'
-
-        return str
-
     def _gen_grid(self, width, height):
-        self.grid = Grid(width, height)
         self._gen_objs()
         assert self._init_conditions(), "Does not satisfy initial conditions"
         self.place_agent()
-        self.mission = self.mission
 
     def _gen_objs(self):
         assert False, "_gen_objs needs to be implemented by each environment"
-
-    def _reward(self):
-        """
-        Compute the reward to be given upon success
-        """
-        assert False, "_reward needs to be implemented by each environment"
-        # return 1 - 0.9 * (self.step_count / self.max_steps)
 
     def _init_conditions(self):
         print('no init conditions')
@@ -304,70 +202,6 @@ class MiniGridEnv(gym.Env):
     def _end_conditions(self):
         print('no end conditions')
         return False
-
-    def _rand_int(self, low, high):
-        """
-        Generate random integer in [low,high[
-        """
-
-        return self.np_random.randint(low, high)
-
-    def _rand_float(self, low, high):
-        """
-        Generate random float in [low,high[
-        """
-
-        return self.np_random.uniform(low, high)
-
-    def _rand_bool(self):
-        """
-        Generate random boolean value
-        """
-
-        return self.np_random.randint(0, 2) == 0
-
-    def _rand_elem(self, iterable):
-        """
-        Pick a random element in a list
-        """
-
-        lst = list(iterable)
-        idx = self._rand_int(0, len(lst))
-        return lst[idx]
-
-    def _rand_subset(self, iterable, num_elems):
-        """
-        Sample a random subset of distinct elements of a list
-        """
-
-        lst = list(iterable)
-        assert num_elems <= len(lst)
-
-        out = []
-
-        while len(out) < num_elems:
-            elem = self._rand_elem(lst)
-            lst.remove(elem)
-            out.append(elem)
-
-        return out
-
-    def _rand_color(self):
-        """
-        Generate a random color name (string)
-        """
-
-        return self._rand_elem(COLOR_NAMES)
-
-    def _rand_pos(self, xLow, xHigh, yLow, yHigh):
-        """
-        Generate a random (x,y) position tuple
-        """
-
-        return (
-            self.np_random.randint(xLow, xHigh),
-            self.np_random.randint(yLow, yHigh)
-        )
 
     def place_obj(self,
                   obj,
@@ -421,17 +255,9 @@ class MiniGridEnv(gym.Env):
                     if not self.grid.is_empty(x, y):
                         valid = False
                         break
-                    # if isinstance(obj, FurnitureObj):
-                    #     if self.grid.get_furniture(x, y) is not None:
-                    #         valid = False
-                    #         break
-                    # else:
-                    #     if self.grid.get_obj(x, y, 0) is not None:
-                    #         valid = False
-                    #         break
 
                     # Don't place the object where the agent is
-                    if np.array_equal((x, y), self.agent.cur_pos):
+                    if np.array_equal((x, y), self.agent_pos):
                         valid = False
                         break
 
@@ -464,33 +290,12 @@ class MiniGridEnv(gym.Env):
             for pos in obj.all_pos:
                 self.grid.set(*pos, obj, dim)
 
-    def place_agent(
-        self,
-        top=None,
-        size=None,
-        rand_dir=True,
-        max_tries=math.inf
-    ):
-        """
-        Set the agent's starting point at an empty position in the grid
-        """
-
-        self.agent.cur_pos = None
-
-        pos = self.place_obj(None, top, size, max_tries=max_tries)
-        self.agent.cur_pos = pos
-
-        if rand_dir:
-            self.agent.dir = self._rand_int(0, 4)
-
-        return pos
-
     def agent_sees(self, x, y):
         """
         Check if a non-empty grid position is visible to the agent
         """
 
-        coordinates = self.agent.relative_coords(x, y)
+        coordinates = self.relative_coords(x, y)
         if coordinates is None:
             return False
         vx, vy = coordinates
@@ -520,18 +325,18 @@ class MiniGridEnv(gym.Env):
         self.action_done = True
 
         # Get the position and contents in front of the agent
-        fwd_pos = self.agent.front_pos
+        fwd_pos = self.front_pos
         fwd_cell = self.grid.get(*fwd_pos)
 
         # Rotate left
         if action == self.actions.left:
-            self.agent.dir -= 1
-            if self.agent.dir < 0:
-                self.agent.dir += 4
+            self.agent_dir -= 1
+            if self.agent_dir < 0:
+                self.agent_dir += 4
 
         # Rotate right
         elif action == self.actions.right:
-            self.agent.dir = (self.agent.dir + 1) % 4
+            self.agent_dir = (self.agent_dir + 1) % 4
 
         # Move forward
         elif action == self.actions.forward:
@@ -542,7 +347,7 @@ class MiniGridEnv(gym.Env):
                         can_overlap = False
                         break
             if can_overlap:
-                self.agent.cur_pos = fwd_pos
+                self.agent_pos = fwd_pos
             else:
                 self.action_done = False
 
@@ -550,7 +355,7 @@ class MiniGridEnv(gym.Env):
             if self.mode == 'human':
                 self.last_action = None
                 if action == 'choose':
-                    choices = self.agent.all_reachable()
+                    choices = self.all_reachable()
                     if not choices:
                         print("No reachable objects")
                     else:
@@ -599,155 +404,33 @@ class MiniGridEnv(gym.Env):
 
         return obs, reward, done, {}
 
+    def all_reachable(self):
+        return [obj for obj in self.obj_instances.values() if obj.check_abs_state(self, 'inreachofrobot')]
+
     def update_states(self):
         for obj in self.obj_instances.values():
             for name, state in obj.states.items():
                 if state.type == 'absolute':
                     state._update(self)
 
-    def gen_obs_grid(self):
-        """
-        Generate the sub-grid observed by the agent.
-        This method also outputs a visibility mask telling us which grid
-        cells the agent can actually see.
-        """
-        if self.agent.view_size >= max(self.width, self.height):
-            grid = self.grid
-        else:
-            topX, topY, botX, botY = self.agent.get_view_exts()
-
-            grid = self.grid.slice(topX, topY, self.agent.view_size, self.agent.view_size)
-
-            for i in range(self.agent.dir + 1):
-                grid = grid.rotate_left()
-
-        # Process occluders and visibility
-        # Note that this incurs some performance cost
-        if not self.see_through_walls:
-            vis_mask = grid.process_vis(agent_pos=(self.agent.view_size // 2 , self.agent.view_size - 1))
-        else:
-            vis_mask = np.ones(shape=(grid.width, grid.height), dtype=bool)
-
-        # TODO: Make it so the agent sees what it's carrying
-        # We do this by placing the carried object at the agent's position in the agent's partially observable view
-        # agent_pos = grid.width // 2, grid.height - 1
-        # if self.agent.carrying:
-        #     grid.set(*agent_pos, self.agent.carrying)
-        # for obj in self.agent.all_reachable():
-        #      grid.set(*agent_pos, None)
-
-        return grid, vis_mask
-
-    def gen_obs(self):
-        """
-        Generate the agent's view (partially observable, low-resolution encoding)
-        """
-
-        grid, vis_mask = self.gen_obs_grid()
-
-        # Encode the partially observable view into a numpy array
-        image = grid.encode(vis_mask)
-
-        assert hasattr(self, 'mission'), "environments must define a textual mission string"
-
-        # Observations are dictionaries containing:
-        # - an image (partially observable view of the environment)
-        # - the agent's direction/orientation (acting as a compass)
-        # - a textual mission string (instructions for the agent)
-        obs = {
-            'image': image,
-            'direction': self.agent.dir,
-            'mission': self.mission
-        }
-
-        return obs
-
-    def get_obs_render(self, obs, tile_size=TILE_PIXELS//2):
-        """
-        Render an agent observation for visualization
-        """
-
-        grid, vis_mask = Grid.decode(obs)
-
-        # Render the whole grid
-        img = grid.render(
-            tile_size,
-            agent_pos=(self.agent.view_size // 2, self.agent.view_size - 1),
-            agent_dir=3,
-            highlight_mask=vis_mask,
-        )
-
-        return img
-
-    def render(self, mode='human', close=False, highlight=True, tile_size=TILE_PIXELS):
+    def render(self, mode='human', highlight=True, tile_size=TILE_PIXELS):
         """
         Render the whole-grid human view
         """
-        highlight = self.highlight
+        if self.render_dim is not None:
+            self.grid.state_values = {obj: obj.get_ability_values(self) for obj in self.obj_instances.values() if
+                            not obj.is_furniture()}
 
-        if close:
-            if self.window:
-                self.window.close()
-            return
+        img = super().render(mode='rgb_array', highlight=highlight, tile_size=tile_size)
 
-        if mode == 'human' and not self.window:
-            import gym_minigrid.window
-            self.window = gym_minigrid.window.Window('gym_minigrid')
-            self.window.show(block=False)
+        if self.render_dim is None:
+            img = self.render_furniture_states(img)
+        else:
+            img = self.render_furniture_states(img, dim=self.render_dim)
 
         if self.window:
             self.window.set_inventory(self)
 
-        # Compute which cells are visible to the agent
-        _, vis_mask = self.gen_obs_grid()
-
-        # Compute the world coordinates of the bottom-left corner
-        # of the agent's view area
-        f_vec = self.agent.dir_vec
-        r_vec = self.agent.right_vec
-        top_left = self.agent.cur_pos + f_vec * (self.agent.view_size-1) - r_vec * (self.agent.view_size // 2)
-
-        # Mask of which cells to highlight
-        highlight_mask = np.zeros(shape=(self.width, self.height), dtype=bool)
-
-        # For each cell in the visibility mask
-        for vis_j in range(0, self.agent.view_size):
-            for vis_i in range(0, self.agent.view_size):
-                # If this cell is not visible, don't highlight it
-                if not vis_mask[vis_i, vis_j]:
-                    continue
-
-                # Compute the world coordinates of this cell
-                abs_i, abs_j = top_left - (f_vec * vis_j) + (r_vec * vis_i)
-
-                if abs_i < 0 or abs_i >= self.width:
-                    continue
-                if abs_j < 0 or abs_j >= self.height:
-                    continue
-
-                # Mark this cell to be highlighted
-                highlight_mask[abs_i, abs_j] = True
-
-        # Render the whole grid
-        if self.render_dim is None:
-            img = self.grid.render(
-                tile_size,
-                self.agent.cur_pos,
-                self.agent.dir,
-                highlight_mask=highlight_mask if highlight else None
-            )
-
-            img = self.render_furniture_states(img)
-        else:
-            state_values = {obj: obj.get_ability_values(self) for obj in self.obj_instances.values() if not obj.is_furniture()}
-            grid = self.grid.grid[self.render_dim]
-            img = grid.render(state_values,
-                              tile_size,
-                              self.agent.cur_pos,
-                              self.agent.dir,
-                              highlight_mask=highlight_mask if highlight else None)
-
-            img = self.render_furniture_states(img, dim=self.render_dim)
         if mode == 'human':
             self.window.set_caption(self.mission)
             self.window.show_img(img)
@@ -755,7 +438,7 @@ class MiniGridEnv(gym.Env):
         return img
 
     def render_states(self, tile_size=TILE_PIXELS):
-        pos = self.agent.front_pos
+        pos = self.front_pos
         imgs = []
         furniture = self.grid.get_furniture(*pos)
         img = np.zeros(shape=(tile_size, tile_size, 3), dtype=np.uint8)
@@ -789,8 +472,4 @@ class MiniGridEnv(gym.Env):
 
     def switch_dim(self, dim):
         self.render_dim = dim
-
-    def close(self):
-        if self.window:
-            self.window.close()
-        return
+        self.grid.render_dim = dim

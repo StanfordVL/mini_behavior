@@ -1,13 +1,13 @@
 import os
 import numpy as np
-from gym_minigrid.minigrid import Grid, MiniGridEnv
-from gym_minigrid.register import register
-from gym_minigrid.objects import Wall
-from gym_minigrid.utils.scene_to_grid import img_to_array, FLOORPLANS_DIR
+from mini_behavior.minibehavior import BehaviorGrid, MiniBehaviorEnv
+from mini_behavior.register import register
+from mini_behavior.objects import Wall
+from mini_behavior.utils.scene_to_grid import img_to_array, FLOORPLANS_DIR
 
 
 # generate grid
-class FloorPlanEnv(MiniGridEnv):
+class FloorPlanEnv(MiniBehaviorEnv):
     def __init__(self,
                  mode='human',
                  img_path='floorplans/beechwood_0_int_floor_trav_no_obj_0.png',
@@ -40,7 +40,7 @@ class FloorPlanEnv(MiniGridEnv):
                     self.put_obj(Wall(), j, i)
 
     def _gen_grid(self, width, height):
-        self.grid = Grid(width, height)
+        self.grid = BehaviorGrid(width, height)
         self.add_walls()
         self._gen_objs()
         assert self._init_conditions(), "Does not satisfy initial conditions"
@@ -77,6 +77,6 @@ for img in all_scenes:
 
     register(
         id=env_id,
-        entry_point='gym_minigrid.envs:FloorPlanEnv',
+        entry_point='mini_behavior.envs:FloorPlanEnv',
         kwargs={'img_path': '{}/{}'.format(FLOORPLANS_DIR, img)}
     )

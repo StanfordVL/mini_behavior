@@ -15,7 +15,7 @@ def get_obj_cell(self, env):
 class InFOVOfRobot(AbsoluteObjectState):
     # return true if obj is in front of agent
     def _get_value(self, env):
-        return env.agent.in_view(*self.obj.cur_pos)
+        return env.in_view(*self.obj.cur_pos)
 
 
 class InHandOfRobot(AbsoluteObjectState):
@@ -37,11 +37,11 @@ class InReachOfRobot(AbsoluteObjectState):
         if self.obj.is_furniture():
             in_front = False
             for pos in self.obj.all_pos:
-                if np.all(pos == env.agent.front_pos):
+                if np.all(pos == env.front_pos):
                     in_front = True
                     break
         else:
-            in_front = np.all(self.obj.cur_pos == env.agent.front_pos)
+            in_front = np.all(self.obj.cur_pos == env.front_pos)
 
         return carrying or in_front
 
@@ -53,7 +53,7 @@ class InSameRoomAsRobot(AbsoluteObjectState):
             return True
 
         obj_room = env.room_from_pos(*self.obj.cur_pos)
-        agent_room = env.room_from_pos(*env.agent.cur_pos)
+        agent_room = env.room_from_pos(*env.agent_pos)
         return np.all(obj_room == agent_room)
 
 

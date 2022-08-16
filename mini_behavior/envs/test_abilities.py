@@ -1,5 +1,5 @@
-from gym_minigrid.roomgrid import *
-from gym_minigrid.register import register
+from mini_behavior.roomgrid import *
+from mini_behavior.register import register
 
 
 class TestAbilitiesEnv(RoomGrid):
@@ -77,6 +77,6 @@ class TestAbilitiesEnv(RoomGrid):
 # human control env
 register(
     id='MiniGrid-TestAbilities-16x16-N1-v0',
-    entry_point='gym_minigrid.envs:TestAbilitiesEnv'
+    entry_point='mini_behavior.envs:TestAbilitiesEnv'
 )
 

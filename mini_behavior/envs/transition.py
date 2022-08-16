@@ -1,6 +1,6 @@
-from gym_minigrid.roomgrid import *
-from gym_minigrid.register import register
-from gym_minigrid.objects import OBJECT_CLASS
+from mini_behavior.roomgrid import *
+from mini_behavior.register import register
+from mini_behavior.objects import OBJECT_CLASS
 
 DEFAULT_OBJS = ['countertop', 'plate', 'ashcan', 'hamburger', 'ball', 'apple', 'carton', 'juice']
 
@@ -133,11 +133,11 @@ class TransitionEnv(RoomGrid):
 
 register(
     id='MiniGrid-TransitionEnv-8x8x4-N2-v0',
-    entry_point='gym_minigrid.envs:TransitionEnv',
+    entry_point='mini_behavior.envs:TransitionEnv',
 )
 
 register(
     id='MiniGrid-TransitionEnv-8x8x4-N2-v1',
-    entry_point='gym_minigrid.envs:TransitionEnv',
+    entry_point='mini_behavior.envs:TransitionEnv',
     kwargs={'mode': 'human'}
 )

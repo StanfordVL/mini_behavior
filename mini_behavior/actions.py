@@ -40,7 +40,6 @@ class BaseAction:
         do action
         """
         assert self.can(obj), 'Cannot perform action'
-        self.env.agent.obj = obj
 
 
 class Close(BaseAction):
@@ -73,7 +72,7 @@ class Cook(BaseAction):
             return False
 
         if find_tool(self.env, self.tools):
-            front_cell = self.env.grid.get_all_items(*self.env.agent.front_pos)
+            front_cell = self.env.grid.get_all_items(*self.env.agent_pos)
             for obj2 in front_cell:
                 if obj2 is not None and obj2.type in self.heat_sources:
                     return obj2.check_abs_state(self.env, 'toggleable')
@@ -102,7 +101,7 @@ class Drop(BaseAction):
         if not obj.check_abs_state(self.env, 'inhandofrobot'):
             return False
 
-        fwd_pos = self.env.agent.front_pos
+        fwd_pos = self.env.front_pos
         self.drop_dim = None
         for i in range(3):
             furniture, dim_obj = self.env.grid.get_dim(*fwd_pos, i)
@@ -114,7 +113,10 @@ class Drop(BaseAction):
 
     def do(self, obj):
         super().do(obj)
-        fwd_pos = self.env.agent.front_pos
+
+        self.env.carrying.discard(obj)
+
+        fwd_pos = self.env.front_pos
 
         # change object properties
         obj.cur_pos = fwd_pos
@@ -141,11 +143,11 @@ class DropIn(BaseAction):
         if not obj.check_abs_state(self.env, 'inhandofrobot'):
             return False
 
-        fwd_pos = self.env.agent.front_pos
+        fwd_pos = self.env.front_pos
         self.drop_dim = None
         for i in range(3):
             furniture, dim_obj = self.env.grid.get_dim(*fwd_pos, i)
-            if furniture is not None and furniture.can_contain and i in furniture.can_contain:
+            if dim_obj is None and furniture is not None and furniture.can_contain and i in furniture.can_contain:
                 if 'openable' not in furniture.states or furniture.check_abs_state(self.env, 'openable'):
                     self.drop_dim = i
                     return True
@@ -155,7 +157,9 @@ class DropIn(BaseAction):
     def do(self, obj):
         # drop
         super().do(obj)
-        fwd_pos = self.env.agent.front_pos
+        self.env.carrying.discard(obj)
+
+        fwd_pos = self.env.front_pos
         obj.cur_pos = fwd_pos
         self.env.grid.set(*fwd_pos, obj, self.drop_dim)
 
@@ -192,6 +196,7 @@ class Pickup(BaseAction):
 
     def do(self, obj):
         super().do(obj)
+        self.env.carrying.add(obj)
 
         objs = self.env.grid.get_all_objs(*obj.cur_pos)
         dim = objs.index(obj)

@@ -1,5 +1,5 @@
-from gym_minigrid.envs.floorplan import FloorPlanEnv
-from gym_minigrid.register import register
+from mini_behavior.envs.floorplan import FloorPlanEnv
+from mini_behavior.register import register
 import os
 
 
@@ -104,6 +104,6 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
 # human input env
 register(
     id='MiniGrid-ThrowLeftoversSceneEnv-0x0-N2-v0',
-    entry_point='gym_minigrid.envs:ThrowLeftoversSceneEnv',
+    entry_point='mini_behavior.envs:ThrowLeftoversSceneEnv',
     kwargs={}
 )

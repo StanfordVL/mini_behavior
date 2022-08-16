@@ -1,4 +1,4 @@
-from gym_minigrid.actions import *
+from mini_behavior.actions import *
 
 ALL_ACTIONS = ['pickup', 'drop', 'drop_in', 'drop_on', 'drop_under', 'toggle', 'open', 'close', 'slice', 'cook']
 DEFAULT_ACTIONS = []

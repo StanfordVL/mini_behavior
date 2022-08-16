@@ -143,50 +143,50 @@ class NavigationObjEnv16x16_RL(NavigationEnv):
 # human control env
 register(
     id='MiniGrid-Navigation-16x16-N1-v0',
-    entry_point='gym_minigrid.envs:NavigationEnv16x16_Human'
+    entry_point='mini_behavior.envs:NavigationEnv16x16_Human'
 )
 
 # RL agent env
 register(
     id='MiniGrid-Navigation-16x16-N2-v0',
-    entry_point='gym_minigrid.envs:NavigationEnv16x16_RL'
+    entry_point='mini_behavior.envs:NavigationEnv16x16_RL'
 )
 
 # human control env
 register(
     id='MiniGrid-Navigation-8x8-N1-v0',
-    entry_point='gym_minigrid.envs:NavigationEnv8x8_Human'
+    entry_point='mini_behavior.envs:NavigationEnv8x8_Human'
 )
 
 # RL agent env
 register(
     id='MiniGrid-Navigation-8x8-N2-v0',
-    entry_point='gym_minigrid.envs:NavigationEnv8x8_RL'
+    entry_point='mini_behavior.envs:NavigationEnv8x8_RL'
 )
 
 ##### MULTI ROOM
 # human control env
 register(
     id='MiniGrid-NavigationMulti-16x16-N1-v0',
-    entry_point='gym_minigrid.envs:NavigatioMultiEnv16x16_Human'
+    entry_point='mini_behavior.envs:NavigatioMultiEnv16x16_Human'
 )
 
 # RL agent env
 register(
     id='MiniGrid-NavigationMulti-16x16-N2-v0',
-    entry_point='gym_minigrid.envs:NavigatioMultiEnv16x16_RL'
+    entry_point='mini_behavior.envs:NavigatioMultiEnv16x16_RL'
 )
 
 # human control env
 register(
     id='MiniGrid-NavigationMulti-8x8-N1-v0',
-    entry_point='gym_minigrid.envs:NavigatioMultiEnv8x8_Human'
+    entry_point='mini_behavior.envs:NavigatioMultiEnv8x8_Human'
 )
 
 # RL agent env
 register(
     id='MiniGrid-NavigationMulti-8x8-N2-v0',
-    entry_point='gym_minigrid.envs:NavigationMultiEnv8x8_RL'
+    entry_point='mini_behavior.envs:NavigationMultiEnv8x8_RL'
 )
 
 
@@ -194,11 +194,11 @@ register(
 # human control env
 register(
     id='MiniGrid-NavigationObj-16x16-N1-v0',
-    entry_point='gym_minigrid.envs:NavigationObjEnv16x16_Human'
+    entry_point='mini_behavior.envs:NavigationObjEnv16x16_Human'
 )
 
 # RL agent env
 register(
     id='MiniGrid-NavigationObj-16x16-N2-v0',
-    entry_point='gym_minigrid.envs:NavigationObjEnv16x16_RL'
+    entry_point='mini_behavior.envs:NavigationObjEnv16x16_RL'
 )

@@ -1,14 +1,14 @@
 import argparse
-from .gym_minigrid.utils.scene_to_grid import gen_grid_from_img
+from .mini_behavior.utils.scene_to_grid import gen_grid_from_img
 import os
 
 # run this to convert iGibson floor plan image to grid image
 # takes in img paths as args (default: process all imgs in scenes dir)
 
-dir_path = os.path.dirname('gym_minigrid')
-img_dir = os.path.join(dir_path, 'gym_minigrid/scenes')
+dir_path = os.path.dirname('mini_behavior')
+img_dir = os.path.join(dir_path, 'mini_behavior/scenes')
 list_scenes = os.listdir(img_dir)
-grids_dir = os.path.join(dir_path, 'gym_minigrid/floorplans')
+grids_dir = os.path.join(dir_path, 'mini_behavior/floorplans')
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--imgs", nargs='+', default=list_scenes,

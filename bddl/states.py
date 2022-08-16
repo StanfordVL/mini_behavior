@@ -1,4 +1,4 @@
-from gym_minigrid.states import *
+from mini_behavior.states import *
 
 ALL_STATES = [
     'atsamelocation',

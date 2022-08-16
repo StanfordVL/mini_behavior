@@ -1,6 +1,6 @@
-from gym_minigrid.roomgrid import *
-from gym_minigrid.register import register
-from gym_minigrid.bddl.actions import CONTROLS
+from mini_behavior.roomgrid import *
+from mini_behavior.register import register
+from bddl.actions import CONTROLS
 
 
 class ThrowLeftoversEnv(RoomGrid):
@@ -107,20 +107,20 @@ class ThrowLeftoversEnv(RoomGrid):
 # non human input env
 register(
     id='MiniGrid-ThrowLeftovers-16x16-N2-v0',
-    entry_point='gym_minigrid.envs:ThrowLeftoversEnv'
+    entry_point='mini_behavior.envs:ThrowLeftoversEnv'
 )
 
 # human input env
 register(
     id='MiniGrid-ThrowLeftovers-16x16-N2-v1',
-    entry_point='gym_minigrid.envs:ThrowLeftoversEnv',
+    entry_point='mini_behavior.envs:ThrowLeftoversEnv',
     kwargs={'mode': 'human'}
 )
 
 # non-human input env
 register(
     id='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v0',
-    entry_point='gym_minigrid.envs:ThrowLeftoversEnv',
+    entry_point='mini_behavior.envs:ThrowLeftoversEnv',
     kwargs={'mode': 'not_human',
             'room_size': 8,
             'num_rows': 2,
@@ -130,7 +130,7 @@ register(
 # human input env
 register(
     id='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1',
-    entry_point='gym_minigrid.envs:ThrowLeftoversEnv',
+    entry_point='mini_behavior.envs:ThrowLeftoversEnv',
     kwargs={'mode': 'human',
             'room_size': 8,
             'num_rows': 2,
@@ -140,7 +140,7 @@ register(
 # non human input env,
 register(
     id='MiniGrid-ThrowLeftovers-8x8-N2-v0',
-    entry_point='gym_minigrid.envs:ThrowLeftoversEnv',
+    entry_point='mini_behavior.envs:ThrowLeftoversEnv',
     kwargs={'mode': 'not_human',
             'room_size': 8}
 )
@@ -191,13 +191,13 @@ class ThrowLeftoversNavigation(ThrowLeftoversEnv):
 
 register(
     id='MiniGrid-ThrowLeftoversNavigation-8x8-N2-v0',
-    entry_point='gym_minigrid.envs:ThrowLeftoversNavigation'
+    entry_point='mini_behavior.envs:ThrowLeftoversNavigation'
 )
 
 
 register(
     id='MiniGrid-ThrowLeftoversNavigation-16x16-N2-v0',
-    entry_point='gym_minigrid.envs:ThrowLeftoversNavigation',
+    entry_point='mini_behavior.envs:ThrowLeftoversNavigation',
     kwargs={'room_size': 16}
 )
 

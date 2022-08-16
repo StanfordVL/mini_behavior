@@ -15,7 +15,7 @@ with open("README.md") as fh:
 extras = {"testing": ["pytest==7.0.1"]}
 
 setup(
-    name="gym_minigrid",
+    name="mini_behavior",
     author="Farama Foundation",
     author_email="jkterry@farama.org",
     classifiers=[
@@ -31,7 +31,7 @@ setup(
     url="https://github.com/Farama-Foundation/gym-minigrid",
     description="Minimalistic gridworld reinforcement learning environments",
     extras_require=extras,
-    packages=["gym_minigrid", "gym_minigrid.envs"],
+    packages=["mini_behavior", "mini_behavior.envs"],
     license="Apache",
     long_description=long_description,
     long_description_content_type="text/markdown",

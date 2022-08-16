@@ -2,9 +2,9 @@
 
 import argparse
 from gym_minigrid.wrappers import *
-from gym_minigrid.window import Window
-from gym_minigrid.utils.save import get_step, save_demo
-from gym_minigrid.grid import GridDimension
+from mini_behavior.window import Window
+from mini_behavior.utils.save import get_step, save_demo
+from mini_behavior.grid import GridDimension
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
@@ -27,13 +27,14 @@ def render_furniture():
     if show_furniture:
         img = np.copy(env.furniture_view)
 
-        i, j = env.agent.cur_pos
+        # i, j = env.agent.cur_pos
+        i, j = env.agent_pos
         ymin = j * TILE_PIXELS
         ymax = (j + 1) * TILE_PIXELS
         xmin = i * TILE_PIXELS
         xmax = (i + 1) * TILE_PIXELS
 
-        img[ymin:ymax, xmin:xmax, :] = GridDimension.render_agent(img[ymin:ymax, xmin:xmax, :], env.agent.dir)
+        img[ymin:ymax, xmin:xmax, :] = GridDimension.render_agent(img[ymin:ymax, xmin:xmax, :], env.agent_dir)
         img = env.render_furniture_states(img)
 
         window.show_img(img)
@@ -199,7 +200,7 @@ if args.agent_view:
     env = RGBImgPartialObsWrapper(env)
     env = ImgObsWrapper(env)
 
-window = Window('gym_minigrid - ' + args.env)
+window = Window('mini_behavior - ' + args.env)
 window.reg_key_handler(key_handler)
 
 if args.load is None:
