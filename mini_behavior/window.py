@@ -1,27 +1,14 @@
-# FROM MINIGRID REPO
-import sys
-import numpy as np
-
-# Only ask users to install matplotlib if they actually need it
-try:
-    # import matplotlib
-    # matplotlib.use('TKAgg')
-    import matplotlib.pyplot as plt
-    import matplotlib.gridspec as gridspec
-except:
-    print('To display the environment in a window, please install matplotlib, eg:')
-    print('pip3 install --user matplotlib')
-    sys.exit(-1)
+from gym_minigrid.window import *
+import matplotlib.gridspec as gridspec
 
 
-class Window:
+class Window(Window):
     """
     Window to draw a gridworld instance using Matplotlib
     """
 
     def __init__(self, title):
-        self.fig = None
-
+        self.no_image_shown = True
         self.imshow_obj = None
         self.closeup_obj = {'top': None,
                             'middle': None,
@@ -40,9 +27,9 @@ class Window:
 
         self.on_grid_ax = self.fig.add_subplot(self.inventory[:1, :])
         self.carrying_ax = self.fig.add_subplot(self.inventory[1:, :])
-        self.grid_ax = self.fig.add_subplot(self.grid[:, :], aspect='equal')
-        self.grid_ax.set_aspect('equal')
-        self.grid_ax.set_anchor('N')
+        self.ax = self.fig.add_subplot(self.grid[:, :], aspect='equal')
+        self.ax.set_aspect('equal')
+        self.ax.set_anchor('N')
 
         self.on_grid_ax.set_title('on grid', fontsize=8, pad=3)
         self.carrying_ax.set_title('carrying', fontsize=8, pad=3)
@@ -65,7 +52,6 @@ class Window:
 
             self.closeup_obj[name] = ax.imshow(np.zeros(shape=(1,1,3)), interpolation='bilinear')
 
-
         # Show the env name in the window title
         self.fig.canvas.set_window_title(title)
 
@@ -81,33 +67,12 @@ class Window:
 
         self.fig.canvas.mpl_connect('close_event', close_handler)
 
-    def show_img(self, img):
-        """
-        Show an image or update the image being shown
-        """
-
-        # If no image has been shown yet,
-        # show the first image of the environment
-        if self.imshow_obj is None:
-            self.imshow_obj = self.grid_ax.imshow(img, interpolation='bilinear')
-
-        # Update the image data
-        self.imshow_obj.set_data(img)
-
-        # Request the window be redrawn
-        self.fig.canvas.draw_idle()
-        self.fig.canvas.flush_events()
-
-        # Let matplotlib process UI events
-        plt.pause(0.0001)
-
     def set_caption(self, text):
         """
         Set/update the caption text below the image
         """
-        self.grid_ax.set_xlabel(text, labelpad=10)
+        self.ax.set_xlabel(text, labelpad=10)
 
-    # NEW
     def set_inventory(self, env):
         """
         Set/update the inventory of objects
@@ -153,33 +118,3 @@ class Window:
             ax.set_title('')
             if self.closeup_obj[name] is not None:
                 self.closeup_obj[name].set_data(np.ones(shape=(1,1,3)))
-
-    def reg_key_handler(self, key_handler):
-        """
-        Register a keyboard event handler
-        """
-
-        # Keyboard handler
-        self.fig.canvas.mpl_connect('key_press_event', key_handler)
-
-    def show(self, block=True):
-        """
-        Show the window, and start an event loop
-        """
-
-        # If not blocking, trigger interactive mode
-        if not block:
-            plt.ion()
-
-        # Show the plot
-        # In non-interactive mode, this enters the matplotlib event loop
-        # In interactive mode, this call does not block
-        plt.show()
-
-    def close(self):
-        """
-        Close the window
-        """
-
-        plt.close()
-        self.closed = True
