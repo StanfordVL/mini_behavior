@@ -71,21 +71,6 @@ class WorldObj:
         self.can_seebehind = can_seebehind
         self.contains = None
         self.inside_of = None
-        self.valid_idx = [0, 1, 2, 3] # TODO: is this needed
-        self.block_idx = set()
-
-        if not self.can_contain:
-            self.block_idx.add(2)
-
-    def block_idxs(self):
-        block_idx = self.block_idx
-
-        if self.can_contain and 'openable' in self.states.keys():
-            if self.states['openable'].get_value():
-                block_idx.discard(2)
-            else:
-                block_idx.add(2)
-        return block_idx
 
     def check_abs_state(self, env=None, state=None):
         if state is not None:
@@ -207,7 +192,7 @@ class FurnitureObj(WorldObj):
         self.all_pos = []
 
     def render_background(self, img):
-        fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
+        fill_coords(img, point_in_rect(0.031, 1, 0.031, 1), COLORS[self.color])
 
     def reset(self):
         super().reset()

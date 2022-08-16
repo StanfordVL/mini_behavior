@@ -4,10 +4,12 @@ import argparse
 from gym_minigrid.wrappers import *
 from gym_minigrid.window import Window
 from gym_minigrid.utils.save import get_step, save_demo
+from gym_minigrid.grid import GridDimension
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
 show_furniture = False
+
 
 def redraw(img):
     if not args.agent_view:
@@ -18,12 +20,22 @@ def redraw(img):
     window.show_img(img)
 
 
-def switch_view():
+def render_furniture():
     global show_furniture
     show_furniture = not show_furniture
 
     if show_furniture:
-        img = env.render_furniture()
+        img = np.copy(env.furniture_view)
+
+        i, j = env.agent.cur_pos
+        ymin = j * TILE_PIXELS
+        ymax = (j + 1) * TILE_PIXELS
+        xmin = i * TILE_PIXELS
+        xmax = (i + 1) * TILE_PIXELS
+
+        img[ymin:ymax, xmin:xmax, :] = GridDimension.render_agent(img[ymin:ymax, xmin:xmax, :], env.agent.dir)
+        img = env.render_furniture_states(img)
+
         window.show_img(img)
     else:
         obs = env.gen_obs()
@@ -106,7 +118,7 @@ def key_handler(event):
         return
     # Spacebar
     if event.key == ' ':
-        switch_view()
+        render_furniture()
         return
     if event.key == 'pageup':
         step('choose')
@@ -140,9 +152,10 @@ parser.add_argument(
     # default='MiniGrid-TestObjects-16x16-N1-v0'
     # default='MiniGrid-TestFurniture-16x16-N1-v0'
     # default='MiniGrid-TestInside-16x16-N1-v0'
-    # default='MiniGrid-TestAbilities-16x16-N1-v0'
+    default='MiniGrid-TestAbilities-16x16-N1-v0'
     # default='MiniGrid-TwoRoomNavigation-8x8-N2-v0'
-    default='MiniGrid-ThrowLeftoversSceneEnv-0x0-N2-v0'
+    # default='MiniGrid-ThrowLeftoversSceneEnv-0x0-N2-v0'
+    # default='MiniGrid-ThrowLeftovers-16x16-N2-v1'
 )
 parser.add_argument(
     "--seed",

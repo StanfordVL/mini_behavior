@@ -3,50 +3,26 @@
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "slice",
         "cook"
     ],
     "ashcan": [],
-    "backpack": [
-        "pickup",
-        "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under",
-        "open",
-        "close"
-    ],
     "ball": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "banana": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
-    ],
-    "basket": [
-        "pickup",
-        "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
     ],
     "bed": [],
     "beef": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "bin": [],
@@ -54,45 +30,33 @@
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "toggle"
     ],
     "book": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "bow": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "bread": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "broom": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "bucket": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "cabinet": [
         "open",
@@ -102,81 +66,57 @@
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "calculator": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "toggle"
     ],
     "candy": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "car": [
-        "pickup",
-        "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under",
         "open",
         "close"
     ],
     "carton": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under",
-        "open",
-        "close"
+        "drop_in"
     ],
     "carving_knife": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "casserole": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
+    "chair": [],
     "chicken": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "chip": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "cookie": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "countertop": [],
@@ -184,21 +124,26 @@
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
+    ],
+    "document": [
+        "pickup",
+        "drop",
+        "drop_in"
     ],
     "door": [
         "open",
         "close"
     ],
-    "dustpan": [],
+    "dustpan": [
+        "pickup",
+        "drop",
+        "drop_in"
+    ],
     "egg": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "electric_refrigerator": [
@@ -209,242 +154,184 @@
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "floor": [],
     "folder": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under",
-        "open",
-        "close"
+        "drop_in"
     ],
     "fork": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "gym_shoe": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "hamburger": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "hammer": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "highlighter": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
-    ],
-    "jar": [
-        "pickup",
-        "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under",
-        "open",
-        "close"
+        "drop_in"
     ],
     "jewelry": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "juice": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "kettle": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "knife": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "lemon": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "slice",
         "cook"
     ],
     "lettuce": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
+    ],
+    "marker": [
+        "pickup",
+        "drop",
+        "drop_in"
     ],
     "necklace": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "notebook": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
+    ],
+    "oatmeal": [
+        "pickup",
+        "drop",
+        "drop_in"
     ],
     "olive": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "package": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "open",
         "close"
     ],
     "pan": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "pen": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "pencil": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "plate": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "plywood": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "pop": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
+    ],
+    "pot_plant": [
+        "pickup",
+        "drop",
+        "drop_in"
     ],
     "printer": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "toggle"
     ],
     "radish": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "rag": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "salad": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "sandwich": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "saw": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "scrub_brush": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "shelf": [],
     "shoe": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "shower": [],
     "sink": [
@@ -453,32 +340,24 @@
     "soap": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "sock": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "sofa": [],
     "soup": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "spoon": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "stove": [
         "toggle",
@@ -489,58 +368,49 @@
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "slice",
         "cook"
+    ],
+    "sugar": [
+        "pickup",
+        "drop",
+        "drop_in"
     ],
     "table": [],
     "tea_bag": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "teapot": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "toilet": [],
     "tomato": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "slice",
         "cook"
     ],
     "towel": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "vegetable_oil": [
         "pickup",
         "drop",
         "drop_in",
-        "drop_on",
-        "drop_under",
         "cook"
     ],
     "wall": [],
     "water": [
         "pickup",
         "drop",
-        "drop_in",
-        "drop_on",
-        "drop_under"
+        "drop_in"
     ],
     "window ": [
         "open",

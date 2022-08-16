@@ -8,11 +8,6 @@
         "dustyable",
         "stainable"
     ],
-    "backpack": [
-        "dustyable",
-        "openable",
-        "stainable"
-    ],
     "ball": [
         "dustyable",
         "stainable"
@@ -84,8 +79,7 @@
         "stainable"
     ],
     "carton": [
-        "dustyable",
-        "openable"
+        "dustyable"
     ],
     "carving_knife": [
         "dustyable",
@@ -95,6 +89,10 @@
     "casserole": [
         "cookable",
         "freezable",
+        "stainable"
+    ],
+    "chair": [
+        "dustyable",
         "stainable"
     ],
     "chicken": [
@@ -115,6 +113,9 @@
     "date": [
         "cookable",
         "freezable"
+    ],
+    "document": [
+        "dustyable"
     ],
     "door": [
         "dustyable",
@@ -144,8 +145,7 @@
         "stainable"
     ],
     "folder": [
-        "dustyable",
-        "openable"
+        "dustyable"
     ],
     "fork": [
         "dustyable",
@@ -165,11 +165,6 @@
     ],
     "highlighter": [
         "dustyable",
-        "stainable"
-    ],
-    "jar": [
-        "dustyable",
-        "openable",
         "stainable"
     ],
     "jewelry": [
@@ -196,12 +191,20 @@
     "lettuce": [
         "freezable"
     ],
+    "marker": [
+        "dustyable",
+        "stainable"
+    ],
     "necklace": [
         "dustyable",
         "stainable"
     ],
     "notebook": [
         "dustyable"
+    ],
+    "oatmeal": [
+        "cookable",
+        "freezable"
     ],
     "olive": [
         "cookable",
@@ -233,6 +236,9 @@
     ],
     "pop": [
         "freezable"
+    ],
+    "pot_plant": [
+        "soakable"
     ],
     "printer": [
         "dustyable",
@@ -310,6 +316,9 @@
         "cookable",
         "freezable",
         "sliceable"
+    ],
+    "sugar": [
+        "cookable"
     ],
     "table": [
         "dustyable",

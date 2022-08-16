@@ -17,10 +17,11 @@ OBJECTS = [
     "salad", "sandwich", "saw", "scrub_brush", "shelf", "shoe", "shower", "sink", "soap", "sock", "sofa", "soup", "spoon", "stove", "strawberry",
     "table", "tea_bag", "teapot", "toilet", "tomato", "towel",
     "vegetable_oil",
-    "water", "window"
+    "water", "window",
+    "pot_plant", "marker", "chair", "document", "oatmeal", "sugar"
 ]
 
-FURNITURE = ['ashcan', 'bin', 'bed', 'cabinet', 'countertop', 'electric_refrigerator', 'shelf', 'sofa', 'stove', 'table', 'sink', 'shower']
+FURNITURE = ['ashcan', 'bin', 'bed', 'cabinet', "car", 'chair', 'countertop', 'electric_refrigerator', 'shelf', 'sofa', 'stove', 'table', 'sink', 'shower']
 
 # Map of object type to integers
 OBJECT_TO_IDX = {
@@ -111,6 +112,12 @@ OBJECT_TO_IDX = {
     "wall": 84,
     "water": 85,
     "window ": 86,
+    "pot_plant": 87,
+    "marker": 88,
+    "chair": 89,
+    "document": 90,
+    "oatmeal": 91,
+    "sugar": 92
 }
 
 IDX_TO_OBJECT = dict(zip(OBJECT_TO_IDX.values(), OBJECT_TO_IDX.keys()))
@@ -202,4 +209,9 @@ OBJECT_TO_STR = {
     "wall": "W",
     "water": "W",
     "window ": "W",
+    "pot_plant": "P",
+    "marker": "M",
+    "chair": "C",
+    "oatmeal": "O",
+    "sugar": "S"
 }

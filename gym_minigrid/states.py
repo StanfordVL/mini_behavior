@@ -1,6 +1,5 @@
 from .utils.states_base import *
 import numpy as np
-from .bddl.objs import FURNITURE
 
 
 def get_obj_cell(self, env):

@@ -53,15 +53,6 @@ class Close(BaseAction):
         obj.states['openable'].set_value(False)
         obj.update(self.env)
 
-        if obj.can_contain:
-            for pos in obj.all_pos:
-                objs = self.env.grid.get_all_objs(*pos)
-                set_objs = [obj for obj in objs]
-                for dim in obj.can_contain:
-                    if objs[dim] is None:
-                        set_objs[dim] = obj
-                self.env.grid.set_all_objs(*pos, set_objs)
-
 
 class Cook(BaseAction):
     def __init__(self, env):
@@ -82,8 +73,7 @@ class Cook(BaseAction):
             return False
 
         if find_tool(self.env, self.tools):
-            front_cell = self.env.grid.get_all_objs(*self.env.agent.front_pos)
-            # if isinstance(front_cell, list):
+            front_cell = self.env.grid.get_all_items(*self.env.agent.front_pos)
             for obj2 in front_cell:
                 if obj2 is not None and obj2.type in self.heat_sources:
                     return obj2.check_abs_state(self.env, 'toggleable')
@@ -155,9 +145,10 @@ class DropIn(BaseAction):
         self.drop_dim = None
         for i in range(3):
             furniture, dim_obj = self.env.grid.get_dim(*fwd_pos, i)
-            if furniture is not None and furniture.can_contain and dim_obj is None:
-                self.drop_dim = i
-                return True
+            if furniture is not None and furniture.can_contain and i in furniture.can_contain:
+                if 'openable' not in furniture.states or furniture.check_abs_state(self.env, 'openable'):
+                    self.drop_dim = i
+                    return True
 
         return False
 
@@ -183,15 +174,6 @@ class Open(BaseAction):
         obj.states['openable'].set_value(True)
         obj.update(self.env)
 
-        if obj.can_contain:
-            for pos in obj.all_pos:
-                objs = self.env.grid.get_all_objs(*pos)
-                set_objs = [obj for obj in objs]
-                for dim in obj.can_contain:
-                    if objs[dim] == obj:
-                        set_objs[dim] = None
-                self.env.grid.set_all_objs(*pos, set_objs)
-
 
 class Pickup(BaseAction):
     def __init__(self, env):
@@ -206,33 +188,28 @@ class Pickup(BaseAction):
         if obj.check_abs_state(self.env, 'inhandofrobot'):
             return False
 
-        # cannot pickup if inside closed obj
-        # dim = self.env.grid.get_obj_dim(obj)
-        # furniture = self.env.grid.get_furniture(*obj.cur_pos, dim)
-        if obj.inside_of and not obj.inside_of.check_abs_state(self.env, 'openable'):
-            return False
-
         return True
 
     def do(self, obj):
-        def pick(obj1):
-            self.env.grid.remove(*obj1.cur_pos, obj1)  # remove obj from the grid and unblock slots
-            obj1.update_pos(np.array([-1, -1])) # update cur_pos of obj
-
-            # check dependencies
-            assert obj.check_abs_state(self.env, 'inhandofrobot')
-            assert not obj.check_abs_state(self.env, 'onfloor')
-
-            # pickup object inside
-            if obj1.contains:
-                pick(obj1.contains)
-
         super().do(obj)
-        pick(obj)
 
-        # if obj was inside, then no longer inside
-        if obj.inside_of:
-            obj.states['inside'].set_value(obj.inside_of, False)
+        objs = self.env.grid.get_all_objs(*obj.cur_pos)
+        dim = objs.index(obj)
+
+        # remove obj from the grid and shift remaining objs
+        self.env.grid.remove(*obj.cur_pos, obj)
+
+        if dim < 2:
+            new_objs = objs[: dim] + objs[dim + 1:] + [None]
+            assert len(new_objs) == 3
+            self.env.grid.set_all_objs(*obj.cur_pos, new_objs)
+
+        # update cur_pos of obj
+        obj.update_pos(np.array([-1, -1]))
+
+        # check dependencies
+        assert obj.check_abs_state(self.env, 'inhandofrobot')
+        assert not obj.check_abs_state(self.env, 'onfloor')
 
 
 class Slice(BaseAction):

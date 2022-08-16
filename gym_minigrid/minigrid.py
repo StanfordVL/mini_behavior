@@ -41,8 +41,6 @@ class MiniGridEnv(gym.Env):
         close = 8
         slice = 9
         cook = 10
-        # drop_on = 11
-        # drop_under = 12
 
     def __init__(
         self,
@@ -127,19 +125,20 @@ class MiniGridEnv(gym.Env):
         # Initialize the state
         self.reset()
 
-        self.mission = ''
+        # self.mission = ''
         self.furniture_view = None
-        self.state_icons = {state: img_to_array(os.path.join(os.path.dirname(__file__), f'utils/state_icons/{state}.jpg')) for state in ABILITIES}
+        # self.state_icons = {state: img_to_array(os.path.join(os.path.dirname(__file__), f'utils/state_icons/{state}.jpg')) for state in ABILITIES}
 
     def copy_objs(self):
         from copy import deepcopy
         return deepcopy(self.objs), deepcopy(self.obj_instances)
 
+    # TODO: check this works
     def load_objs(self, state):
         obj_instances = state['obj_instances']
         grid = state['grid']
         for obj in self.obj_instances.values():
-            if obj.type != 'wall' and obj.type != 'door':
+            if type(obj) != Wall and type(obj) != Door:
                 load_obj = obj_instances[obj.name]
                 obj.load(load_obj, grid, self)
 
@@ -149,6 +148,7 @@ class MiniGridEnv(gym.Env):
                 if other_obj.check_rel_state(self, obj, 'inside'):
                     obj.contains.append(other_obj)
 
+    # TODO: check this works
     def get_state(self):
         grid = self.grid.copy()
         agent = self.agent.copy()
@@ -166,6 +166,7 @@ class MiniGridEnv(gym.Env):
             pkl.dump(state, f)
             print(f'saved to: {out_file}')
 
+    # TODO: check this works
     def load_state(self, load_file):
         assert os.path.isfile(load_file)
         with open(load_file, 'rb') as f:
@@ -190,23 +191,16 @@ class MiniGridEnv(gym.Env):
         self._gen_grid(self.width, self.height)
 
         # generate furniture view
-        self.furniture_view = self.grid.render_furniture(tile_size=TILE_PIXELS, objs=self.objs)
+        self.furniture_view = self.grid.render_furniture(tile_size=TILE_PIXELS, obj_instances=self.obj_instances)
 
         # These fields should be defined by _gen_grid
         assert self.agent.cur_pos is not None
         assert self.agent.dir is not None
 
         # Check that the agent doesn't overlap with an object
-        start_cell = self.grid.get(*self.agent.cur_pos)
+        # start_cell = self.grid.get(*self.agent.cur_pos)
 
-        can_overlap = True
-
-        for dim in start_cell:
-            for obj in dim:
-                if is_obj(obj) and not obj.can_overlap:
-                    can_overlap = False
-
-        assert start_cell is None or can_overlap is True
+        assert self.grid.is_empty(*self.agent.cur_pos)
 
         # Step count since episode start
         self.step_count = 0
@@ -424,14 +418,17 @@ class MiniGridEnv(gym.Env):
                     y = pos[1] + dy
 
                     # Don't place the object on top of another object
-                    if isinstance(obj, FurnitureObj):
-                        if self.grid.get_furniture(x, y) is not None:
-                            valid = False
-                            break
-                    else:
-                        if self.grid.get_obj(x, y, 0) is not None:
-                            valid = False
-                            break
+                    if not self.grid.is_empty(x, y):
+                        valid = False
+                        break
+                    # if isinstance(obj, FurnitureObj):
+                    #     if self.grid.get_furniture(x, y) is not None:
+                    #         valid = False
+                    #         break
+                    # else:
+                    #     if self.grid.get_obj(x, y, 0) is not None:
+                    #         valid = False
+                    #         break
 
                     # Don't place the object where the agent is
                     if np.array_equal((x, y), self.agent.cur_pos):
@@ -503,7 +500,14 @@ class MiniGridEnv(gym.Env):
         obs_cell = obs_grid.get(vx, vy)
         world_cell = self.grid.get(x, y)
 
-        return obs_cell != [] and [obj.type for obj in obs_cell] == [obj.type for obj in world_cell]
+        if obs_grid.is_empty(vx, vy):
+            return False
+
+        for i in range(3):
+            if [obj.type for obj in obs_cell[i]] != [obj.type for obj in world_cell[i]]:
+                return False
+
+        return True
 
     def step(self, action):
         # keep track of last action
@@ -517,7 +521,7 @@ class MiniGridEnv(gym.Env):
 
         # Get the position and contents in front of the agent
         fwd_pos = self.agent.front_pos
-        fwd_cell = self.grid.get_all_items(*fwd_pos)
+        fwd_cell = self.grid.get(*fwd_pos)
 
         # Rotate left
         if action == self.actions.left:
@@ -532,10 +536,11 @@ class MiniGridEnv(gym.Env):
         # Move forward
         elif action == self.actions.forward:
             can_overlap = True
-            for obj in fwd_cell:
-                if is_obj(obj) and not obj.can_overlap:
-                    can_overlap = False
-                    break
+            for dim in fwd_cell:
+                for obj in dim:
+                    if is_obj(obj) and not obj.can_overlap:
+                        can_overlap = False
+                        break
             if can_overlap:
                 self.agent.cur_pos = fwd_pos
             else:
@@ -749,19 +754,6 @@ class MiniGridEnv(gym.Env):
 
         return img
 
-    def render_furniture(self, tile_size=TILE_PIXELS):
-        img = np.copy(self.furniture_view)
-
-        i, j = self.agent.cur_pos
-        ymin = j * tile_size
-        ymax = (j + 1) * tile_size
-        xmin = i * tile_size
-        xmax = (i + 1) * tile_size
-
-        img[ymin:ymax, xmin:xmax, :] = self.grid.render_agent(img[ymin:ymax, xmin:xmax, :], self.agent.dir)
-        img = self.render_furniture_states(img)
-        return img
-
     def render_states(self, tile_size=TILE_PIXELS):
         pos = self.agent.front_pos
         imgs = []
@@ -771,7 +763,6 @@ class MiniGridEnv(gym.Env):
             furniture.render(img)
             state_values = furniture.get_ability_values(self)
             GridDimension.render_furniture_states(img, state_values)
-
         imgs.append(img)
 
         for grid in self.grid.grid:

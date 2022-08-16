@@ -7,7 +7,7 @@ TILE_PIXELS = 32
 
 
 def is_obj(obj):
-    return obj is not None and type(obj) != bool
+    return isinstance(obj, WorldObj)
 
 
 class Grid:
@@ -25,8 +25,8 @@ class Grid:
         self.width = width
         self.height = height
 
-        self.grid = [GridDimension(width, height) for i in range(3)]
         # 3 Grid Dimension classes
+        self.grid = [GridDimension(width, height) for i in range(3)]
 
         self.walls = []
 
@@ -74,9 +74,6 @@ class Grid:
         assert 0 <= j < self.height
         return [dim.get(i, j) for dim in self.grid]
 
-    def has_furniture(self, i, j, dim=0):
-        return self.grid[dim].has_furniture(i, j)
-
     def get_furniture(self, i, j, dim=None):
         if dim is not None:
             return self.grid[dim].get_furniture(i, j)
@@ -113,6 +110,7 @@ class Grid:
     def remove(self, i, j, v):
         assert 0 <= i < self.width
         assert 0 <= j < self.height
+        assert isinstance(v, WorldObj) and not isinstance(v, FurnitureObj)
 
         cell = self.get_all_objs(i, j)
 
@@ -128,9 +126,6 @@ class Grid:
         if isinstance(v, FurnitureObj):
             for idx in v.dims:
                 self.grid[idx].set(i, j, v)
-            if v.can_contain and 'openable' not in v.states:
-                for dim in v.can_contain:
-                    self.grid[dim].remove(i, j)
         else:
             self.grid[dim].set(i, j, v)
 
@@ -192,20 +187,6 @@ class Grid:
         return grid
 
     @classmethod
-    def render_agent(cls, img, agent_dir):
-        tri_fn = point_in_triangle(
-            (0.12, 0.19),
-            (0.87, 0.50),
-            (0.12, 0.81),
-        )
-
-        # Rotate the agent based on its direction
-        tri_fn = rotate_fn(tri_fn, cx=0.5, cy=0.5, theta=0.5 * math.pi * agent_dir)
-        fill_coords(img, tri_fn, (255, 0, 0))
-
-        return img
-
-    @classmethod
     def render_tile(
         cls,
         furniture,
@@ -250,28 +231,21 @@ class Grid:
         if furniture:
             furniture.render_background(img)
 
-        # if len([obj for obj in render_objs if obj is not None]) == 1 or render_objs[0].type == 'wall':
-        #         render_objs[0].render(img)
-        #     else:
-        # split up the cell for multiple objs
-        if is_obj(render_objs[0]) and render_objs[0].type == 'door':
-            render_objs[0].render(img)
-        else:
-            full, half = np.shape(img)[0], int(np.shape(img)[0] / 2)
-            y_coords = [(0, half), (0, half), (half, full)] #, (half, full)]
-            x_coords = [(0, half), (half, full), (0, half)] #, (half, full)]
+        full, half = np.shape(img)[0], int(np.shape(img)[0] / 2)
+        y_coords = [(0, half), (0, half), (half, full)] #, (half, full)]
+        x_coords = [(0, half), (half, full), (0, half)] #, (half, full)]
 
-            for i in range(len(render_objs)):
-                obj = render_objs[i]
+        for i in range(len(render_objs)):
+            obj = render_objs[i]
 
-                if is_obj(obj) and not obj.is_furniture():
-                    x_1, x_2 = x_coords[i]
-                    y_1, y_2 = y_coords[i]
-                    sub_img = img[y_1: y_2, x_1: x_2, :]
-                    obj.render(sub_img)
+            if is_obj(obj):
+                x_1, x_2 = x_coords[i]
+                y_1, y_2 = y_coords[i]
+                sub_img = img[y_1: y_2, x_1: x_2, :]
+                obj.render(sub_img)
 
         if agent_dir is not None:
-            cls.render_agent(img, agent_dir)
+            GridDimension.render_agent(img, agent_dir)
 
         # Highlight the cell if needed
         if highlight:
@@ -332,7 +306,7 @@ class Grid:
     def render_furniture(
         self,
         tile_size,
-        objs
+        obj_instances
     ):
         # Compute the total grid size
         width_px = self.width * tile_size
@@ -354,21 +328,17 @@ class Grid:
                 fill_coords(sub_img, point_in_rect(0, 0.031, 0, 1), (100, 100, 100))
                 fill_coords(sub_img, point_in_rect(0, 1, 0, 0.031), (100, 100, 100))
 
-        layout = self.walls
-        for obj_type in objs.keys():
-            if obj_type in FURNITURE:
-                layout += objs[obj_type]
+        # render all furniture
+        for obj in obj_instances.values():
+            if obj.is_furniture():
+                i, j = obj.cur_pos
+                ymin = j * tile_size
+                ymax = (j + obj.height) * tile_size
+                xmin = i * tile_size
+                xmax = (i + obj.width) * tile_size
+                sub_img = img[ymin:ymax, xmin:xmax, :]
 
-        # render all furniture + walls
-        for obj in layout:
-            i, j = obj.cur_pos
-            ymin = j * tile_size
-            ymax = (j + obj.height) * tile_size
-            xmin = i * tile_size
-            xmax = (i + obj.width) * tile_size
-            sub_img = img[ymin:ymax, xmin:xmax, :]
-
-            obj.render(sub_img)
+                obj.render(sub_img)
 
         return img
 
@@ -386,12 +356,8 @@ class Grid:
             for j in range(self.height):
                 if vis_mask[i, j]:
                     v = self.get_all_objs(i, j)
-
                     for obj in v:
-                        if is_obj(obj):
-                            encoding = obj.encode()
-                        else:
-                            encoding = np.array([OBJECT_TO_IDX['empty'], 0, 0])
+                        encoding = obj.encode() if is_obj(obj) else np.array([OBJECT_TO_IDX['empty'], 0, 0])
                         array[i, j, :] = np.add(array[i, j, :], encoding)
 
         return array
@@ -459,6 +425,7 @@ class GridDimension:
         from copy import deepcopy
         return deepcopy(self)
 
+    # TODO: check this works
     def load(self, grid, env):
         for x in range(self.width):
             for y in range(self.height):
@@ -473,18 +440,18 @@ class GridDimension:
         assert 0 <= j < self.height
         return self.grid[j * self.width + i]
 
-    def get_obj(self, i, j):
-        assert 0 <= i < self.width
-        assert 0 <= j < self.height
-        return self.grid[j * self.width + i][1]
-
     def get_furniture(self, i, j):
         assert 0 <= i < self.width
         assert 0 <= j < self.height
         return self.grid[j * self.width + i][0]
 
-    def has_furniture(self, i, j):
-        return self.get_furniture(i, j) is not None
+    def get_obj(self, i, j):
+        assert 0 <= i < self.width
+        assert 0 <= j < self.height
+        return self.grid[j * self.width + i][1]
+
+    # def has_furniture(self, i, j):
+    #     return self.get_furniture(i, j) is not None
 
     def remove(self, i, j):
         assert 0 <= i < self.width
@@ -495,11 +462,10 @@ class GridDimension:
         assert 0 <= i < self.width, f'{i}'
         assert 0 <= j < self.height, f'{j}'
 
-        self.grid[j * self.width + i][1] = v
         if isinstance(v, FurnitureObj):
             self.grid[j * self.width + i][0] = v
-        # else:
-        #     self.grid[j * self.width + i][1] = v
+        else:
+            self.grid[j * self.width + i][1] = v
 
     def rotate_left(self):
         """
@@ -520,7 +486,7 @@ class GridDimension:
         Get a subset of the grid
         """
 
-        grid = Grid(width, height)
+        grid = GridDimension(width, height)
 
         for j in range(0, height):
             for i in range(0, width):
@@ -528,8 +494,9 @@ class GridDimension:
                 y = topY + j
 
                 if 0 <= x < self.width and 0 <= y < self.height:
-                    v = self.get(x, y)
-                    grid.set(i, j, v)
+                    furniture, obj = self.get(x, y)
+                    grid.set(i, j, furniture)
+                    grid.set(i, j, obj)
                 else:
                     grid.set(i, j, Wall())
 
@@ -560,6 +527,7 @@ class GridDimension:
         highlight=False,
         tile_size=TILE_PIXELS,
         subdivs=3,
+        draw_grid_lines=True
     ):
         """
         Render a tile and cache the result
@@ -570,8 +538,9 @@ class GridDimension:
         obj_size = int(tile_size * 7 / 8)
 
         # Draw the grid lines (top and left edges)
-        fill_coords(img, point_in_rect(0, 0.031, 0, 1), (100, 100, 100))
-        fill_coords(img, point_in_rect(0, 1, 0, 0.031), (100, 100, 100))
+        if draw_grid_lines:
+            fill_coords(img, point_in_rect(0, 0.031, 0, 1), (100, 100, 100))
+            fill_coords(img, point_in_rect(0, 1, 0, 0.031), (100, 100, 100))
 
         # if obj is inside closed obj, don't render it
         if is_obj(obj) and obj.inside_of and 'openable' in obj.inside_of.states.keys() and not obj.inside_of.check_abs_state(state='openable'):
@@ -589,11 +558,19 @@ class GridDimension:
             if furniture:
                 furniture.render_background(img)
 
-            if is_obj(obj) and not obj.is_furniture():
+            # render obj and all false states
+            if is_obj(obj):
                 obj_img = img[: obj_size * 3, : obj_size * 3, :]
                 obj.render(obj_img)
                 states_img = img[:, obj_size * 3:, :]
-                fill_coords(states_img, point_in_rect(0, 1, 0, 1), [255, 255, 255])
+
+                # Draw the grid lines (top and left edges)
+                for i in range(len(ABILITIES)):
+                    y_min = int(i * tile_size / len(ABILITIES))
+                    y_max = int((i + 1) * tile_size / len(ABILITIES))
+                    sub_img = states_img[y_min: y_max, :, :]
+                    fill_coords(sub_img, point_in_rect(0.15, 1, 0.15, 1), (255, 204, 203))
+                    # fill_coords(states_img, point_in_rect(0.031, 1, 0.031, 1), (255, 204, 203))
 
             if agent_dir is not None:
                 cls.render_agent(img, agent_dir)
@@ -608,11 +585,12 @@ class GridDimension:
             # Cache the rendered tile
             cls.tile_cache[key] = img
 
-        if is_obj(obj) and not obj.is_furniture():
-            img[:, obj_size:, :] = cls.render_obj_states(state_values)
+        if is_obj(obj):
+            img[:, obj_size:, :] = cls.render_obj_states(state_values, highlight, tile_size)
 
         return img.astype(np.uint8)
 
+    # TODO: delete and replace usages with: render_tile(furniture, obj, state_values, draw_grid_lines=False)
     @classmethod
     def render_closeup(
         cls,
@@ -644,10 +622,6 @@ class GridDimension:
             img = downsample(img, subdivs)
 
             states_img = cls.render_obj_states(state_values)
-            fill_coords(states_img, point_in_rect(0, 0.01, 0, 1), [255, 0, 0])
-            fill_coords(states_img, point_in_rect(0.99, 1, 0, 1), [255, 0, 0])
-            fill_coords(states_img, point_in_rect(0, 1, 0, 0.01), [255, 0, 0])
-            fill_coords(states_img, point_in_rect(0, 1, 0.99, 1), [255, 0, 0])
             img = np.concatenate((img, states_img), axis=1)
 
         return img.astype(np.uint8)
@@ -655,14 +629,15 @@ class GridDimension:
 
     @classmethod
     def render_obj_states(cls, state_values, highlight=False, tile_size=TILE_PIXELS):
-
-        # if obj is inside closed obj, don't render it
         num = len(ABILITIES)
-        img = np.ones(shape=(tile_size, int(tile_size / num), 3), dtype=np.uint8) * 255
+        img = np.zeros(shape=(tile_size, int(tile_size / num), 3), dtype=np.uint8)
 
-        # Draw the grid lines (top and left edges)
-        fill_coords(img, point_in_rect(0, 0.031, 0, 1), (100, 100, 100))
-        fill_coords(img, point_in_rect(0, 1, 0, 0.031), (100, 100, 100))
+        # # Draw the grid lines (top and left edges)
+        for i in range(len(ABILITIES)):
+            y_min = int(i * tile_size / len(ABILITIES))
+            y_max = int((i + 1) * tile_size / len(ABILITIES))
+            sub_img = img[y_min: y_max, :, :]
+            fill_coords(sub_img, point_in_rect(0.15, 1, 0.15, 1), (255, 204, 203))
 
         if state_values:
             for i in range(len(ABILITIES)):
@@ -672,7 +647,7 @@ class GridDimension:
                     y_max = int((i + 1) * tile_size / len(ABILITIES))
                     sub_img = img[y_min: y_max, :, :]
 
-                    fill_coords(sub_img, point_in_rect(0.031, 0.969, 0.031, 0.969), COLORS['green'])
+                    fill_coords(sub_img, point_in_rect(0.15, 1, 0.15, 1), COLORS['green'])
 
         # Highlight the cell if needed
         if highlight:
@@ -682,13 +657,13 @@ class GridDimension:
 
     @classmethod
     def render_furniture_states(cls, img, state_values):
-        if state_values.get('openable', False):
-            fill_coords(img, point_in_rect(0, 0.05, 0, 1), [0, 255, 0])
-        if state_values.get('toggleable', False):
-            fill_coords(img, point_in_rect(0, 1, 0, 0.05), [0, 255, 0])
         if state_values.get('dustyable', False):
-            fill_coords(img, point_in_rect(0.95, 1, 0, 1), [0, 255, 0])
+            fill_coords(img, point_in_rect(0, 0.05, 0, 1), [0, 255, 0])
+        if state_values.get('openable', False):
+            fill_coords(img, point_in_rect(0, 1, 0, 0.05), [0, 255, 0])
         if state_values.get('stainable', False):
+            fill_coords(img, point_in_rect(0.95, 1, 0, 1), [0, 255, 0])
+        if state_values.get('toggleable', False):
             fill_coords(img, point_in_rect(0, 1, 0.95, 1), [0, 255, 0])
 
     def render(

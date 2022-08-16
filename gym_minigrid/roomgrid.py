@@ -234,22 +234,22 @@ class RoomGrid(MiniGridEnv):
 
         return obj, pos
 
-    def add_object(self, i, j, kind=None, color=None):
-        """
-        Add a new object to room (i, j)
-        """
-
-        if kind is None:
-            kind = self._rand_elem(['key', 'ball', 'box'])
-
-        if color is None:
-            color = self._rand_color()
-
-        # TODO: we probably want to add an Object.make helper function
-        assert kind in OBJECTS
-        obj = OBJECT_CLASS[kind]()
-
-        return self.place_in_room(i, j, obj)
+    # def add_object(self, i, j, kind=None, color=None):
+    #     """
+    #     Add a new object to room (i, j)
+    #     """
+    #
+    #     if kind is None:
+    #         kind = self._rand_elem(['key', 'ball', 'box'])
+    #
+    #     if color is None:
+    #         color = self._rand_color()
+    #
+    #     # TODO: we probably want to add an Object.make helper function
+    #     assert kind in OBJECTS
+    #     obj = OBJECT_CLASS[kind]()
+    #
+    #     return self.place_in_room(i, j, obj)
 
     def add_door(self, i, j, door_idx=None, color=None, locked=None):
         """

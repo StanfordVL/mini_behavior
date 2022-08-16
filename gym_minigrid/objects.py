@@ -18,10 +18,6 @@ class Apple(WorldObj):
     def __init__(self, color=None, name='apple'):
         super(Apple, self).__init__('apple', color, name)
 
-class Backpack(WorldObj):
-    def __init__(self, color=None, name='backpack'):
-        super(Backpack, self).__init__('backpack', color, name, can_contain=True)
-
 
 class Ball(WorldObj):
     def __init__(self, color=None, name='ball'):
@@ -31,11 +27,6 @@ class Ball(WorldObj):
 class Banana(WorldObj):
     def __init__(self, color=None, name='banana'):
         super(Banana, self).__init__('banana', color, name)
-
-
-class Basket(WorldObj):
-    def __init__(self, color=None, name='basket'):
-        super(Basket, self).__init__('basket', color, name, can_contain=True)
 
 
 class Beef(WorldObj):
@@ -70,7 +61,7 @@ class Broom(WorldObj):
 
 class Bucket(WorldObj):
     def __init__(self, color=None, name='bucket'):
-        super(Bucket, self).__init__('bucket', color, name, can_contain=True)
+        super(Bucket, self).__init__('bucket', color, name)
 
 
 class Cake(WorldObj):
@@ -88,14 +79,9 @@ class Candy(WorldObj):
         super(Candy, self).__init__('candy', color, name)
 
 
-class Car(WorldObj):
-    def __init__(self, color=None, name='car'):
-        super(Car, self).__init__('car', color, name)
-
-
 class Carton(WorldObj):
     def __init__(self, color=None, name='carton'):
-        super(Carton, self).__init__('carton', color, name, can_contain=True)
+        super(Carton, self).__init__('carton', color, name)
 
 
 class CarvingKnife(WorldObj):
@@ -157,7 +143,7 @@ class Floor(WorldObj):
 
 class Folder(WorldObj):
     def __init__(self, color=None, name='folder'):
-        super(Folder, self).__init__('folder', color, name, can_contain=True)
+        super(Folder, self).__init__('folder', color, name)
 
 
 class Fork(WorldObj):
@@ -185,14 +171,10 @@ class Highlighter(WorldObj):
         super(Highlighter, self).__init__('highlighter', color, name)
 
 
-class Jar(WorldObj):
-    def __init__(self, color=None, name='jar'):
-        super(Jar, self).__init__('jar', color, name, can_contain=True)
-
-
 class Jewelry(WorldObj):
     def __init__(self, color=None, name='jewelry'):
         super(Jewelry, self).__init__('jewelry', color, name)
+
 
 class Juice(WorldObj):
     def __init__(self, color=None, name='juice'):
@@ -236,7 +218,7 @@ class Olive(WorldObj):
 
 class Package(WorldObj):
     def __init__(self, color=None, name='package'):
-        super(Package, self).__init__('package', color, name, can_contain=True)
+        super(Package, self).__init__('package', color, name)
 
 
 class Pan(WorldObj):
@@ -298,6 +280,7 @@ class Saw(WorldObj):
     def __init__(self, color=None, name='saw'):
         super(Saw, self).__init__('saw', color, name)
 
+
 class ScrubBrush(WorldObj):
     def __init__(self, color=None, name='scrub_brush'):
         super(ScrubBrush, self).__init__('scrub_brush', color, name)
@@ -340,7 +323,7 @@ class TeaBag(WorldObj):
 
 class Teapot(WorldObj):
     def __init__(self, color=None, name='teapot'):
-        super(Teapot, self).__init__('teapot', color, name, can_contain=True)
+        super(Teapot, self).__init__('teapot', color, name)
 
 
 class Toilet(WorldObj):
@@ -374,6 +357,31 @@ class Window(WorldObj):
         super(Window, self).__init__('window', color, name)
 
 
+class PotPlant(WorldObj):
+    def __init__(self, color=None, name='pot_plant'):
+        super(PotPlant, self).__init__('pot_plant', color, name)
+
+
+class Marker(WorldObj):
+    def __init__(self, color=None, name='marker'):
+        super(Marker, self).__init__('marker', color, name)
+
+
+class Document(WorldObj):
+    def __init__(self, color=None, name='document'):
+        super(Document, self).__init__('document', color, name)
+
+
+class Oatmeal(WorldObj):
+    def __init__(self, color=None, name='oatmeal'):
+        super(Oatmeal, self).__init__('oatmeal', color, name)
+
+
+class Sugar(WorldObj):
+    def __init__(self, color=None, name='sugar'):
+        super(Sugar, self).__init__('sugar', color, name)
+
+
 #######################################################################################################################
 
 class Ashcan(FurnitureObj):
@@ -394,6 +402,16 @@ class Bin(FurnitureObj):
 class Cabinet(FurnitureObj):
     def __init__(self, width=2, height=3, color='brown', name='cabinet'):
         super(Cabinet, self).__init__('cabinet', width, height, {0, 1, 2}, color, name, can_contain={0, 1, 2}, can_seebehind=False)
+
+
+class Car(FurnitureObj):
+    def __init__(self, width=3, height=2, color='blue', name='car'):
+        super(Car, self).__init__('car', width, height, {0, 1}, color, name, can_contain={0})
+
+
+class Chair(FurnitureObj):
+    def __init__(self, width=1, height=1, color='brown', name='chair'):
+        super(Chair, self).__init__('chair', width, height, {0, 1}, color, name)
 
 
 class Countertop(FurnitureObj):
@@ -489,10 +507,8 @@ class Table(FurnitureObj):
 OBJECT_CLASS = {
     "apple": Apple,
     "ashcan": Ashcan,
-    "backpack": Backpack,
     "ball": Ball,
     "banana": Banana,
-    "basket": Basket,
     "bed": Bed,
     "beef": Beef,
     "bin": Bin,
@@ -510,11 +526,13 @@ OBJECT_CLASS = {
     "carton": Carton,
     "carving_knife": CarvingKnife,
     "casserole": Casserole,
+    "chair": Chair,
     "chicken": Chicken,
     "chip": Chip,
     "cookie": Cookie,
     "countertop": Countertop,
     "date": Date,
+    "document": Document,
     "door": Door,
     "dustpan": Dustpan,
     "egg": Egg,
@@ -527,15 +545,16 @@ OBJECT_CLASS = {
     "hamburger": Hamburger,
     "hammer": Hammer,
     "highlighter": Highlighter,
-    "jar": Jar,
     "jewelry": Jewelry,
     "juice": Juice,
     "kettle": Kettle,
     "knife": Knife,
     "lemon": Lemon,
     "lettuce": Lettuce,
+    "marker": Marker,
     "necklace": Necklace,
     "notebook": Notebook,
+    "oatmeal": Oatmeal,
     "olive": Olive,
     "package": Package,
     "pan": Pan,
@@ -543,6 +562,7 @@ OBJECT_CLASS = {
     "pencil": Pencil,
     "plate": Plate,
     "plywood": Plywood,
+    "pot_plant": PotPlant,
     "pop": Pop,
     "printer": Printer,
     "radish": Radish,
@@ -562,6 +582,7 @@ OBJECT_CLASS = {
     "spoon": Spoon,
     "stove": Stove,
     "strawberry": Strawberry,
+    "sugar": Sugar,
     "table": Table,
     "tea_bag": TeaBag,
     "teapot": Teapot,
