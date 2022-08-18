@@ -1,9 +1,8 @@
 from mini_behavior.roomgrid import *
 from mini_behavior.register import register
-from bddl.actions import CONTROLS
 
 
-class ThrowLeftoversEnv(RoomGrid):
+class ThrowingAwayLeftoversEnv(RoomGrid):
     """
     Environment in which the agent is instructed to throw away all leftovers into a trash can.
     """
@@ -34,8 +33,6 @@ class ThrowLeftoversEnv(RoomGrid):
                          )
 
     def _gen_objs(self):
-        # # generate counter
-        # place all objects
         countertop = self.objs['countertop'][0]
         plates = self.objs['plate']
         hamburgers = self.objs['hamburger']
@@ -106,21 +103,21 @@ class ThrowLeftoversEnv(RoomGrid):
 
 # non human input env
 register(
-    id='MiniGrid-ThrowLeftovers-16x16-N2-v0',
-    entry_point='mini_behavior.envs:ThrowLeftoversEnv'
+    id='MiniGrid-ThrowingAwayLeftovers-16x16-N2-v0',
+    entry_point='mini_behavior.envs:ThrowingAwayLeftoversEnv'
 )
 
 # human input env
 register(
-    id='MiniGrid-ThrowLeftovers-16x16-N2-v1',
-    entry_point='mini_behavior.envs:ThrowLeftoversEnv',
+    id='MiniGrid-ThrowingAwayLeftovers-16x16-N2-v1',
+    entry_point='mini_behavior.envs:ThrowingAwayLeftoversEnv',
     kwargs={'mode': 'human'}
 )
 
 # non-human input env
 register(
-    id='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v0',
-    entry_point='mini_behavior.envs:ThrowLeftoversEnv',
+    id='MiniGrid-ThrowingAwayLeftoversFour-8x8-N2-v0',
+    entry_point='mini_behavior.envs:ThrowingAwayLeftoversEnv',
     kwargs={'mode': 'not_human',
             'room_size': 8,
             'num_rows': 2,
@@ -129,8 +126,8 @@ register(
 
 # human input env
 register(
-    id='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1',
-    entry_point='mini_behavior.envs:ThrowLeftoversEnv',
+    id='MiniGrid-ThrowingAwayLeftoversFour-8x8-N2-v1',
+    entry_point='mini_behavior.envs:ThrowingAwayLeftoversEnv',
     kwargs={'mode': 'human',
             'room_size': 8,
             'num_rows': 2,
@@ -139,65 +136,8 @@ register(
 
 # non human input env,
 register(
-    id='MiniGrid-ThrowLeftovers-8x8-N2-v0',
-    entry_point='mini_behavior.envs:ThrowLeftoversEnv',
+    id='MiniGrid-ThrowingAwayLeftovers-8x8-N2-v0',
+    entry_point='mini_behavior.envs:ThrowingAwayLeftoversEnv',
     kwargs={'mode': 'not_human',
             'room_size': 8}
 )
-
-
-#######################################################################################################################
-
-
-class ThrowLeftoversNavigation(ThrowLeftoversEnv):
-    """
-    Environment in which the agent is rewarded for navigating to a counter
-    """
-
-    def __init__(
-            self,
-            mode='not_human',
-            room_size=8,
-            num_rows=1,
-            num_cols=1,
-            max_steps=500,
-            num_objs=None
-    ):
-        super().__init__(mode=mode,
-                         room_size=room_size,
-                         num_rows=num_rows,
-                         num_cols=num_cols,
-                         max_steps=max_steps,
-                         num_objs=num_objs
-                         )
-
-    def _reward(self):
-        if self.last_action.name in CONTROLS:
-            self.reward += 0.01
-
-        # for counter in self.objs['counter']:
-        #     if counter.check_rel_state(self, self.agent, 'nextto'):
-        #         self.reward += 0.01
-
-        # for hamburger in self.objs['hamburger']:
-        #     for ashcan in self.objs['ashcan']:
-        #         if hamburger.check_rel_state(self, ashcan, 'inside'):
-        #             self.reward += 1
-        if not self.action_done:
-            self.reward -= 0.01
-
-        return self.reward
-
-
-register(
-    id='MiniGrid-ThrowLeftoversNavigation-8x8-N2-v0',
-    entry_point='mini_behavior.envs:ThrowLeftoversNavigation'
-)
-
-
-register(
-    id='MiniGrid-ThrowLeftoversNavigation-16x16-N2-v0',
-    entry_point='mini_behavior.envs:ThrowLeftoversNavigation',
-    kwargs={'room_size': 16}
-)
-

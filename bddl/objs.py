@@ -1,12 +1,12 @@
 OBJECTS = [
     "apple", "ashcan",
-    "backpack", "ball", "banana", "basket", "bed", "beef", "bin", "blender", "book", "bow", "bread", "broom", "bucket",
-    "cabinet", "cake", "calculator", "candy", "car", "carton", "carving_knife", "casserole", "chicken", "chip", "cookie", "countertop",
+    "backpack", "ball", "banana", "basket", "bed", "beef", "bin", "blender", "book", "bow", "box", "bread", "broom", "bucket",
+    "cabinet", "cake", "calculator", "candle", "candy", "car", "carton", "carving_knife", "casserole", "chicken", "chip", "cookie", "countertop",
     "date", "dustpan", # door
     "egg", "electric_refrigerator",
     "fish", "folder", "fork", # "floor",
     "gym_shoe",
-    "hamburger", "hammer", "highlighter",
+    "hamburger", "hammer", "hardback", "highlighter",
     "jar", "jewelry", "juice",
     "kettle", "knife",
     "lemon", "lettuce",
@@ -21,8 +21,7 @@ OBJECTS = [
     "pot_plant", "marker", "chair", "document", "oatmeal", "sugar"
 ]
 
-FURNITURE = ['ashcan', 'bin', 'bed', 'cabinet', "car", 'chair', 'countertop', 'electric_refrigerator', 'shelf', 'sofa', 'stove', 'table', 'sink', 'shower']
-
+FURNITURE = ['ashcan', 'bed', 'bin', 'box', 'bucket', 'cabinet', 'chair', 'car', 'countertop', 'electric_refrigerator', 'shelf', 'shower', 'sink', 'sofa', 'stove', 'table']
 # Map of object type to integers
 OBJECT_TO_IDX = {
     'unseen': 0,
@@ -117,7 +116,10 @@ OBJECT_TO_IDX = {
     "chair": 89,
     "document": 90,
     "oatmeal": 91,
-    "sugar": 92
+    "sugar": 92,
+    "candle": 93,
+    "box": 94,
+    "hardback": 95
 }
 
 IDX_TO_OBJECT = dict(zip(OBJECT_TO_IDX.values(), OBJECT_TO_IDX.keys()))
@@ -213,5 +215,8 @@ OBJECT_TO_STR = {
     "marker": "M",
     "chair": "C",
     "oatmeal": "O",
-    "sugar": "S"
+    "sugar": "S",
+    "box": "B",
+    "hardback": "H",
+    "candle": "C"
 }

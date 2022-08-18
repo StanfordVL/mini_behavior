@@ -116,7 +116,7 @@ class WorldObj:
                         name = '{}/{}/{}'.format(self.name, obj_name, state)
                         val = instance.get_value(obj_instance, env)
                         states[name] = val
-        return states
+        return states2
 
     def get_ability_values(self, env):
         states = {}

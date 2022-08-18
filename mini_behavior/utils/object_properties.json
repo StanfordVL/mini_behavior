@@ -45,6 +45,9 @@
     "bow": [
         "dustyable"
     ],
+    "box": [
+        "dustyable"
+    ],
     "bread": [
         "cookable",
         "freezable"
@@ -72,6 +75,9 @@
     ],
     "candy": [
         "cookable"
+    ],
+    "candle": [
+        "dustyable"
     ],
     "car": [
         "dustyable",
@@ -154,6 +160,9 @@
     "gym_shoe": [
         "dustyable",
         "stainable"
+    ],
+    "hardback": [
+        "dustyable"
     ],
     "hamburger": [
         "cookable",

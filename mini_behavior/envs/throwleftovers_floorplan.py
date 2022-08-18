@@ -1,4 +1,4 @@
-from mini_behavior.envs.floorplan import FloorPlanEnv
+from mini_behavior.floorplan import *
 from mini_behavior.register import register
 import os
 

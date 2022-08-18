@@ -4,7 +4,7 @@ import numpy as np
 
 def get_obj_cell(self, env):
     obj = self.obj
-    cell = env.grid.get_all_items(*obj.cur_pos)
+    cell = [obj_ for obj_ in env.grid.get_all_items(*obj.cur_pos)]
     return obj, cell
 
 
@@ -126,7 +126,7 @@ class Sliced(AbilityState):
 class Soaked(AbilityState):
     def __init__(self, obj, key):
         super(Soaked, self).__init__(obj, key)
-        self.tools = ['sink']
+        self.tools = ['sink', 'teapot']
 
     def _update(self, env):
         """
@@ -175,7 +175,15 @@ class AtSameLocation(RelativeObjectState):
         if other is None:
             return False
 
-        return np.all(self.obj.cur_pos == other.cur_pos)
+        obj_pos = self.obj.all_pos if self.obj.is_furniture() else [self.obj.cur_pos]
+        other_pos = other.all_pos if other.is_furniture() else [other.cur_pos]
+
+        for pos_1 in obj_pos:
+            for pos_2 in other_pos:
+                if np.all(pos_1 == pos_2):
+                    return True
+
+        return False
 
 
 class Inside(RelativeObjectState):
@@ -247,8 +255,11 @@ class OnTop(RelativeObjectState):
         if other is None or self.obj == other:
             return False
 
-        obj, cell = get_obj_cell(self, env)
+        if self.obj.check_abs_state(self, 'inhandofrobot'):
+            return False
 
+        obj, cell = get_obj_cell(self, env)
+        cell.reverse()
         obj_idx = cell.index(obj)
 
         if other not in cell:
@@ -257,7 +268,7 @@ class OnTop(RelativeObjectState):
         other_idx = cell.index(other)
 
         if obj_idx >= 0 and other_idx >= 0:
-            return obj_idx > other_idx
+            return obj_idx < other_idx
 
         return False
 

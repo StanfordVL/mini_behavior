@@ -8,7 +8,6 @@ from gym_minigrid.minigrid import MiniGridEnv
 from bddl import ACTION_FUNC_MAPPING
 from .objects import *
 from .grid import BehaviorGrid, GridDimension, is_obj
-from. states import Soaked
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
@@ -75,12 +74,17 @@ class MiniBehaviorEnv(MiniGridEnv):
         self.objs = {}
         self.obj_instances = {}
 
-        for obj in num_objs.keys():
-            self.objs[obj] = []
-            for i in range(num_objs[obj]):
-                obj_name = '{}_{}'.format(obj, i)
-                obj_instance = OBJECT_CLASS[obj](name=obj_name)
-                self.objs[obj].append(obj_instance)
+        for obj_type in num_objs.keys():
+            self.objs[obj_type] = []
+            for i in range(num_objs[obj_type]):
+                obj_name = '{}_{}'.format(obj_type, i)
+
+                if obj_type in OBJECT_CLASS.keys():
+                    obj_instance = OBJECT_CLASS[obj_type](name=obj_name)
+                else:
+                    obj_instance = WorldObj(obj_type, None, obj_name)
+
+                self.objs[obj_type].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 
         super().__init__(grid_size=grid_size,
@@ -98,7 +102,6 @@ class MiniBehaviorEnv(MiniGridEnv):
         self.action_space = spaces.Discrete(len(self.actions))
 
         self.carrying = set()
-        # self.state_icons = {state: img_to_array(os.path.join(os.path.dirname(__file__), f'utils/state_icons/{state}.jpg')) for state in ABILITIES}
 
     def copy_objs(self):
         from copy import deepcopy
@@ -130,7 +133,7 @@ class MiniBehaviorEnv(MiniGridEnv):
                  'agent_dir': agent_dir,
                  'objs': objs,
                  'obj_instances': obj_instances
-                }
+                 }
         return state
 
     def save_state(self, out_file='cur_state.pkl'):
@@ -151,9 +154,6 @@ class MiniBehaviorEnv(MiniGridEnv):
         return self.grid
 
     def reset(self):
-        # Current position and direction of the agent
-        # self.agent.reset()
-
         # Reinitialize episode-specific variables
         self.agent_pos = (-1, -1)
         self.agent_dir = -1
@@ -379,7 +379,15 @@ class MiniBehaviorEnv(MiniGridEnv):
 
                             action = input("Choose one of the following actions: \n{}".format(text))
                             action = actions[int(action)] # action name
-                            ACTION_FUNC_MAPPING[action](self).do(obj) # perform action
+
+                            if action == 'drop' or action == 'drop_in':
+                                dims = ACTION_FUNC_MAPPING[action](self).drop_dims(fwd_pos)
+                                spots = ['bottom', 'middle', 'top']
+                                text = ''.join(f'{dim}) {spots[dim]} \n' for dim in dims)
+                                dim = input(f'Choose which dimension to drop the object: \n{text}')
+                                ACTION_FUNC_MAPPING[action](self).do(obj, int(dim))
+                            else:
+                                ACTION_FUNC_MAPPING[action](self).do(obj) # perform action
                             self.last_action = self.actions[action]
 
                 # Done action (not used by default)
@@ -403,9 +411,6 @@ class MiniBehaviorEnv(MiniGridEnv):
         done = self._end_conditions() or self.step_count >= self.max_steps
         obs = self.gen_obs()
 
-        # print('towel soaked')
-        # print(self.objs['towel'][0].check_abs_state(self, 'soakable'))
-
         return obs, reward, done, {}
 
     def all_reachable(self):
@@ -417,7 +422,7 @@ class MiniBehaviorEnv(MiniGridEnv):
                 if state.type == 'absolute':
                     state._update(self)
 
-        self.grid.state_values = {obj: obj.get_ability_values(self) for obj in self.obj_instances.values() if not obj.is_furniture()}
+        self.grid.state_values = {obj: obj.get_ability_values(self) for obj in self.obj_instances.values()}
 
     def render(self, mode='human', highlight=True, tile_size=TILE_PIXELS):
         """
@@ -453,6 +458,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         for grid in self.grid.grid:
             furniture, obj = grid.get(*pos)
             state_values = obj.get_ability_values(self) if obj else None
+            print(state_values)
             img = GridDimension.render_tile(furniture, obj, state_values, draw_grid_lines=False)
             imgs.append(img)
 

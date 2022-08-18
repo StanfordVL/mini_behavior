@@ -1,5 +1,5 @@
-from gym_minigrid.roomgrid import *
-from gym_minigrid.register import register
+from mini_behavior.roomgrid import *
+from mini_behavior.register import register
 
 
 class TwoRoomNavigationEnv(RoomGrid):

@@ -42,6 +42,7 @@
         "drop",
         "drop_in"
     ],
+    "box": [],
     "bread": [
         "pickup",
         "drop",
@@ -53,11 +54,7 @@
         "drop",
         "drop_in"
     ],
-    "bucket": [
-        "pickup",
-        "drop",
-        "drop_in"
-    ],
+    "bucket": [],
     "cabinet": [
         "open",
         "close"
@@ -79,6 +76,11 @@
         "drop",
         "drop_in",
         "cook"
+    ],
+    "candle": [
+        "pickup",
+        "drop",
+        "drop_in"
     ],
     "car": [
         "open",
@@ -179,6 +181,11 @@
         "cook"
     ],
     "hammer": [
+        "pickup",
+        "drop",
+        "drop_in"
+    ],
+    "hardback": [
         "pickup",
         "drop",
         "drop_in"

@@ -315,7 +315,7 @@ class BehaviorGrid(Grid):
                 fill_coords(sub_img, point_in_rect(0, 1, 0, 0.031), (100, 100, 100))
 
         # render all furniture
-        for obj in obj_instances.values():
+        for obj in list(obj_instances.values()) + self.walls:
             if obj.is_furniture():
                 i, j = obj.cur_pos
                 ymin = j * tile_size

@@ -87,7 +87,24 @@ class Drop(BaseAction):
     def __init__(self, env):
         super(Drop, self).__init__(env)
         self.key = 'drop'
-        self.drop_dim = None
+
+    def drop_dims(self, pos):
+        dims = []
+
+        all_items = self.env.grid.get_all_items(*pos)
+        last_furniture, last_obj = 'floor', 'floor'
+        for i in range(3):
+            furniture = all_items[2*i]
+            obj = all_items[2*i + 1]
+
+            if furniture is None and obj is None:
+                if last_furniture is not None or last_obj is not None:
+                    dims.append(i)
+
+            last_furniture = furniture
+            last_obj = obj
+
+        return dims
 
     def can(self, obj):
         """
@@ -102,16 +119,11 @@ class Drop(BaseAction):
             return False
 
         fwd_pos = self.env.front_pos
-        self.drop_dim = None
-        for i in range(3):
-            furniture, dim_obj = self.env.grid.get_dim(*fwd_pos, i)
-            if furniture is None and dim_obj is None:
-                self.drop_dim = i
-                return True
+        dims = self.drop_dims(fwd_pos)
 
-        return False
+        return dims != []
 
-    def do(self, obj):
+    def do(self, obj, dim):
         super().do(obj)
 
         self.env.carrying.discard(obj)
@@ -121,14 +133,31 @@ class Drop(BaseAction):
         # change object properties
         obj.cur_pos = fwd_pos
         # change agent / grid
-        self.env.grid.set(*fwd_pos, obj, self.drop_dim)
+        self.env.grid.set(*fwd_pos, obj, dim)
 
 
 class DropIn(BaseAction):
     def __init__(self, env):
         super(DropIn, self).__init__(env)
         self.key = 'drop_in'
-        self.drop_dim = None
+
+    def drop_dims(self, pos):
+        dims = []
+
+        all_items = self.env.grid.get_all_items(*pos)
+        last_furniture, last_obj = 'floor', 'floor'
+        for i in range(3):
+            furniture = all_items[2*i]
+            obj = all_items[2*i + 1]
+
+            if obj is None and furniture is not None and furniture.can_contain and i in furniture.can_contain:
+                if 'openable' not in furniture.states or furniture.check_abs_state(self.env, 'openable'):
+                    if last_obj is not None:
+                        dims.append(i)
+
+            last_furniture = furniture
+            last_obj = obj
+        return dims
 
     def can(self, obj):
         """
@@ -144,27 +173,20 @@ class DropIn(BaseAction):
             return False
 
         fwd_pos = self.env.front_pos
-        self.drop_dim = None
-        for i in range(3):
-            furniture, dim_obj = self.env.grid.get_dim(*fwd_pos, i)
-            if dim_obj is None and furniture is not None and furniture.can_contain and i in furniture.can_contain:
-                if 'openable' not in furniture.states or furniture.check_abs_state(self.env, 'openable'):
-                    self.drop_dim = i
-                    return True
+        dims = self.drop_dims(fwd_pos)
+        return dims != []
 
-        return False
-
-    def do(self, obj):
+    def do(self, obj, dim):
         # drop
         super().do(obj)
         self.env.carrying.discard(obj)
 
         fwd_pos = self.env.front_pos
         obj.cur_pos = fwd_pos
-        self.env.grid.set(*fwd_pos, obj, self.drop_dim)
+        self.env.grid.set(*fwd_pos, obj, dim)
 
         # drop in and update
-        furniture = self.env.grid.get_furniture(*fwd_pos, self.drop_dim)
+        furniture = self.env.grid.get_furniture(*fwd_pos, dim)
         obj.states['inside'].set_value(furniture, True)
 
 

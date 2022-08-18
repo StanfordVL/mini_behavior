@@ -151,13 +151,10 @@ parser.add_argument(
     help="gym environment to load",
     # default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
     # default='MiniGrid-FloorPlanEnv-16x16-N1-v0'
-    # default='MiniGrid-TestObjects-16x16-N1-v0'
-    # default='MiniGrid-TestFurniture-16x16-N1-v0'
-    # default='MiniGrid-TestInside-16x16-N1-v0'
-    default='MiniGrid-TestAbilities-16x16-N1-v0'
     # default='MiniGrid-TwoRoomNavigation-8x8-N2-v0'
     # default='MiniGrid-ThrowLeftoversSceneEnv-0x0-N2-v0'
     # default='MiniGrid-ThrowLeftovers-16x16-N2-v1'
+    default='MiniGrid-SettingUpCandles-16x16-N2-v1'
 )
 parser.add_argument(
     "--seed",

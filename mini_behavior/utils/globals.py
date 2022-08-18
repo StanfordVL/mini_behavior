@@ -2,7 +2,7 @@ import numpy as np
 
 # Map of color names to RGB values
 COLORS = {
-    'red'   : np.array([255, 0, 0]),
+    'red'   : np.array([128, 0, 32]),
     'green' : np.array([0, 255, 0]),
     'blue'  : np.array([0, 0, 255]),
     'purple': np.array([112, 39, 195]),

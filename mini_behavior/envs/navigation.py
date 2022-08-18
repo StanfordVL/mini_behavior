@@ -1,5 +1,5 @@
-from gym_minigrid.roomgrid import *
-from gym_minigrid.register import register
+from mini_behavior.roomgrid import *
+from mini_behavior.register import register
 
 
 class NavigationEnv(RoomGrid):
@@ -66,26 +66,6 @@ class NavigationEnv16x16_Human(NavigationEnv):
                          )
 
 
-class NavigationEnv16x16_RL(NavigationEnv):
-    def __init__(self):
-        super().__init__(mode='not_human',
-                         room_size=16,
-                         )
-
-class NavigationEnv8x8_Human(NavigationEnv):
-    def __init__(self):
-        super().__init__(mode='human',
-                         room_size=8,
-                         )
-
-
-class NavigationEnv8x8_RL(NavigationEnv):
-    def __init__(self):
-        super().__init__(mode='not_human',
-                         room_size=8,
-                         )
-
-
 class NavigationMultiEnv16x16_Human(NavigationEnv):
     def __init__(self):
         super().__init__(mode='human',
@@ -112,57 +92,12 @@ class NavigationMultiEnv8x8_Human(NavigationEnv):
                          )
 
 
-class NavigationMultiEnv8x8_RL(NavigationEnv):
-    def __init__(self):
-        super().__init__(mode='not_human',
-                         room_size=8,
-                         num_rows=2,
-                         num_cols=2
-                         )
-
-
-class NavigationObjEnv16x16_Human(NavigationEnv):
-    def __init__(self):
-        super().__init__(mode='human',
-                         room_size=16,
-                         num_objs={'goal': 1,
-                                   'ball': 4
-                                   }
-                         )
-
-
-class NavigationObjEnv16x16_RL(NavigationEnv):
-    def __init__(self):
-        super().__init__(mode='not_human',
-                         room_size=16,
-                         num_objs={'goal': 1,
-                                   'ball': 4
-                                   }
-                         )
-
 # human control env
 register(
     id='MiniGrid-Navigation-16x16-N1-v0',
     entry_point='mini_behavior.envs:NavigationEnv16x16_Human'
 )
 
-# RL agent env
-register(
-    id='MiniGrid-Navigation-16x16-N2-v0',
-    entry_point='mini_behavior.envs:NavigationEnv16x16_RL'
-)
-
-# human control env
-register(
-    id='MiniGrid-Navigation-8x8-N1-v0',
-    entry_point='mini_behavior.envs:NavigationEnv8x8_Human'
-)
-
-# RL agent env
-register(
-    id='MiniGrid-Navigation-8x8-N2-v0',
-    entry_point='mini_behavior.envs:NavigationEnv8x8_RL'
-)
 
 ##### MULTI ROOM
 # human control env
@@ -181,24 +116,4 @@ register(
 register(
     id='MiniGrid-NavigationMulti-8x8-N1-v0',
     entry_point='mini_behavior.envs:NavigatioMultiEnv8x8_Human'
-)
-
-# RL agent env
-register(
-    id='MiniGrid-NavigationMulti-8x8-N2-v0',
-    entry_point='mini_behavior.envs:NavigationMultiEnv8x8_RL'
-)
-
-
-##### OBJECTS
-# human control env
-register(
-    id='MiniGrid-NavigationObj-16x16-N1-v0',
-    entry_point='mini_behavior.envs:NavigationObjEnv16x16_Human'
-)
-
-# RL agent env
-register(
-    id='MiniGrid-NavigationObj-16x16-N2-v0',
-    entry_point='mini_behavior.envs:NavigationObjEnv16x16_RL'
 )
