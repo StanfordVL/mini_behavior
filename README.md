@@ -8,52 +8,6 @@
 ### Run Code 
 To run in interactive mode: ./manual_control.py
 
-### Directory 
-```angular2html
-├── __init__.py 
-├── benchmark.py
-├── collect_demos.py (new)
-├── convert_scenes.py (new)
-├── evaluate.py
-├── gym_minigrid
-│   ├── __init__.py 
-│   ├── actions.py (new)
-│   ├── agent.py (new)
-│   ├── bddl.py (new)
-│   ├── envs
-│   │   ├── __init__.py
-│   │   ├── floorplan.py (new)
-│   │   ├── navigation.py (new)
-│   │   └── throwleftovers.py (new)
-│   ├── globals.py (new)
-│   ├── grids (new)
-│   ├── minigrid.py (modified)
-│   ├── objects.py (new)
-│   ├── register.py
-│   ├── rendering.py 
-│   ├── roomgrid.py
-│   ├── scene_to_grid.py (new)
-│   ├── scenes (new)
-│   ├── states.py (new)
-│   ├── states_base.py (new)
-│   ├── window.py
-│   └── wrappers.py
-├── manual_control.py
-├── model.py
-├── run_tests.py
-├── setup.py
-├── train.py
-├── train_nav.py
-├── utils
-│   ├── __init__.py
-│   ├── agent.py
-│   ├── env.py
-│   ├── format.py
-│   ├── other.py
-│   └── storage.py
-└── visualize.py
-``` 
-
 ### File Descriptions 
 * **gym_minigrid/actions.py**
     * Contains base class for actions 

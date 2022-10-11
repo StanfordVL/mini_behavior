@@ -79,7 +79,7 @@ class PreparingSaladEnv(RoomGrid):
             for veg in vegs:
                 forpair = False
                 for plate in plates:
-                    if veg.check_rel_state(self, plate, 'ontop'):
+                    if veg.check_rel_state(self, plate, 'onTop'):
                         forpair = True
                         break
                 if not forpair:
@@ -88,7 +88,7 @@ class PreparingSaladEnv(RoomGrid):
             for plate in plates:
                 forpair = False
                 for veg in vegs:
-                    if veg.check_rel_state(self, plate, 'ontop'):
+                    if veg.check_rel_state(self, plate, 'onTop'):
                         forpair = True
                         break
                 if not forpair:
@@ -98,7 +98,7 @@ class PreparingSaladEnv(RoomGrid):
             for veg in vegs:
                 forpair = False
                 for plate in plates:
-                    if plate.check_abs_state(self, 'sliced') and veg.check_rel_state(self, plate, 'ontop'):
+                    if plate.check_abs_state(self, 'sliced') and veg.check_rel_state(self, plate, 'onTop'):
                         forpair = True
                         break
                 if not forpair:
@@ -107,7 +107,7 @@ class PreparingSaladEnv(RoomGrid):
             for plate in plates:
                 forpair = False
                 for veg in vegs:
-                    if veg.check_abs_state(self, 'sliced') and veg.check_rel_state(self, plate, 'ontop'):
+                    if veg.check_abs_state(self, 'sliced') and veg.check_rel_state(self, plate, 'onTop'):
                         forpair = True
                         break
                 if not forpair:

@@ -47,10 +47,10 @@ class MovingBoxesToStorageEnv(RoomGrid):
     def _end_conditions(self):
         cartons = self.objs['carton']
 
-        if cartons[0].check_abs_state(self, 'onfloor') and cartons[1].check_rel_state(self, 'ontop'):
+        if cartons[0].check_abs_state(self, 'onfloor') and cartons[1].check_rel_state(self, 'onTop'):
             return True
 
-        if cartons[1].check_abs_state(self, 'onfloor') and cartons[0].check_rel_state(self, 'ontop'):
+        if cartons[1].check_abs_state(self, 'onfloor') and cartons[0].check_rel_state(self, 'onTop'):
             return True
 
         return False

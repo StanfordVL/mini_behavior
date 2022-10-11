@@ -57,9 +57,9 @@ class SettingUpCandlesEnv(RoomGrid):
         n_0 = 0
         n_1 = 0
         for obj in candle:
-            if obj.check_rel_state(self, table[0], 'ontop'):
+            if obj.check_rel_state(self, table[0], 'onTop'):
                 n_0 += 1
-            elif obj.check_rel_state(self, table[1], 'ontop'):
+            elif obj.check_rel_state(self, table[1], 'onTop'):
                 n_1 += 1
 
         return n_0 == 3 and n_1 == 3

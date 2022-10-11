@@ -165,6 +165,11 @@ class WorldObj:
         self.contains = None
         self.cur_pos = None
 
+        # CHANGE
+        for state in self.states.values():
+            if state.type == 'absolute':
+                state.set_value(False)
+
     def update(self, env):
         """Method to trigger/toggle an action this object performs"""
         pass

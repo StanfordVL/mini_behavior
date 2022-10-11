@@ -11,7 +11,7 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
     def __init__(
             self,
             mode='human',
-            img_path=os.path.join(os.path.dirname(__file__), '../floorplans/rs_int_floor_trav_no_obj_0.png'),
+            scene_id='rs_int',
             num_objs=None,
             max_steps=1e5,
     ):
@@ -24,7 +24,7 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
         self.mission = 'throw all {} leftovers in the ashcan'.format(num_objs['hamburger'])
 
         super().__init__(mode=mode,
-                         img_path=img_path,
+                         scene_id=scene_id,
                          num_objs=num_objs,
                          max_steps=max_steps
                          )
@@ -69,13 +69,13 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
         assert ashcan.check_abs_state(self, 'onfloor'), "Ashcan not on floor"
 
         for plate in plates:
-            on_counter = plate.check_rel_state(self, countertop, 'ontop')
+            on_counter = plate.check_rel_state(self, countertop, 'onTop')
             assert on_counter, "Plate not on counter"
 
         for hamburger in hamburgers:
             on_plate = False
             for plate in plates:
-                on_plate = hamburger.check_rel_state(self, plate, 'ontop')
+                on_plate = hamburger.check_rel_state(self, plate, 'onTop')
                 if on_plate:
                     break
             assert on_plate, "Hamburger not on plate"

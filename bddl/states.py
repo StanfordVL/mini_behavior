@@ -15,7 +15,7 @@ ALL_STATES = [
     'inside',
     'nextto',
     'onfloor',
-    'ontop',
+    'onTop',
     'openable',
     'sliceable',
     'slicer',
@@ -39,7 +39,7 @@ DEFAULT_STATES = [
     'inside',
     'nextto',
     'onfloor',
-    'ontop',
+    'onTop',
     'under'
 ]
 
@@ -72,7 +72,7 @@ STATE_FUNC_MAPPING = {
     'inside': Inside,
     'nextto': NextTo,
     'onfloor': OnFloor,
-    'ontop': OnTop,
+    'onTop': OnTop,
     'openable': Opened,
     'sliceable': Sliced,
     'slicer': Slicer,

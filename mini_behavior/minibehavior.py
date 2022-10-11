@@ -5,9 +5,10 @@ import pickle as pkl
 from enum import IntEnum
 from gym import spaces
 from gym_minigrid.minigrid import MiniGridEnv
-from bddl import ACTION_FUNC_MAPPING
+from bddl.actions import ACTION_FUNC_MAPPING
 from .objects import *
 from .grid import BehaviorGrid, GridDimension, is_obj
+from mini_behavior.window import Window
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
@@ -428,6 +429,10 @@ class MiniBehaviorEnv(MiniGridEnv):
         """
         Render the whole-grid human view
         """
+        if mode == "human" and not self.window:
+            self.window = Window("mini_behavior")
+            self.window.show(block=False)
+
         img = super().render(mode='rgb_array', highlight=highlight, tile_size=tile_size)
 
         if self.render_dim is None:

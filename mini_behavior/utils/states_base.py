@@ -108,6 +108,9 @@ class ObjectProperty(BaseObjectState):
     def _get_value(self, env=None):
         return True
 
+    def _set_value(self, new_value):
+        pass
+
 
 class AbilityState(AbsoluteObjectState):
     def __init__(self, obj, key):

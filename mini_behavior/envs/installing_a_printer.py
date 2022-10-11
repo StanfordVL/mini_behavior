@@ -1,5 +1,7 @@
 from mini_behavior.roomgrid import *
 from mini_behavior.register import register
+from enum import IntEnum
+from gym import spaces
 
 
 class InstallingAPrinterEnv(RoomGrid):
@@ -27,6 +29,9 @@ class InstallingAPrinterEnv(RoomGrid):
                          max_steps=max_steps
                          )
 
+        self.actions = InstallingAPrinterEnv.Actions
+        self.action_space = spaces.Discrete(len(self.actions))
+
     def _gen_objs(self):
         printer = self.objs['printer'][0]
         table = self.objs['table'][0]
@@ -52,7 +57,7 @@ class InstallingAPrinterEnv(RoomGrid):
         printer = self.objs['printer'][0]
         table = self.objs['table'][0]
 
-        if printer.check_rel_state(self, table, 'ontop') and printer.check_abs_state(self, 'toggleable'):
+        if printer.check_rel_state(self, table, 'onTop') and printer.check_abs_state(self, 'toggleable'):
             return True
         else:
             return False

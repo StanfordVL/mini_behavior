@@ -83,7 +83,7 @@ class MakingTeaEnv(RoomGrid):
         stove = self.objs['stove'][0]
 
         if lemon.check_abs_state(self, 'sliceable') and \
-                teapot.check_rel_state(self, stove, 'ontop') and \
+                teapot.check_rel_state(self, stove, 'onTop') and \
                 tea_bag.check_rel_state(self, teapot, 'atsamelocation') and \
                 tea_bag.check_abs_state(self, 'soakable') and \
                 stove.check_abs_state(self, 'toggleable'):

@@ -48,7 +48,7 @@ def get_step(env):
     return step_count, step
 
 
-# save demo as a pkl file
+# save demo_16 as a pkl file
 def save_demo(all_steps, env_name, episode):
     demo_dir = os.path.join('../../../demos', env_name)
     if not os.path.isdir(demo_dir):
@@ -61,7 +61,7 @@ def save_demo(all_steps, env_name, episode):
     demo_file = os.path.join(demo_dir, '{}_{}'.format(env_name, demo_num))
     assert not os.path.isfile(demo_file)
 
-    print('saving demo to: {}'.format(demo_file))
+    print('saving demo_16 to: {}'.format(demo_file))
 
     with open(demo_file, 'wb') as f:
         pkl.dump(all_steps, f)
@@ -69,7 +69,7 @@ def save_demo(all_steps, env_name, episode):
     print('saved')
 
 
-# save demo as a pkl file
+# save demo_16 as a pkl file
 def save_snapshots(env_steps, model_name='', date=''):
     dir = '../snapshots'
     if not os.path.isdir(dir):
@@ -91,7 +91,7 @@ def open_demo(demo_file):
 
     with open(demo_file, 'rb') as f:
         demo = pkl.load(f)
-        print('num_steps in demo: {}'.format(len(demo)))
+        print('num_steps in demo_16: {}'.format(len(demo)))
         return demo
 
 

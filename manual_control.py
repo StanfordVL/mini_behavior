@@ -154,7 +154,7 @@ parser.add_argument(
     # default='MiniGrid-TwoRoomNavigation-8x8-N2-v0'
     # default='MiniGrid-ThrowLeftoversSceneEnv-0x0-N2-v0'
     # default='MiniGrid-ThrowLeftovers-16x16-N2-v1'
-    default='MiniGrid-SettingUpCandles-16x16-N2-v1'
+    default='MiniGrid-InstallingAPrinter-16x16-N2-v1'
 )
 parser.add_argument(
     "--seed",
@@ -178,7 +178,7 @@ parser.add_argument(
 parser.add_argument(
     "--save",
     default=False,
-    help="whether or not to save the demo"
+    help="whether or not to save the demo_16"
 )
 # NEW
 parser.add_argument(

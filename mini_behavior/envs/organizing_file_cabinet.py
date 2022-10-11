@@ -69,12 +69,12 @@ class OrganizingFileCabinetEnv(RoomGrid):
         folders = self.objs['folder']
         documents = self.objs['document']
 
-        assert marker.check_rel_state(self, chair, 'ontop')
-        assert documents[0].check_rel_state(self, table, 'ontop')
+        assert marker.check_rel_state(self, chair, 'onTop')
+        assert documents[0].check_rel_state(self, table, 'onTop')
         assert documents[1].check_rel_state(self, cabinet, 'inside')
-        assert documents[2].check_rel_state(self, table, 'ontop')
+        assert documents[2].check_rel_state(self, table, 'onTop')
         assert documents[3].check_rel_state(self, cabinet, 'inside')
-        assert folders[0].check_rel_state(self, table, 'ontop')
+        assert folders[0].check_rel_state(self, table, 'onTop')
         assert folders[1].check_abs_state(self, 'onfloor')
 
         return True
@@ -90,7 +90,7 @@ class OrganizingFileCabinetEnv(RoomGrid):
         folders = self.objs['folder']
         documents = self.objs['document']
 
-        if not marker.check_rel_state(self, table, 'ontop'):
+        if not marker.check_rel_state(self, table, 'onTop'):
             return False
 
         for document in documents:

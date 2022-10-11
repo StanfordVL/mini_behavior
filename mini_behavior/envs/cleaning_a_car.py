@@ -62,9 +62,9 @@ class CleaningACarEnv(RoomGrid):
         bucket = self.objs['bucket'][0]
 
         assert car.check_abs_state(self, 'onfloor')
-        assert rag.check_rel_state(self, shelf, 'ontop')
+        assert rag.check_rel_state(self, shelf, 'onTop')
         assert not rag.check_abs_state(self, 'soakable')
-        assert soap.check_rel_state(self, soap, 'ontop')
+        assert soap.check_rel_state(self, soap, 'onTop')
         assert car.check_abs_state(self, 'dustyable')
         assert bucket.check_abs_state(self, 'onfloor')
 

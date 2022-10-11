@@ -10,7 +10,7 @@ class CleaningShoesEnv(RoomGrid):
     def __init__(
             self,
             mode='not_human',
-            room_size=16,
+            room_size=8,
             num_rows=1,
             num_cols=1,
             max_steps=1e5,
@@ -69,12 +69,12 @@ class CleaningShoesEnv(RoomGrid):
         towel = self.objs['towel'][0]
         shoes = self.objs['shoe']
 
-        assert soap.check_rel_state(self, bed, 'ontop')
-        assert rag.check_rel_state(self, bed, 'ontop')
+        assert soap.check_rel_state(self, bed, 'onTop')
+        assert rag.check_rel_state(self, bed, 'onTop')
         assert towel.check_abs_state(self, 'onfloor')
 
         for shoe in shoes:
-            assert shoe.check_rel_state(self, bed, 'ontop')
+            assert shoe.check_rel_state(self, bed, 'onTop')
 
         for shoe in shoes[:2]:
             assert shoe.check_abs_state(self, 'stainable')

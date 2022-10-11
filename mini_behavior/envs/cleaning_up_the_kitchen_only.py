@@ -106,7 +106,7 @@ class CleaningUpTheKitchenOnlyEnv(RoomGrid):
         vegetable_oil = self.objs['vegetable_oil'][0]
         apple = self.objs['apple'][0]
 
-        if not blender.check_rel_state(self, countertop, 'ontop'):
+        if not blender.check_rel_state(self, countertop, 'onTop'):
             return False
 
         if not soap.check_rel_state(self, sink, 'nextto'):

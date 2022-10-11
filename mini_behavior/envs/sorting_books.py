@@ -51,7 +51,7 @@ class SortingBooksEnv(RoomGrid):
         shelf = self.objs['shelf'][0]
 
         for obj in book + hardback:
-            if not obj.check_rel_state(self, shelf, 'ontop'):
+            if not obj.check_rel_state(self, shelf, 'onTop'):
                 return False
 
         return True

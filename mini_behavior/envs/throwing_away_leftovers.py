@@ -71,13 +71,13 @@ class ThrowingAwayLeftoversEnv(RoomGrid):
         assert ashcan.check_abs_state(self, 'onfloor'), "Ashcan not on floor"
 
         for plate in plates:
-            on_counter = plate.check_rel_state(self, countertop, 'ontop')
+            on_counter = plate.check_rel_state(self, countertop, 'onTop')
             assert on_counter, "Plate not on counter"
 
         for hamburger in hamburgers:
             on_plate = False
             for plate in plates:
-                on_plate = hamburger.check_rel_state(self, plate, 'ontop')
+                on_plate = hamburger.check_rel_state(self, plate, 'onTop')
                 if on_plate:
                     break
             assert on_plate, "Hamburger not on plate"

@@ -118,3 +118,6 @@ class Window(Window):
             ax.set_title('')
             if self.closeup_obj[name] is not None:
                 self.closeup_obj[name].set_data(np.ones(shape=(1,1,3)))
+
+    def save_img(self, out_filepath):
+        self.fig.savefig(out_filepath)

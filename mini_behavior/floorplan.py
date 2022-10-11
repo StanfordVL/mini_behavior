@@ -66,10 +66,11 @@ class FloorPlanEnv(MiniBehaviorEnv):
             return 0
 
     def _end_conditions(self):
-        if np.all(self.agent.cur_pos == self.target_pos):
-            return True
-        else:
-            return False
+        pass
+        # if np.all(self.agent_pos == self.target_pos):
+        #     return True
+        # else:
+        #     return False
 
 
 # register environments of all floorplans in floorplans dir
