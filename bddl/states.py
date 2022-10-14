@@ -1,4 +1,4 @@
-from mini_behavior.states import *
+from mini_behavior.mini_behavior.states import *
 
 ALL_STATES = [
     'atsamelocation',

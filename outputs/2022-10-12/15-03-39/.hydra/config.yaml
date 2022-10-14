@@ -1,0 +1,18 @@
+scene_gen:
+  cfg_name: fixed_scene
+  scene_priors_type: detailed
+  evolver_priors_nodes_from_scene: true
+  object_move_ratio_per_step: 0.025
+  add_or_remove_objs: false
+  min_floors: 1
+  max_floors: 1
+  min_rooms: 4
+  max_rooms: 4
+  min_furniture: 20
+  max_furniture: 25
+  min_objects: 5
+  max_objects: 5
+  priors_noise: 0.2
+  priors_sparsity_level: 0.2
+  use_move_freq: true
+  random_evolver: false

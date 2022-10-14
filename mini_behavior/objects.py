@@ -1,20 +1,12 @@
 from .rendering import *
-from bddl import OBJECT_TO_IDX
-from .utils.globals import COLOR_TO_IDX, COLORS
-from .utils.objects_base import WorldObj, FurnitureObj
+from mini_behavior.bddl import OBJECT_TO_IDX
+from mini_behavior.mini_behavior.utils.globals import COLOR_TO_IDX, COLORS
+from mini_behavior.mini_behavior.utils.objects_base import WorldObj, FurnitureObj
 
 
-class Goal(WorldObj):
-    def __init__(self, color='green', name='goal'):
-        super().__init__('goal', color=color, name=name, can_overlap=True)
-
-    def render(self, img):
-        fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
-
-
-class Ashcan(FurnitureObj):
-    def __init__(self, width=1, height=1, color='blue', name='ashcan'):
-        super(Ashcan, self).__init__('ashcan', width, height, {0, 1, 2}, color, name, can_contain={0, 1, 2})
+class Can(FurnitureObj):
+    def __init__(self, width=1, height=1, color='blue', name='can'):
+        super(Can, self).__init__('ashcan', width, height, {0, 1, 2}, color, name, can_contain={0, 1, 2})
 
 
 class Bed(FurnitureObj):
@@ -22,29 +14,14 @@ class Bed(FurnitureObj):
         super(Bed, self).__init__('bed', width, height, {0}, color, name, can_overlap=True)
 
 
-class Bin(FurnitureObj):
-    def __init__(self, width=1, height=1, color='purple', name='bin'):
-        super(Bin, self).__init__('bin', width, height, {0, 1, 2}, color, name, can_contain={0, 1, 2})
+class Top_cabinet(FurnitureObj):
+    def __init__(self, width=2, height=3, color='brown', name='top_cabinet'):
+        super(Top_cabinet, self).__init__('cabinet', width, height, {0, 1, 2}, color, name, can_contain={0, 1, 2}, can_seebehind=False)
 
 
-class Box(FurnitureObj):
-    def __init__(self, width=2, height=2, color='tan', name='box'):
-        super(Box, self).__init__('box', width, height, {0}, color, name, can_contain={0})
-
-
-class Bucket(FurnitureObj):
-    def __init__(self, width=1, height=2, color='l_blue', name='bucket'):
-        super(Bucket, self).__init__('bucket', width, height, {0}, color, name, can_contain={0})
-
-
-class Cabinet(FurnitureObj):
-    def __init__(self, width=2, height=3, color='brown', name='cabinet'):
-        super(Cabinet, self).__init__('cabinet', width, height, {0, 1, 2}, color, name, can_contain={0, 1, 2}, can_seebehind=False)
-
-
-class Car(FurnitureObj):
-    def __init__(self, width=3, height=2, color='blue', name='car'):
-        super(Car, self).__init__('car', width, height, {0, 1}, color, name, can_contain={0})
+class Dresser(FurnitureObj):
+    def __init__(self, width=2, height=3, color='brown', name='dresser'):
+        super(Dresser, self).__init__('dresser', width, height, {0}, color, name, can_contain={0}, can_seebehind=False)
 
 
 class Chair(FurnitureObj):
@@ -52,9 +29,19 @@ class Chair(FurnitureObj):
         super(Chair, self).__init__('chair', width, height, {0, 1}, color, name)
 
 
-class Countertop(FurnitureObj):
-    def __init__(self, width=3, height=2, color='tan', name='countertop'):
-        super(Countertop, self).__init__('countertop', width, height, {0}, color, name, can_seebehind=True)
+class Ottoman(FurnitureObj):
+    def __init__(self, width=1, height=1, color='brown', name='ottoman'):
+        super(Ottoman, self).__init__('ottoman', width, height, {0, 1}, color, name)
+
+
+class Counter(FurnitureObj):
+    def __init__(self, width=3, height=2, color='tan', name='counter'):
+        super(Counter, self).__init__('counter', width, height, {0}, color, name, can_seebehind=True)
+
+
+class Counter_top(FurnitureObj):
+    def __init__(self, width=3, height=2, color='tan', name='counter_top'):
+        super(Counter_top, self).__init__('counter_top', width, height, {0}, color, name, can_seebehind=True)
 
 
 class Door(FurnitureObj):
@@ -98,9 +85,9 @@ class Door(FurnitureObj):
         fill_coords(img, point_in_circle(cx=0.75, cy=0.50, r=0.08), c)
 
 
-class ElectricRefrigerator(FurnitureObj):
-    def __init__(self, width=2, height=3, color='l_blue', name='electric_refrigerator'):
-        super(ElectricRefrigerator, self).__init__('electric_refrigerator', width, height, {0, 1, 2}, color, name, can_contain={0, 1, 2}, can_seebehind=False)
+class Fridge(FurnitureObj):
+    def __init__(self, width=2, height=3, color='l_blue', name='fridge'):
+        super(Fridge, self).__init__('fridge', width, height, {0, 1, 2}, color, name, can_contain={0, 1, 2}, can_seebehind=False)
 
 
 # TODO: add wall to object properties
@@ -117,13 +104,13 @@ class Shelf(FurnitureObj):
         super(Shelf, self).__init__('shelf', width, height, {0, 1}, color, name, can_contain={0, 1}, can_seebehind=False)
 
 
-class Shower(FurnitureObj):
-    def __init__(self, width=3, height=2, color='l_blue', name='shower'):
-        super(Shower, self).__init__('shower', width, height, {0, 1, 2}, color, name)
+class Shelving_unit(FurnitureObj):
+    def __init__(self, width=2, height=3, color='brown', name='shelving_unit'):
+        super(Shelving_unit, self).__init__('shelving_unit', width, height, {0, 1}, color, name, can_contain={0, 1}, can_seebehind=False)
 
 
 class Sink(FurnitureObj):
-    def __init__(self, width=2, height=2, color='blue', name='sink'):
+    def __init__(self, width=3, height=2, color='blue', name='sink'):
         super(Sink, self).__init__('sink', width, height, {0}, color, name, can_contain={0}, can_overlap=False, can_seebehind=True)
 
 
@@ -132,9 +119,9 @@ class Sofa(FurnitureObj):
         super(Sofa, self).__init__('sofa', width, height, {0}, color, name)
 
 
-class Stove(FurnitureObj):
-    def __init__(self, width=3, height=2, color='grey', name='stove'):
-        super(Stove, self).__init__('stove', width, height, {0, 1}, color, name, can_contain={0})
+class Cooktop(FurnitureObj):
+    def __init__(self, width=3, height=2, color='grey', name='cooktop'):
+        super(Cooktop, self).__init__('stove', width, height, {0, 1}, color, name, can_contain={0})
 
 
 class Table(FurnitureObj):
@@ -142,23 +129,58 @@ class Table(FurnitureObj):
         super(Table, self).__init__('table', width, height, {1}, color, name)
 
 
+class Coffee_table(FurnitureObj):
+    def __init__(self, width=3, height=2, color='tan', name='coffee_table'):
+        super(Coffee_table, self).__init__('coffee_table', width, height, {1}, color, name)
+
+
+class Dining_table(FurnitureObj):
+    def __init__(self, width=3, height=2, color='tan', name='dining_table'):
+        super(Dining_table, self).__init__('dining_table', width, height, {1}, color, name)
+
+
+class Side_table(FurnitureObj):
+    def __init__(self, width=3, height=2, color='tan', name='side_table'):
+        super(Side_table, self).__init__('side_table', width, height, {1}, color, name)
+
+
+class Desk(FurnitureObj):
+    def __init__(self, width=3, height=2, color='tan', name='desk'):
+        super(Desk, self).__init__('desk', width, height, {1}, color, name)
+
+
+class T_v_stand(FurnitureObj):
+    def __init__(self, width=3, height=2, color='tan', name='t_v_stand'):
+        super(T_v_stand, self).__init__('t_v_stand', width, height, {1}, color, name)
+
+
+class Toilet(FurnitureObj):
+    def __init__(self, width=2, height=2, color='white', name='toilet'):
+        super(Toilet, self).__init__('toilet', width, height, {1}, color, name)
+
+
 OBJECT_CLASS = {
-    'ashcan': Ashcan,
-    'bed': Bed,
-    'bin': Bin,
-    'box': Box,
-    'bucket': Bucket,
-    'cabinet': Cabinet,
-    'chair': Chair,
-    'car': Car,
-    'countertop': Countertop,
-    'door': Door,
-    'electric_refrigerator': ElectricRefrigerator,
-    'wall': Wall,
-    'shelf': Shelf,
-    'shower': Shower,
-    'sink': Sink,
-    'sofa': Sofa,
-    'stove': Stove,
-    'table': Table
+    "counter": Counter,
+    "table": Table,
+    "shelf": Shelf,
+    "fridge": Fridge,
+    "top_cabinet": Top_cabinet,
+    "coffee_table": Coffee_table,
+    "cooktop": Cooktop,
+    "counter_top": Counter_top,
+    "dining_table": Dining_table,
+    "chair": Chair,
+    "t_v_stand": T_v_stand,
+    "can": Can,
+    "sofa": Sofa,
+    "bed": Bed,
+    "dresser": Dresser,
+    "toilet": Toilet,
+    "sink": Sink,
+    "shelving_unit": Shelving_unit,
+    "desk": Desk,
+    "side_table": Side_table,
+    "ottoman": Ottoman,
+    "wall": Wall,
+    "door": Door
 }

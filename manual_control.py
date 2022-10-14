@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
+import pickle as pkl
 import argparse
 from gym_minigrid.wrappers import *
-from mini_behavior.window import Window
-from mini_behavior.utils.save import get_step, save_demo
-from mini_behavior.grid import GridDimension
+from mini_behavior.mini_behavior.window import Window
+from mini_behavior.mini_behavior.utils.save import get_step, save_demo
 import numpy as np
 
 # Size in pixels of a tile in the full-scale human view
@@ -19,34 +19,6 @@ def redraw(img):
     window.no_closeup()
     window.set_inventory(env)
     window.show_img(img)
-
-
-def render_furniture():
-    global show_furniture
-    show_furniture = not show_furniture
-
-    if show_furniture:
-        img = np.copy(env.furniture_view)
-
-        # i, j = env.agent.cur_pos
-        i, j = env.agent_pos
-        ymin = j * TILE_PIXELS
-        ymax = (j + 1) * TILE_PIXELS
-        xmin = i * TILE_PIXELS
-        xmax = (i + 1) * TILE_PIXELS
-
-        img[ymin:ymax, xmin:xmax, :] = GridDimension.render_agent(img[ymin:ymax, xmin:xmax, :], env.agent_dir)
-        img = env.render_furniture_states(img)
-
-        window.show_img(img)
-    else:
-        obs = env.gen_obs()
-        redraw(obs)
-
-
-def show_states():
-    imgs = env.render_states()
-    window.show_closeup(imgs)
 
 
 def reset():
@@ -94,11 +66,16 @@ def step(action):
         redraw(obs)
 
 
-def switch_dim(dim):
-    env.switch_dim(dim)
-    print(f'switching to dim: {env.render_dim}')
-    obs = env.gen_obs()
-    redraw(obs)
+def render_furniture():
+    global show_furniture
+    show_furniture = not show_furniture
+
+    if show_furniture:
+        img = np.copy(env.furniture_view)
+        window.show_img(img)
+    else:
+        obs = env.gen_obs()
+        redraw(obs)
 
 
 def key_handler(event):
@@ -118,30 +95,14 @@ def key_handler(event):
     if event.key == 'up':
         step(env.actions.forward)
         return
-    # Spacebar
-    if event.key == ' ':
-        render_furniture()
-        return
     if event.key == 'pageup':
         step('choose')
         return
     if event.key == 'enter':
         env.save_state()
         return
-    if event.key == 'pagedown':
-        show_states()
-        return
-    if event.key == '0':
-        switch_dim(None)
-        return
-    if event.key == '1':
-        switch_dim(0)
-        return
-    if event.key == '2':
-        switch_dim(1)
-        return
-    if event.key == '3':
-        switch_dim(2)
+    if event.key == ' ':
+        render_furniture()
         return
 
 
@@ -149,12 +110,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--env",
     help="gym environment to load",
-    # default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
-    # default='MiniGrid-FloorPlanEnv-16x16-N1-v0'
-    # default='MiniGrid-TwoRoomNavigation-8x8-N2-v0'
-    # default='MiniGrid-ThrowLeftoversSceneEnv-0x0-N2-v0'
-    # default='MiniGrid-ThrowLeftovers-16x16-N2-v1'
-    default='MiniGrid-InstallingAPrinter-16x16-N2-v1'
+    default='MiniGrid-PSGFourRooms-32x32-N2-v0'
 )
 parser.add_argument(
     "--seed",

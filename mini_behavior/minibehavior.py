@@ -5,10 +5,10 @@ import pickle as pkl
 from enum import IntEnum
 from gym import spaces
 from gym_minigrid.minigrid import MiniGridEnv
-from bddl.actions import ACTION_FUNC_MAPPING
+# from bddl.actions import ACTION_FUNC_MAPPING
 from .objects import *
-from .grid import BehaviorGrid, GridDimension, is_obj
-from mini_behavior.window import Window
+from .grid import BehaviorGrid, is_obj
+from mini_behavior.mini_behavior.window import Window
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
@@ -32,14 +32,6 @@ class MiniBehaviorEnv(MiniGridEnv):
         left = 0
         right = 1
         forward = 2
-        pickup = 3
-        drop = 4
-        drop_in = 5
-        toggle = 6
-        open = 7
-        close = 8
-        slice = 9
-        cook = 10
 
     def __init__(
         self,
@@ -172,7 +164,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         self._gen_grid(self.width, self.height)
 
         # generate furniture view
-        self.furniture_view = self.grid.render_furniture(tile_size=TILE_PIXELS, obj_instances=self.obj_instances)
+        # self.furniture_view = self.grid.render_furniture(tile_size=TILE_PIXELS, obj_instances=self.obj_instances)
 
         # These fields should be defined by _gen_grid
         assert self.agent_pos is not None
@@ -343,69 +335,16 @@ class MiniBehaviorEnv(MiniGridEnv):
         # Move forward
         elif action == self.actions.forward:
             can_overlap = True
-            for dim in fwd_cell:
-                for obj in dim:
-                    if is_obj(obj) and not obj.can_overlap:
-                        can_overlap = False
-                        break
+            furniture = fwd_cell.furniture
+            objs = fwd_cell.objs
+            for obj in [furniture] + objs:
+                if is_obj(obj) and not obj.can_overlap:
+                    can_overlap = False
+                    break
             if can_overlap:
                 self.agent_pos = fwd_pos
             else:
                 self.action_done = False
-
-        else:
-            if self.mode == 'human':
-                self.last_action = None
-                if action == 'choose':
-                    choices = self.all_reachable()
-                    if not choices:
-                        print("No reachable objects")
-                    else:
-                        # get all reachable objects
-                        text = ''.join('{}) {} \n'.format(i, choices[i].name) for i in range(len(choices)))
-                        obj = input("Choose one of the following reachable objects: \n{}".format(text))
-                        obj = choices[int(obj)]
-                        assert obj is not None, "No object chosen"
-
-                        actions = []
-                        for action in self.actions:
-                            action_class = ACTION_FUNC_MAPPING.get(action.name, None)
-                            if action_class and action_class(self).can(obj):
-                                actions.append(action.name)
-
-                        if len(actions) == 0:
-                            print("No actions available")
-                        else:
-                            text = ''.join('{}) {} \n'.format(i, actions[i]) for i in range(len(actions)))
-
-                            action = input("Choose one of the following actions: \n{}".format(text))
-                            action = actions[int(action)] # action name
-
-                            if action == 'drop' or action == 'drop_in':
-                                dims = ACTION_FUNC_MAPPING[action](self).drop_dims(fwd_pos)
-                                spots = ['bottom', 'middle', 'top']
-                                text = ''.join(f'{dim}) {spots[dim]} \n' for dim in dims)
-                                dim = input(f'Choose which dimension to drop the object: \n{text}')
-                                ACTION_FUNC_MAPPING[action](self).do(obj, int(dim))
-                            else:
-                                ACTION_FUNC_MAPPING[action](self).do(obj) # perform action
-                            self.last_action = self.actions[action]
-
-                # Done action (not used by default)
-                else:
-                    assert False, "unknown action {}".format(action)
-            else:
-                # TODO: with agent centric, how does agent choose which obj to do the action on
-                obj_action = self.actions(action).name.split('/') # list: [obj, action]
-
-                # try to perform action
-                obj = self.obj_instances[obj_action[0]]
-                action_class = ACTION_FUNC_MAPPING[obj_action[1]]
-
-                if action_class(self).can(obj):
-                    action_class(self).do(obj)
-                else:
-                    self.action_done = False
 
         self.update_states()
         reward = self._reward()
@@ -435,11 +374,6 @@ class MiniBehaviorEnv(MiniGridEnv):
 
         img = super().render(mode='rgb_array', highlight=highlight, tile_size=tile_size)
 
-        if self.render_dim is None:
-            img = self.render_furniture_states(img)
-        else:
-            img = self.render_furniture_states(img, dim=self.render_dim)
-
         if self.window:
             self.window.set_inventory(self)
 
@@ -448,41 +382,3 @@ class MiniBehaviorEnv(MiniGridEnv):
             self.window.show_img(img)
 
         return img
-
-    def render_states(self, tile_size=TILE_PIXELS):
-        pos = self.front_pos
-        imgs = []
-        furniture = self.grid.get_furniture(*pos)
-        img = np.zeros(shape=(tile_size, tile_size, 3), dtype=np.uint8)
-        if furniture:
-            furniture.render(img)
-            state_values = furniture.get_ability_values(self)
-            GridDimension.render_furniture_states(img, state_values)
-        imgs.append(img)
-
-        for grid in self.grid.grid:
-            furniture, obj = grid.get(*pos)
-            state_values = obj.get_ability_values(self) if obj else None
-            print(state_values)
-            img = GridDimension.render_tile(furniture, obj, state_values, draw_grid_lines=False)
-            imgs.append(img)
-
-        return imgs
-
-    def render_furniture_states(self, img, tile_size=TILE_PIXELS, dim=None):
-        for obj in self.obj_instances.values():
-            if obj.is_furniture():
-                if dim is None or dim in obj.dims:
-                    i, j = obj.cur_pos
-                    ymin = j * tile_size
-                    ymax = (j + obj.height) * tile_size
-                    xmin = i * tile_size
-                    xmax = (i + obj.width) * tile_size
-                    sub_img = img[ymin:ymax, xmin:xmax, :]
-                    state_values = obj.get_ability_values(self)
-                    GridDimension.render_furniture_states(sub_img, state_values)
-        return img
-
-    def switch_dim(self, dim):
-        self.render_dim = dim
-        self.grid.render_dim = dim

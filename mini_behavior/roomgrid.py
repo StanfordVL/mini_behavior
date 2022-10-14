@@ -3,6 +3,7 @@
 from .minibehavior import *
 from .utils.globals import COLOR_NAMES
 
+
 def reject_next_to(env, pos):
     """
     Function to filter out object positions that are right next to
@@ -21,8 +22,11 @@ class Room:
         top,
         size,
         row,
-        col
+        col,
+        door_pos = None,
+        name=None
     ):
+        self.name = name
         # Top-left corner and size (tuples)
         self.top = top
         self.size = size
@@ -30,7 +34,7 @@ class Room:
         # List of door objects and door positions
         # Order of the doors is right, down, left, up
         self.doors = [None] * 4
-        self.door_pos = [None] * 4
+        self.door_pos = [None] * 4 if door_pos is None else door_pos
 
         # List of rooms adjacent to this one
         # Order of the neighbors is right, down, left, up
@@ -233,22 +237,21 @@ class RoomGrid(MiniBehaviorEnv):
 
         return obj, pos
 
-    # def add_object(self, i, j, kind=None, color=None):
-    #     """
-    #     Add a new object to room (i, j)
-    #     """
-    #
-    #     if kind is None:
-    #         kind = self._rand_elem(['key', 'ball', 'box'])
-    #
-    #     if color is None:
-    #         color = self._rand_color()
-    #
-    #     # TODO: we probably want to add an Object.make helper function
-    #     assert kind in OBJECTS
-    #     obj = OBJECT_CLASS[kind]()
-    #
-    #     return self.place_in_room(i, j, obj)
+    def put_in_room(self, i, j, pos, obj):
+        """
+        Add an existing object to room (i, j)
+        """
+
+        room = self.get_room(i, j)
+        pos = self.put_obj(
+            obj,
+            room.top[0] + pos[0],
+            room.top[1] + pos[1],
+        )
+
+        room.objs.append(obj)
+
+        return obj, pos
 
     def add_door(self, i, j, door_idx=None, color=None, locked=None):
         """
