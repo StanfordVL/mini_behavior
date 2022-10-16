@@ -1,6 +1,6 @@
 # FROM RL TORCH
 
-import gymnasium
+import gymnasium as gym
 import minigrid
 
 
