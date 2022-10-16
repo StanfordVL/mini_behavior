@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from gym_minigrid.wrappers import *
+from minigrid.wrappers import *
 from mini_behavior.window import Window
 from mini_behavior.utils.save import get_step, save_demo
 from mini_behavior.grid import GridDimension
@@ -122,7 +122,7 @@ def key_handler(event):
     if event.key == ' ':
         render_furniture()
         return
-    if event.key == 'pageup':
+    if event.key == 'e':
         step('choose')
         return
     if event.key == 'enter':

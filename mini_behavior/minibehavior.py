@@ -3,8 +3,8 @@
 import os
 import pickle as pkl
 from enum import IntEnum
-from gym import spaces
-from gym_minigrid.minigrid import MiniGridEnv
+from gymnasium import spaces
+from minigrid.minigrid_env import MiniGridEnv, MissionSpace
 from bddl.actions import ACTION_FUNC_MAPPING
 from .objects import *
 from .grid import BehaviorGrid, GridDimension, is_obj
@@ -65,8 +65,6 @@ class MiniBehaviorEnv(MiniGridEnv):
         self.highlight = highlight
         self.tile_size = tile_size
 
-        # Initialize the RNG
-        self.seed(seed=seed)
         self.furniture_view = None
 
         if num_objs is None:
@@ -94,6 +92,7 @@ class MiniBehaviorEnv(MiniGridEnv):
                          max_steps=max_steps,
                          see_through_walls=see_through_walls,
                          agent_view_size=agent_view_size,
+                         mission_space = MissionSpace(mission_func=lambda: self.mission, seed=seed),
                          )
 
         self.grid = BehaviorGrid(width, height)
@@ -433,7 +432,10 @@ class MiniBehaviorEnv(MiniGridEnv):
             self.window = Window("mini_behavior")
             self.window.show(block=False)
 
-        img = super().render(mode='rgb_array', highlight=highlight, tile_size=tile_size)
+        self.render_mode = 'rgb_array'
+        self.highlight = highlight
+        self.tile_size = tile_size
+        img = super().render()
 
         if self.render_dim is None:
             img = self.render_furniture_states(img)

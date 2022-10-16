@@ -1,5 +1,5 @@
 import argparse
-from .mini_behavior.utils.scene_to_grid import gen_grid_from_img
+from mini_behavior.utils.scene_to_grid import gen_grid_from_img
 import os
 
 # run this to convert iGibson floor plan image to grid image

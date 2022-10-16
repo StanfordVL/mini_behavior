@@ -1,7 +1,7 @@
 # FROM RL TORCH
 
-import gym
-import gym_minigrid
+import gymnasium
+import minigrid
 
 
 def make_env(env_key, seed=None):
