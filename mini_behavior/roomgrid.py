@@ -162,6 +162,7 @@ class RoomGrid(MiniBehaviorEnv):
         return self.gen_obs()
 
     def _gen_grid(self, width, height):
+        self.grid = BehaviorGrid(width, height)
         self._gen_rooms(width, height)
         self._gen_objs()
         self.place_agent()
@@ -169,7 +170,7 @@ class RoomGrid(MiniBehaviorEnv):
 
     def _gen_rooms(self, width, height):
         # Create the grid
-        self.grid = BehaviorGrid(width, height)
+        # self.grid = BehaviorGrid(width, height)
         self.room_grid = [] # list of lists
         self.doors = []
 

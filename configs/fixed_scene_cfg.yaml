@@ -11,8 +11,8 @@ scene_gen:
   max_rooms: 4
   min_furniture: 6
   max_furniture: 6
-  min_objects: 5
-  max_objects: 5
+  min_objects: 1
+  max_objects: 4
   priors_noise: 0.2
   priors_sparsity_level: 0.2
   use_move_freq: True

@@ -67,6 +67,7 @@ class AbsoluteObjectState(BaseObjectState):
         pass
 
     def _get_value(self, env=None):
+        self._update(env)
         return self.value
 
     def _set_value(self, new_value):

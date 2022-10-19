@@ -1,4 +1,4 @@
-from mini_behavior.objects import FurnitureObj
+from mini_behavior.mini_behavior.objects import FurnitureObj
 import random
 
 
@@ -11,25 +11,51 @@ def put_ontop(env, obj1, obj2):
 
     # choose position to put obj1
     if isinstance(obj2, FurnitureObj):
-        pos = random.choice(obj2.all_pos)
+        # TODO: clean up loop logic
+        pos = None
+        while pos is None:
+            all_pos = obj2.all_pos
+            random.shuffle(all_pos)
+            # pos = random.shuffle(obj2.all_pos)
+            for try_pos in all_pos:
+                if len(env.grid.get_all_objs(*try_pos)) < 4:
+                    pos = try_pos
+                    break
     else:
         pos = obj2.cur_pos
 
-    # get dim (d) of furniture obj
-    dim = env.get_obj_dim(obj2)
+    # get max dim of furniture obj
+    cell = env.grid.get(*pos)
+    n = len(cell.objs)
+    cell_objs = [cell.objs[n - i] for i in range(1, n + 1)]
+    dim = len(cell_objs) - cell_objs.index(obj2) - 1
 
-    # put_obj at (i,j) at dim (d+1)
+    # put_obj at (i,j) at dim+1
     env.put_obj(obj1, *pos, dim + 1)
 
 
 def put_inside(env, obj1, obj2):
+    # choose position to put obj2
     if isinstance(obj2, FurnitureObj):
-        possible_pos = obj2.all_pos
-        # get all possible positions
-        # randomly choose a possible position (i, j)
-        # get random dim (d) of furniture obj
-        # put_obj at (i,j) at dim (d+1)
-        # set state to inside = True
+        # pos = random.choice(obj2.all_pos)
+        pos = None
+        while pos is None:
+            all_pos = obj2.all_pos
+            random.shuffle(all_pos)
+            # pos = random.shuffle(obj2.all_pos)
+            for try_pos in all_pos:
+                if len(env.grid.get_all_objs(*try_pos)) < 4:
+                    pos = try_pos
+                    break
+    else:
+        pos = obj2.cur_pos
+
+    # put_obj at (i,j) at dim
+    dim = random.choice(list(obj2.dims))
+    env.put_obj(obj1, *pos, dim)
+
+    # set state inside(obj1, obj2) = True
+    obj1.states['inside'].set_value(obj2, True)
 
 
 def put_contains(env, obj1, obj2):
@@ -38,9 +64,3 @@ def put_contains(env, obj1, obj2):
 
 def put_under(env, obj1, obj2):
     put_ontop(env, obj2, obj1)
-
-
-# what does connected mean?
-def put_connected(env, obj1, obj2):
-    if isinstance(obj2, FurnitureObj):
-        possible_pos = obj2.all_pos

@@ -1,8 +1,9 @@
 import os
 from mini_behavior.mini_behavior.rendering import *
 from mini_behavior.bddl import DEFAULT_STATES, STATE_FUNC_MAPPING, DEFAULT_ACTIONS, OBJECT_TO_IDX, IDX_TO_OBJECT, OBJECTS, ABILITIES
-from .globals import COLOR_TO_IDX, IDX_TO_COLOR, COLORS
+from .globals import COLOR_TO_IDX, IDX_TO_COLOR, COLORS, COLOR_NAMES
 from .load import load_json
+import random
 
 
 class WorldObj:
@@ -41,14 +42,15 @@ class WorldObj:
         self.height = 1
 
         # TODO: change this
-        if obj_type in OBJECTS:
-            icon_path = os.path.join(os.path.dirname(__file__), f'../utils/object_icons/{self.type}.jpg')
+        icon_path = os.path.join(os.path.dirname(__file__), f'../utils/object_icons/{self.type}.jpg')
+        if os.path.isfile(icon_path):
             self.icon = img_to_array(icon_path)
         else:
             self.icon = None
 
-        self.color = 'white' if color is None else color
-        assert self.color in COLOR_TO_IDX, self.color
+        self.color = random.choice(COLOR_NAMES) if color is None else color
+        if color is not None:
+            assert self.color in COLOR_TO_IDX, self.color
 
         # Initial and current position of the object
         self.init_pos = None
@@ -159,7 +161,10 @@ class WorldObj:
         """
         render object from icon
         """
-        fill_coords(img, point_in_icon(img, self.icon), [255, 255, 255])
+        if self.icon is not None:
+            fill_coords(img, point_in_icon(img, self.icon), [255, 255, 255])
+        else:
+            fill_coords(img, point_in_circle(.5, .5, .6), COLORS[self.color])
 
     def reset(self):
         self.contains = None

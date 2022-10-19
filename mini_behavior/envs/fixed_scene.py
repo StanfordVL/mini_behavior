@@ -3,21 +3,10 @@ from mini_behavior.mini_behavior.roomgrid import *
 from mini_behavior.mini_behavior.register import register
 
 
-class PSGFourRoomsEnv(RoomGrid):
-    # bedroom, kitchen, bathroom, living room
-    def __init__(self):
-        num_objs = {'bed': 1,
-                    'desk': 1,
-                    'counter': 2,
-                    'shelving_unit': 1,
-                    'chair': 11,
-                    'fridge': 1,
-                    'toilet': 1,
-                    'sink': 1,
-                    'sofa': 1,
-                    'dining_table': 1
-                    }
+# TODO: use procthor to generate env
 
+class FixedEnv(RoomGrid):
+    def __init__(self, num_objs):
         super().__init__(
             room_size=16,
             num_rows=2,
@@ -113,7 +102,6 @@ class PSGFourRoomsEnv(RoomGrid):
         self.put_in_room(1, 1, (9, 8), self.objs['chair'][9])
         self.put_in_room(1, 1, (11, 8), self.objs['chair'][10])
 
-
         self.objs['sofa'][0].width = 6
         self.put_in_room(1, 1, (1, 13), self.objs['sofa'][0])
         self.objs['shelving_unit'][0].width = 4
@@ -121,6 +109,6 @@ class PSGFourRoomsEnv(RoomGrid):
         self.put_in_room(1, 1, (10, 13), self.objs['shelving_unit'][0])
 
 register(
-    id='MiniGrid-PSGFourRooms-32x32-N2-v0',
-    entry_point='mini_behavior.mini_behavior.envs:PSGFourRoomsEnv'
+    id='MiniGrid-FixedEnv-32x32-N2-v0',
+    entry_point='mini_behavior.mini_behavior.envs:FixedEnv'
 )

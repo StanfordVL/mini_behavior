@@ -67,18 +67,21 @@ class MiniBehaviorEnv(MiniGridEnv):
         self.objs = {}
         self.obj_instances = {}
 
-        for obj_type in num_objs.keys():
-            self.objs[obj_type] = []
-            for i in range(num_objs[obj_type]):
-                obj_name = '{}_{}'.format(obj_type, i)
+        self.add_objs(num_objs)
+        # for obj_type in num_objs.keys():
+        #     self.objs[obj_type] = []
+        #     for i in range(num_objs[obj_type]):
+        #         obj_name = '{}_{}'.format(obj_type, i)
+        #
+        #         if obj_type in OBJECT_CLASS.keys():
+        #             obj_instance = OBJECT_CLASS[obj_type](name=obj_name)
+        #         else:
+        #             obj_instance = WorldObj(obj_type, None, obj_name)
+        #
+        #         self.objs[obj_type].append(obj_instance)
+        #         self.obj_instances[obj_name] = obj_instance
 
-                if obj_type in OBJECT_CLASS.keys():
-                    obj_instance = OBJECT_CLASS[obj_type](name=obj_name)
-                else:
-                    obj_instance = WorldObj(obj_type, None, obj_name)
-
-                self.objs[obj_type].append(obj_instance)
-                self.obj_instances[obj_name] = obj_instance
+        self.grid = None
 
         super().__init__(grid_size=grid_size,
                          width=width,
@@ -88,13 +91,31 @@ class MiniBehaviorEnv(MiniGridEnv):
                          agent_view_size=agent_view_size,
                          )
 
-        self.grid = BehaviorGrid(width, height)
-
         # Action enumeration for this environment, actions are discrete int
         self.actions = MiniBehaviorEnv.Actions
         self.action_space = spaces.Discrete(len(self.actions))
 
         self.carrying = set()
+
+    def add_objs(self, num_objs):
+        new_objs = []
+        for obj_type in num_objs.keys():
+            cur_objs = self.objs.get(obj_type, [])
+            n = len(cur_objs)
+            for i in range(num_objs[obj_type]):
+                obj_name = '{}_{}'.format(obj_type, n + i)
+                if obj_type in OBJECT_CLASS.keys():
+                    obj_instance = OBJECT_CLASS[obj_type](name=obj_name)
+                else:
+                    obj_instance = WorldObj(obj_type, None, obj_name)
+
+                cur_objs.append(obj_instance)
+                self.obj_instances[obj_name] = obj_instance
+                new_objs.append(obj_instance)
+
+            self.objs[obj_type] = cur_objs
+
+        return new_objs
 
     def copy_objs(self):
         from copy import deepcopy
@@ -159,7 +180,6 @@ class MiniBehaviorEnv(MiniGridEnv):
         self.reward = 0
 
         # Generate a new random grid at the start of each episode
-        # To keep the same grid for each episode, call env.seed() with
         # the same seed before calling env.reset()
         self._gen_grid(self.width, self.height)
 
@@ -182,6 +202,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         return obs
 
     def _gen_grid(self, width, height):
+        self.grid = BehaviorGrid(width, height)
         self._gen_objs()
         assert self._init_conditions(), "Does not satisfy initial conditions"
         self.place_agent()
@@ -276,13 +297,9 @@ class MiniBehaviorEnv(MiniGridEnv):
         """
         Put an object at a specific position in the grid
         """
-        self.grid.set(i, j, obj, dim)
         obj.init_pos = (i, j)
         obj.update_pos((i, j))
-
-        if obj.is_furniture():
-            for pos in obj.all_pos:
-                self.grid.set(*pos, obj, dim)
+        self.grid.set(i, j, obj, dim)
 
     def agent_sees(self, x, y):
         """

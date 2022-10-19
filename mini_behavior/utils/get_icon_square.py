@@ -41,9 +41,9 @@ def square_img_array(img_path):
 
 # dir with all icon images
 # img_dir = '/Users/emilyjin/Downloads/icons'
-img_dir = '/Users/emilyjin/Downloads/untitled folder'
+img_dir = '/Users/emilyjin/Downloads/icon_jpg'
 # dir to save cropped icons as square
-crop_dir = '/mini_behavior/mini_behavior/utils/state_icons'
+crop_dir = '/mini_behavior/mini_behavior/utils/object_icons'
 
 imgs = os.listdir(img_dir)
 for img in imgs:
