@@ -9,6 +9,7 @@ from gym_minigrid.minigrid import MiniGridEnv
 from .objects import *
 from .grid import BehaviorGrid, is_obj
 from mini_behavior.mini_behavior.window import Window
+from .utils.navigate import *
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
@@ -68,18 +69,6 @@ class MiniBehaviorEnv(MiniGridEnv):
         self.obj_instances = {}
 
         self.add_objs(num_objs)
-        # for obj_type in num_objs.keys():
-        #     self.objs[obj_type] = []
-        #     for i in range(num_objs[obj_type]):
-        #         obj_name = '{}_{}'.format(obj_type, i)
-        #
-        #         if obj_type in OBJECT_CLASS.keys():
-        #             obj_instance = OBJECT_CLASS[obj_type](name=obj_name)
-        #         else:
-        #             obj_instance = WorldObj(obj_type, None, obj_name)
-        #
-        #         self.objs[obj_type].append(obj_instance)
-        #         self.obj_instances[obj_name] = obj_instance
 
         self.grid = None
 
@@ -96,6 +85,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         self.action_space = spaces.Discrete(len(self.actions))
 
         self.carrying = set()
+        self.path = None
 
     def add_objs(self, num_objs):
         new_objs = []
@@ -300,6 +290,13 @@ class MiniBehaviorEnv(MiniGridEnv):
         obj.init_pos = (i, j)
         obj.update_pos((i, j))
         self.grid.set(i, j, obj, dim)
+
+    def get_path_to(self, pos):
+        agent_pos = self.agent_pos
+
+        maze = self.grid.get_maze()
+        path = astar(maze, agent_pos, pos)
+
 
     def agent_sees(self, x, y):
         """

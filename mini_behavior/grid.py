@@ -87,6 +87,19 @@ class BehaviorGrid(Grid):
             self.walls.append(wall)
             self.set(x, y, wall)
 
+    def get_maze(self):
+        maze = []
+
+        for i in range(self.width):
+            row = []
+            for j in range(self.height):
+                cell = 0 if self.is_empty(i, j) else 1
+                row.append(cell)
+            maze.append(row)
+
+        return maze
+
+
     def get_furniture(self, i, j):
         cell = self.get(i,j)
         return cell.furniture
@@ -95,11 +108,6 @@ class BehaviorGrid(Grid):
         cell = self.get(*obj.cur_pos)
         if obj in cell.objs:
             return cell.objs.index(obj)
-
-    # def get_obj(self, i, j, dim):
-    #     cell = self.get(i, j)
-    #     if dim < len(cell.objs):
-    #         return cell.objs[dim]
 
     def get_all_objs(self, i, j):
         cell = self.get(i, j)
