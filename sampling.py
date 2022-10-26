@@ -63,4 +63,22 @@ def put_contains(env, obj1, obj2):
 
 
 def put_under(env, obj1, obj2):
-    put_ontop(env, obj2, obj1)
+    if isinstance(obj2, FurnitureObj):
+        pos = None
+        while pos is None:
+            all_pos = obj2.all_pos
+            random.shuffle(all_pos)
+            # pos = random.shuffle(obj2.all_pos)
+            for try_pos in all_pos:
+                if len(env.grid.get_all_objs(*try_pos)) < 4:
+                    pos = try_pos
+                    break
+    else:
+        pos = obj2.cur_pos
+
+    # get max dim of furniture obj
+    cell = env.grid.get(*pos)
+    dim = cell.objs.index(obj2)
+
+    # put_obj at (i,j) at dim+1
+    env.put_obj(obj1, *pos, dim)
