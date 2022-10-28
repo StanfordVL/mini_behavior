@@ -241,8 +241,8 @@ class BehaviorGrid(Grid):
         key = tuple(furniture_encoding + objs_encoding) + key
 
         # TODO: should be uncommented
-        # if key in cls.tile_cache:
-        #     return cls.tile_cache[key]
+        if key in cls.tile_cache:
+            return cls.tile_cache[key]
 
         img = np.zeros(shape=(tile_size * subdivs, tile_size * subdivs, 3), dtype=np.uint8)
 

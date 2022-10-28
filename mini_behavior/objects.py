@@ -15,7 +15,7 @@ class Bed(FurnitureObj):
 
 
 class Top_cabinet(FurnitureObj):
-    def __init__(self, width=2, height=3, color='brown', name='top_cabinet'):
+    def __init__(self, width=2, height=3, color='pink', name='top_cabinet'):
         super(Top_cabinet, self).__init__('cabinet', width, height, {0, 1, 2}, color, name, can_contain={0, 1, 2}, can_seebehind=False)
 
 
@@ -40,7 +40,7 @@ class Counter(FurnitureObj):
 
 
 class Counter_top(FurnitureObj):
-    def __init__(self, width=3, height=2, color='tan', name='counter_top'):
+    def __init__(self, width=3, height=2, color='pink', name='counter_top'):
         super(Counter_top, self).__init__('counter_top', width, height, {0}, color, name, can_seebehind=True)
 
 
@@ -105,7 +105,7 @@ class Shelf(FurnitureObj):
 
 
 class Shelving_unit(FurnitureObj):
-    def __init__(self, width=2, height=3, color='brown', name='shelving_unit'):
+    def __init__(self, width=2, height=3, color='red_brown', name='shelving_unit'):
         super(Shelving_unit, self).__init__('shelving_unit', width, height, {0, 1}, color, name, can_contain={0, 1}, can_seebehind=False)
 
 
@@ -135,7 +135,7 @@ class Coffee_table(FurnitureObj):
 
 
 class Dining_table(FurnitureObj):
-    def __init__(self, width=3, height=2, color='tan', name='dining_table'):
+    def __init__(self, width=3, height=2, color='l_purple', name='dining_table'):
         super(Dining_table, self).__init__('dining_table', width, height, {1}, color, name)
 
 
@@ -155,7 +155,7 @@ class T_v_stand(FurnitureObj):
 
 
 class Toilet(FurnitureObj):
-    def __init__(self, width=2, height=2, color='white', name='toilet'):
+    def __init__(self, width=2, height=2, color='l_green', name='toilet'):
         super(Toilet, self).__init__('toilet', width, height, {1}, color, name)
 
 
