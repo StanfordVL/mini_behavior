@@ -59,31 +59,31 @@ class FixedEnv(RoomGrid):
         # bedroom
         self.objs['bed'][0].width = 5
         self.objs['bed'][0].height = 7
-        self.put_in_room(0, 0, (1, 5), self.objs['bed'][0])
+        self.put_in_room(0, 0, (2, 6), self.objs['bed'][0])
 
         self.objs['desk'][0].width = 5
         self.objs['desk'][0].height = 3
-        self.put_in_room(0, 0, (10, 5), self.objs['desk'][0])
+        self.put_in_room(0, 0, (9, 6), self.objs['desk'][0])
 
-        self.put_in_room(0, 0, (12, 9), self.objs['chair'][0])
+        self.put_in_room(0, 0, (12, 10), self.objs['chair'][0])
 
         # bathroom
         self.objs['sink'][0].width = 4
-        self.put_in_room(0, 1, (9, 6), self.objs['sink'][0])
+        self.put_in_room(0, 1, (9, 5), self.objs['sink'][0])
+        self.objs['toilet'][0].width = 1
+        self.objs['toilet'][0].height = 1
         self.put_in_room(0, 1, (9, 1, 10), self.objs['toilet'][0])
 
         # kitchen
-        self.objs['counter'][0].width = 8
-        self.objs['counter'][0].height = 1
-        self.put_in_room(1, 0, (4, 7), self.objs['counter'][0])
-        self.objs['counter'][1].width = 1
-        self.objs['counter'][1].height = 7
-        self.put_in_room(1, 0, (11, 8), self.objs['counter'][1])
-        self.put_in_room(1, 0, (1, 7), self.objs['fridge'][0])
-
-        # self.objs['ashcan'][0].width = 1
-        # self.objs['ashcan'][0].height = 1
-        # self.put_in_room(1, 0, (1, 14), self.objs['ashcan'][0])
+        self.objs['counter_top'][0].width = 8
+        self.objs['counter_top'][0].height = 1
+        self.put_in_room(1, 0, (4, 7), self.objs['counter_top'][0])
+        self.objs['counter_top'][1].width = 1
+        self.objs['counter_top'][1].height = 7
+        self.put_in_room(1, 0, (11, 8), self.objs['counter_top'][1])
+        self.objs['fridge'][0].width = 2
+        self.objs['fridge'][0].height = 2
+        self.put_in_room(1, 0, (1, 8), self.objs['fridge'][0])
 
         # living room
         self.objs['dining_table'][0].width = 7
@@ -103,10 +103,11 @@ class FixedEnv(RoomGrid):
         self.put_in_room(1, 1, (11, 8), self.objs['chair'][10])
 
         self.objs['sofa'][0].width = 6
-        self.put_in_room(1, 1, (1, 13), self.objs['sofa'][0])
+        self.objs['sofa'][0].height = 1
+        self.put_in_room(1, 1, (1, 14), self.objs['sofa'][0])
         self.objs['shelving_unit'][0].width = 4
-        self.objs['shelving_unit'][0].height = 2
-        self.put_in_room(1, 1, (10, 13), self.objs['shelving_unit'][0])
+        self.objs['shelving_unit'][0].height = 1
+        self.put_in_room(1, 1, (10, 14), self.objs['shelving_unit'][0])
 
 register(
     id='MiniGrid-FixedEnv-32x32-N2-v0',

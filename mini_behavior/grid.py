@@ -47,10 +47,10 @@ class Cell:
         assert self.wall is None
         self.add_at_dim(obj, dim)
 
-    # def reset(self):
-    #     self.wall = None
-    #     self.furniture = None
-    #     self.objs = []
+    def reset(self):
+        self.wall = None
+        self.furniture = None
+        self.objs = []
 
 
 class BehaviorGrid(Grid):
@@ -90,10 +90,10 @@ class BehaviorGrid(Grid):
     def get_maze(self):
         maze = []
 
-        for i in range(self.width):
+        for i in range(self.height):
             row = []
-            for j in range(self.height):
-                cell = 0 if self.is_empty(i, j) else 1
+            for j in range(self.width):
+                cell = 0 if self.is_empty(j, i)  else 1
                 row.append(cell)
             maze.append(row)
 

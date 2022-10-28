@@ -49,11 +49,11 @@ class Room:
         self.row = row
         self.col = col
 
-    def reset(self):
-        self.doors = [None] * 4
-        self.door_pos = [None] * 4
-        self.neighbors = [None] * 4
-        self.objs = []
+    # def reset(self):
+    #     self.doors = [None] * 4
+    #     self.door_pos = [None] * 4
+    #     self.neighbors = [None] * 4
+    #     self.objs = []
 
     def rand_pos(self, env):
         topX, topY = self.top
@@ -154,12 +154,12 @@ class RoomGrid(MiniBehaviorEnv):
         assert j < self.num_rows
         return self.room_grid[j][i]
 
-    def reset(self):
-        super().reset()
-        for row in self.room_grid:
-            for room in row:
-                room.reset()
-        return self.gen_obs()
+    # def reset(self):
+    #     super().reset()
+    #     # for row in self.room_grid:
+    #     #     for room in row:
+    #     #         room.reset()
+    #     return self.gen_obs()
 
     def _gen_grid(self, width, height):
         self.grid = BehaviorGrid(width, height)
@@ -284,7 +284,9 @@ class RoomGrid(MiniBehaviorEnv):
         self.doors.append(door)
 
         pos = room.door_pos[door_idx]
-        self.grid.set(*pos, door)
+        # self.grid.set(*pos, door)
+        cell = self.grid.get(*pos)
+        cell.reset()
         door.cur_pos = pos
 
         neighbor = room.neighbors[door_idx]

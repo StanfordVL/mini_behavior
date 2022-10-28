@@ -11,7 +11,7 @@ class Can(FurnitureObj):
 
 class Bed(FurnitureObj):
     def __init__(self, width=3, height=2, color='purple', name='bed'):
-        super(Bed, self).__init__('bed', width, height, {0}, color, name, can_overlap=True)
+        super(Bed, self).__init__('bed', width, height, {0}, color, name) #, can_overlap=True)
 
 
 class Top_cabinet(FurnitureObj):

@@ -350,7 +350,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         elif action == self.actions.forward:
             can_overlap = True
             furniture = fwd_cell.furniture
-            objs = fwd_cell.objs
+            objs = fwd_cell.objs if fwd_cell.objs is not None else []
             for obj in [furniture] + objs:
                 if is_obj(obj) and not obj.can_overlap:
                     can_overlap = False
