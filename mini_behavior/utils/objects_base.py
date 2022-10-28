@@ -45,8 +45,10 @@ class WorldObj:
         icon_path = os.path.join(os.path.dirname(__file__), f'../utils/object_icons/{self.type}.jpg')
         if os.path.isfile(icon_path):
             self.icon = img_to_array(icon_path)
+            self.icon_color = 'white'
         else:
             self.icon = None
+            self.icon_color = None
 
         self.color = random.choice(COLOR_NAMES) if color is None else color
         if color is not None:
@@ -118,7 +120,7 @@ class WorldObj:
                         name = '{}/{}/{}'.format(self.name, obj_name, state)
                         val = instance.get_value(obj_instance, env)
                         states[name] = val
-        return states2
+        return states
 
     def get_ability_values(self, env):
         states = {}
@@ -162,7 +164,7 @@ class WorldObj:
         render object from icon
         """
         if self.icon is not None:
-            fill_coords(img, point_in_icon(img, self.icon), [255, 255, 255])
+            fill_coords(img, point_in_icon(img, self.icon), COLORS[self.icon_color])
         else:
             fill_coords(img, point_in_circle(.5, .5, .6), COLORS[self.color])
 
@@ -202,7 +204,7 @@ class FurnitureObj(WorldObj):
         self.all_pos = []
 
     def render_background(self, img):
-        fill_coords(img, point_in_rect(0.031, 1, 0.031, 1), COLORS[self.color])
+        fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
 
     def reset(self):
         super().reset()

@@ -10,6 +10,7 @@ COLORS = {
     'grey'  : np.array([100, 100, 100]),
     'orange': np.array([255, 165, 0]),
     'white' : np.array([255, 255, 255]),
+    # 'grey' : np.array([255, 255, 255]),
     'l_green': np.array([46, 139, 87]),
     'brown': np.array([101, 67, 33]),
     'pink': np.array([255, 192, 203]),

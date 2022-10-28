@@ -15,7 +15,53 @@ class FixedEnv(RoomGrid):
         )
 
     def _gen_rooms(self, width, height):
-        super()._gen_rooms(width, height)
+        # Create the grid
+        # self.grid = BehaviorGrid(width, height)
+        self.room_grid = []  # list of lists
+        self.doors = []
+
+        # For each row of rooms
+        for j in range(0, self.num_rows):
+            row = []
+
+            # For each column of rooms
+            for i in range(0, self.num_cols):
+                room = Room(
+                    top=(i * (self.room_size - 1), j * (self.room_size - 1)),
+                    size=(self.room_size, self.room_size),
+                    row=j,
+                    col=i
+                )
+                row.append(room)
+
+                # Generate the walls for this room
+                # self.grid.wall_rect(*room.top, *room.size)
+
+            self.room_grid.append(row)
+
+        # For each row of rooms
+        for j in range(0, self.num_rows):
+            # For each column of rooms
+            for i in range(0, self.num_cols):
+                room = self.room_grid[j][i]
+
+                x_l, y_l = (room.top[0] + 1, room.top[1] + 1)
+                x_m, y_m = (room.top[0] + room.size[0] - 1, room.top[1] + room.size[1] - 1)
+
+                # Door positions, order is right, down, left, up
+                if i < self.num_cols - 1:
+                    room.neighbors[0] = self.room_grid[j][i + 1]
+                    room.door_pos[0] = (x_m, self._rand_int(y_l, y_m))
+                if j < self.num_rows - 1:
+                    room.neighbors[1] = self.room_grid[j + 1][i]
+                    room.door_pos[1] = (self._rand_int(x_l, x_m), y_m)
+                if i > 0:
+                    room.neighbors[2] = self.room_grid[j][i - 1]
+                    room.door_pos[2] = room.neighbors[2].door_pos[0]
+                if j > 0:
+                    room.neighbors[3] = self.room_grid[j - 1][i]
+                    room.door_pos[3] = room.neighbors[3].door_pos[1]
+
         names = ['bedroom', 'bathroom', 'kitchen', 'living_room']
         i = 0
         for row in self.room_grid:
@@ -23,22 +69,35 @@ class FixedEnv(RoomGrid):
                 room.name = names[i]
                 i += 1
 
+
         # bedroom
-        for i in range(5):
-            self.grid.horz_wall(0, i, 16)
+        for i in range(4):
+            self.grid.horz_wall(0, i, 16, color='white')
+        self.grid.horz_wall(0, 4, 16, color='grey')
 
         # bathroom
-        for i in range(16, 23):
-            self.grid.horz_wall(0, i, 9)
+        self.grid.horz_wall(0, 15, 31, color='grey')
+        self.grid.vert_wall(0, 4, 12, color='grey')
+        self.grid.vert_wall(15, 4, 27, color='grey')
+        self.grid.vert_wall(30, 15, 15, color='grey')
+        self.grid.horz_wall(15, 30, 16, color='grey')
 
-        for i in range(23, 31):
-            self.grid.horz_wall(0, i, 16)
+        for i in range(16, 24):
+            self.grid.horz_wall(0, i, 8, color='white')
+        self.grid.vert_wall(8, 16, 7, color='grey')
+
+        self.grid.horz_wall(8, 23, 8, color='grey')
+        for i in range(24, 31):
+            self.grid.horz_wall(0, i, 16, color='white')
 
         # kitchen
-        for i in range(7):
-            self.grid.horz_wall(15, i, 16)
-        for i in range(7, 16):
-            self.grid.horz_wall(27, i, 4)
+        self.grid.horz_wall(15, 6, 13, color='grey')
+        for i in range(6):
+            self.grid.horz_wall(15, i, 16, color='white')
+
+        self.grid.vert_wall(27, 7, 9, color='grey')
+        for i in range(6, 16):
+            self.grid.horz_wall(28, i, 3, color='white')
 
     def connect_all(self, door_colors=COLOR_NAMES, max_itrs=5000):
         # down right up left

@@ -161,13 +161,13 @@ class BehaviorGrid(Grid):
         cell = self.get(i, j)
         cell.objs = objs
 
-    def horz_wall(self, x, y, length=None, obj_type=Wall):
+    def horz_wall(self, x, y, length=None, obj_type=Wall, color='grey'):
         if length is None:
             length = self.width - x
         for i in range(0, length):
-            self.add_wall(obj_type(), x + i, y)
+            self.add_wall(obj_type(color=color), x + i, y)
 
-    def vert_wall(self, x, y, length=None, obj_type=Wall):
+    def vert_wall(self, x, y, length=None, obj_type=Wall, color='grey'):
         if length is None:
             length = self.height - y
         for j in range(0, length):
@@ -240,12 +240,13 @@ class BehaviorGrid(Grid):
 
         key = tuple(furniture_encoding + objs_encoding) + key
 
-        if key in cls.tile_cache:
-            return cls.tile_cache[key]
+        # TODO: should be uncommented
+        # if key in cls.tile_cache:
+        #     return cls.tile_cache[key]
 
         img = np.zeros(shape=(tile_size * subdivs, tile_size * subdivs, 3), dtype=np.uint8)
 
-        # Draw the grid lines (top and left edges)
+        # # Draw the grid lines (top and left edges)
         fill_coords(img, point_in_rect(0, 0.031, 0, 1), (100, 100, 100))
         fill_coords(img, point_in_rect(0, 1, 0, 0.031), (100, 100, 100))
 
