@@ -11,7 +11,8 @@ ACTION_FUNC_MAPPING = {
     'open': Open,
     'close': Close,
     'slice': Slice,
-    'cook': Cook
+    'cook': Cook,
+    'goto': GoTo,
 }
 
 CONTROLS = ['left', 'right', 'forward']  # 'down'

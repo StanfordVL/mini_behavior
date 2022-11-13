@@ -1,5 +1,5 @@
 import numpy as np
-
+from mini_behavior.utils.globals import DIR_TO_VEC
 
 def find_tool(env, possible_tool_types):
     # returns whether agent is carrying a obj of possible_tool_types, and the obj_instance
@@ -30,8 +30,8 @@ class BaseAction:
             return False
 
         # check if the object is in reach of the agent
-        if not obj.check_abs_state(self.env, 'inreachofrobot'):
-            return False
+        # if not obj.check_abs_state(self.env, 'inreachofrobot'):
+            # return False
 
         return True
 
@@ -88,8 +88,9 @@ class Drop(BaseAction):
         super(Drop, self).__init__(env)
         self.key = 'drop'
 
-    def drop_dims(self, pos):
+    def drop_dims(self, obj):
         dims = []
+        pos = self.env.agent_pos + DIR_TO_VEC[self.env.agent_dir]
 
         all_items = self.env.grid.get_all_items(*pos)
         last_furniture, last_obj = 'floor', 'floor'
@@ -123,7 +124,7 @@ class Drop(BaseAction):
 
         return dims != []
 
-    def do(self, obj, dim):
+    def do(self, obj, dim=2):
         super().do(obj)
 
         self.env.carrying.discard(obj)
@@ -176,7 +177,7 @@ class DropIn(BaseAction):
         dims = self.drop_dims(fwd_pos)
         return dims != []
 
-    def do(self, obj, dim):
+    def do(self, obj, dim=2):
         # drop
         super().do(obj)
         self.env.carrying.discard(obj)
@@ -273,3 +274,27 @@ class Toggle(BaseAction):
         cur = obj.check_abs_state(self.env, 'toggleable')
         obj.states['toggleable'].set_value(not cur)
 
+class GoTo(BaseAction):
+    def __init__(self, env):
+        super(GoTo, self).__init__(env)
+        self.key = 'goto'
+        self.max_search_size = 10
+
+    def can(self, obj):
+        return True
+
+    def do(self, obj):
+        """
+        find the closest reachable position to obj and update the agent's position and direction to face the object
+        """
+        super().do(obj)
+        obj_pos = obj.cur_pos
+        for search_size in range(self.max_search_size):
+            for candidate_dir, candidate_vec in enumerate(DIR_TO_VEC):
+                candidate_pos = obj_pos - search_size * candidate_vec
+                if candidate_pos[0] < 0 or candidate_pos[0] >= self.env.grid.width or candidate_pos[1] < 0 or candidate_pos[1] >= self.env.grid.height:
+                    continue
+                if self.env.grid.is_empty(candidate_pos[0], candidate_pos[1]):
+                    self.env.agent_pos = candidate_pos
+                    self.env.agent_dir = candidate_dir
+                    return

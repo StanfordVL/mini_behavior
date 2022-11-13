@@ -106,7 +106,7 @@ class RoomGrid(MiniBehaviorEnv):
         height = (room_size - 1) * num_rows + 1
         width = (room_size - 1) * num_cols + 1
 
-        self.mission = ''
+        # self.mission = ''
 
         super().__init__(
             mode=mode,
