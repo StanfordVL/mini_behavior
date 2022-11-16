@@ -147,13 +147,15 @@ if __name__ == "__main__":
             step_logits = lm.train_step(affordances, affordance_labels)
             logits[idx] = step_logits
 
+
         loss = torch.nn.functional.cross_entropy(logits, true_logits)
 
-        acc = (np.array(predicted_plan) == np.array(true_plan)).mean()
-        print(f"Plan accuracy {acc}")
+        # acc = (predicted_plan == true_plan).mean()
+        # print(f"Plan accuracy {acc}")
         print(f"Loss: {loss}")
 
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
+        lm.action_history = []
 
