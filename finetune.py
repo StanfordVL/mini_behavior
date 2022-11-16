@@ -117,7 +117,7 @@ class SayCanOPT:
             logits[idx] = -torch.exp(outputs["loss"])
 
         idx = torch.argmax(logits)
-        self.action_history.append(idx)
+        self.action_history.append(labels[idx])
         return logits
 
 
