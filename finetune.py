@@ -135,7 +135,7 @@ if __name__ == "__main__":
     true_logits = torch.nn.functional.one_hot(torch.tensor(true_plan), len(affordances)).float()
 
     parameters = lm.model.get_input_embeddings().parameters()
-    optimizer = torch.optim.Adam(parameters, lr=1e-8)
+    optimizer = torch.optim.Adam(parameters, lr=1e-4)
     optimizer.zero_grad()
 
     plan_length = len(affordances)
