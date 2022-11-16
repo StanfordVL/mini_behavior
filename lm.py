@@ -3,6 +3,7 @@ import openai
 import numpy as np
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
+import math
 
 openai.api_key = "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"
 
@@ -291,22 +292,6 @@ class SayCanOPT:
     def get_text_likelihood(self, prompt):
         input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
         outputs = self.model(input_ids, labels=input_ids)
-        sentence_prob = outputs['logits'].max(dim=2).values.sum()
+        # sentence_prob = outputs['logits'].max(dim=2).values.sum()
 
-        # print(sum_logits)
-        # response = openai.Completion.create(
-        #     model="text-davinci-002",
-        #     prompt=prompt,
-        #     temperature=0,
-        #     max_tokens=1,
-        #     top_p=1,
-        #     frequency_penalty=0,
-        #     presence_penalty=0,
-        #     logprobs=0,
-        #     stop=["\n"],
-        #     echo=True,
-        # )
-        # sentence_prob_2 =  sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
-        #should be around -91
-        # breakpoint()
-        return sentence_prob
+        return -math.exp(outputs['loss'].item())
