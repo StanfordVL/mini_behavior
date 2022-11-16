@@ -5,6 +5,57 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import math
 
+import torch
+import torch.nn as nn
+
+# from https://raw.githubusercontent.com/kipgparker/soft-prompt-tuning/main/soft_embedding.py
+class SoftEmbedding(nn.Module):
+    def __init__(self, 
+                wte: nn.Embedding,
+                n_tokens: int = 10, 
+                random_range: float = 0.5,
+                initialize_from_vocab: bool = True):
+        """appends learned embedding to 
+        Args:
+            wte (nn.Embedding): original transformer word embedding
+            n_tokens (int, optional): number of tokens for task. Defaults to 10.
+            random_range (float, optional): range to init embedding (if not initialize from vocab). Defaults to 0.5.
+            initialize_from_vocab (bool, optional): initalizes from default vocab. Defaults to True.
+        """
+        super(SoftEmbedding, self).__init__()
+        self.wte = wte
+        self.n_tokens = n_tokens
+        self.learned_embedding = nn.parameter.Parameter(self.initialize_embedding(wte,
+                                                                               n_tokens, 
+                                                                               random_range, 
+                                                                               initialize_from_vocab))
+
+    def initialize_embedding(self, 
+                             wte: nn.Embedding,
+                             n_tokens: int = 10, 
+                             random_range: float = 0.5, 
+                             initialize_from_vocab: bool = True):
+        """initializes learned embedding
+        Args:
+            same as __init__
+        Returns:
+            torch.float: initialized using original schemes
+        """
+        if initialize_from_vocab:
+            return self.wte.weight[:n_tokens].clone().detach()
+        return torch.FloatTensor(n_tokens, wte.weight.size(1)).uniform_(-random_range, random_range)
+
+    def forward(self, tokens):
+        """run forward pass
+        Args:
+            tokens (torch.long): input tokens before encoding
+        Returns:
+            torch.float: encoding of text concatenated with learned task specifc embedding
+        """
+        input_embedding = self.wte(tokens[:, self.n_tokens:])
+        learned_embedding = self.learned_embedding.repeat(input_embedding.size(0), 1, 1)
+        return torch.cat([learned_embedding, input_embedding], 1)
+
 openai.api_key = "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"
 
 # SAYCAN_PROMPT = """Robot: Hi there, I'm a robot operating in an office kitchen.
@@ -251,13 +302,26 @@ class SayCan:
         return sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
 
 class SayCanOPT:
-    def __init__(self, task):
+    def __init__(self, task, use_soft_prompt=True):
         self.task = task
         self.action_history = []
-        self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-6.7b", torch_dtype=torch.float16).cuda()
-        self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-6.7b", use_fast=False)
-        # self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-350m", torch_dtype=torch.float16).cuda()
-        # self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m", use_fast=False)
+        # self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-6.7b", torch_dtype=torch.float16).cuda()
+        # self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-6.7b", use_fast=False)
+        self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-350m", torch_dtype=torch.float16).cuda()
+        self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m", use_fast=False)
+
+
+        self.use_soft_prompt = use_soft_prompt
+        if use_soft_prompt:
+            n_tokens = 20
+            self.n_tokens = n_tokens
+            initialize_from_vocab = True
+
+            s_wte = SoftEmbedding(self.model.get_input_embeddings(), 
+                          n_tokens=n_tokens, 
+                          initialize_from_vocab=initialize_from_vocab)
+            self.model.set_input_embeddings(s_wte)
+
         print("SayCan initialized with task:", task)
 
     def get_action(self, affordances, affordance_labels):
@@ -291,6 +355,10 @@ class SayCanOPT:
 
     def get_text_likelihood(self, prompt):
         input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
+
+        if self.use_soft_prompt:
+            input_ids = torch.cat([torch.full((1, self.n_tokens), 50256).cuda(), input_ids], 1)
+
         outputs = self.model(input_ids, labels=input_ids)
         # sentence_prob = outputs['logits'].max(dim=2).values.sum()
 
