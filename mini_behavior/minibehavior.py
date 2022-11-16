@@ -187,7 +187,7 @@ class MiniBehaviorEnv(MiniGridEnv):
 
         # Return first observation
         obs = self.gen_obs()
-        return obs
+        return obs, {}
 
     def _gen_grid(self, width, height):
         self._gen_objs()
@@ -418,10 +418,11 @@ class MiniBehaviorEnv(MiniGridEnv):
 
         self.update_states()
         reward = self._reward()
-        done = self._end_conditions() or self.step_count >= self.max_steps
+        terminated = self._end_conditions()
+        truncated = (self.step_count >= self.max_steps)
         obs = self.gen_obs()
 
-        return obs, reward, done, {}
+        return obs, reward, terminated, truncated, {}
 
     def affordances(self):
         """

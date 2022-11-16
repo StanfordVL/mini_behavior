@@ -81,7 +81,7 @@ def step(action):
     affordances, affordance_labels = env.affordances()
     action = saycan.get_action(affordances, affordance_labels)
 
-    obs, reward, done, info = env.step(action)
+    obs, reward, terminated, truncated, info = env.step(action)
 
     print('step=%s, reward=%.2f' % (env.step_count, reward))
     print('affordances', affordance_labels)
@@ -90,7 +90,7 @@ def step(action):
         step_count, step = get_step(env)
         all_steps[step_count] = step
 
-    if done:
+    if terminated or truncated:
         print('done!')
         if args.save:
             save_demo(all_steps, args.env, env.episode)
