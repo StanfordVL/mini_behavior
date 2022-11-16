@@ -11,12 +11,6 @@ saycan = SayCan(task=env.mission)
 
 all_steps = {}
 
-# if args.agent_view:
-#     env = RGBImgPartialObsWrapper(env)
-#     env = ImgObsWrapper(env)
-
-window = Window('mini_behavior - ' + env_id)
-
 rng = np.random.default_rng()
 seed = rng.integers(int(1e6))
 env.reset(seed=seed, options={})
@@ -29,18 +23,7 @@ for _ in range(5):
 
     print('step=%s, reward=%.2f' % (env.step_count, reward))
 
-    # if args.save:
-    #     step_count, step = get_step(env)
-    #     all_steps[step_count] = step
-
     if terminated or truncated:
         print('done!')
-        # if args.save:
-        #     save_demo(all_steps, args.env, env.episode)
-
         seed = rng.integers(int(1e6))
         env.reset(seed=seed, options={})
-    # else:
-    #     redraw(obs)
-
-
