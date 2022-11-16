@@ -18,7 +18,7 @@ class SayCanOPT:
         # self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-6.7b", torch_dtype=torch.float16).cuda()
         # self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-6.7b", use_fast=False)
         self.model = AutoModelForCausalLM.from_pretrained(
-            "facebook/opt-350m", torch_dtype=torch.float16
+            "facebook/opt-350m"#, torch_dtype=torch.float16
         ).cuda()
         self.tokenizer = AutoTokenizer.from_pretrained(
             "facebook/opt-350m", use_fast=False
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     optimizer.zero_grad()
 
     plan_length = len(affordances)
-    for _ in range(100):
+    for _ in range(1000):
 
         logits = torch.zeros(plan_length, plan_length)
         predicted_plan = []
@@ -149,10 +149,15 @@ if __name__ == "__main__":
 
 
         loss = torch.nn.functional.cross_entropy(logits, true_logits)
+        # step_logits = lm.train_step(affordances, affordance_labels)
+        # loss = torch.nn.functional.cross_entropy(step_logits, true_logits[0])
+        # print(step_logits, true_logits[0])
 
-        # acc = (predicted_plan == true_plan).mean()
-        # print(f"Plan accuracy {acc}")
+        predicted_plan = torch.argmax(logits, dim=1)
+        acc = (predicted_plan == torch.tensor(true_plan)).float().mean()
+        print(f"Plan accuracy {acc}")
         print(f"Loss: {loss}")
+        print(f"Predicted plan: {predicted_plan}")
 
         loss.backward()
         optimizer.step()
