@@ -5,6 +5,7 @@ import math
 
 from lm import SoftEmbedding
 import torch
+from tensorboardX import SummaryWriter
 
 SAYCAN_PROMPT = """You are a robotic task planner.
 Task: {}
@@ -120,9 +121,23 @@ class SayCanOPT:
         self.action_history.append(labels[idx])
         return logits
 
+def train_step(optimizer, model, plan_length, affordances, affordance_labels):
+    logits = torch.zeros(plan_length, plan_length)
+    for idx in range(plan_length):
+        step_logits = model.train_step(affordances, affordance_labels)
+        logits[idx] = step_logits
+    loss = torch.nn.functional.cross_entropy(logits, true_logits)
+
+    loss.backward()
+    optimizer.step()
+    optimizer.zero_grad()
+    model.action_history = []
+    return loss, logits
 
 if __name__ == "__main__":
-    lm = SayCanOPT(task="Pickup the printer from the floor, put it on the table, and turn it on")
+    original_task = "Pickup the printer from the floor, put it on the table, and turn it on"
+    test_task = "Pickup the scanner from the floor, put it on the counter, and turn it on"
+    lm = SayCanOPT(task=original_task)
     affordance_labels = [
         ("pickup", "printer_0"),
         ("toggle", "printer_0"),
@@ -132,35 +147,44 @@ if __name__ == "__main__":
     ]
     affordances = [0, 1, 2, 3, 4]
     true_plan = [2, 0, 3, 4, 1]
+
+    test_affordance_labels = [
+        ("pickup", "scanner_0"),
+        ("toggle", "scanner_0"),
+        ("goto", "scanner_0"),
+        ("goto", "counter_0"),
+        ("putdown", "scanner_0"),
+    ]
+    test_affordances = [0, 1, 2, 3, 4]
+    test_true_plan = [2, 0, 3, 4, 1]
+
     true_logits = torch.nn.functional.one_hot(torch.tensor(true_plan), len(affordances)).float()
 
     parameters = lm.model.get_input_embeddings().parameters()
     optimizer = torch.optim.Adam(parameters, lr=1e-4)
     optimizer.zero_grad()
 
+    writer = SummaryWriter()
     plan_length = len(affordances)
-    for _ in range(1000):
-
-        logits = torch.zeros(plan_length, plan_length)
-        predicted_plan = []
-        for idx in range(plan_length):
-            step_logits = lm.train_step(affordances, affordance_labels)
-            logits[idx] = step_logits
+    for i in range(1000):
 
 
-        loss = torch.nn.functional.cross_entropy(logits, true_logits)
-        # step_logits = lm.train_step(affordances, affordance_labels)
-        # loss = torch.nn.functional.cross_entropy(step_logits, true_logits[0])
-        # print(step_logits, true_logits[0])
-
+        loss, logits = train_step(optimizer, lm, plan_length, affordances, affordance_labels)
         predicted_plan = torch.argmax(logits, dim=1)
         acc = (predicted_plan == torch.tensor(true_plan)).float().mean()
         print(f"Plan accuracy {acc}")
+        writer.add_scalar('plan-accuracy/train', acc, i)
         print(f"Loss: {loss}")
+        writer.add_scalar('loss/train', loss, i)
         print(f"Predicted plan: {predicted_plan}")
 
-        loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()
-        lm.action_history = []
-
+        if i % 10 == 0:
+            lm.task = test_task
+            loss, logits = train_step(optimizer, lm, plan_length, test_affordances, test_affordance_labels)
+            predicted_plan = torch.argmax(logits, dim=1)
+            acc = (predicted_plan == torch.tensor(true_plan)).float().mean()
+            print(f"Test plan accuracy {acc}")
+            writer.add_scalar('plan-accuracy/test', acc, i)
+            print(f"Loss: {loss}")
+            writer.add_scalar('loss/test', loss, i)
+            lm.task = original_task
