@@ -7,7 +7,7 @@ from mini_behavior.window import Window
 from mini_behavior.utils.save import get_step, save_demo
 from mini_behavior.grid import GridDimension
 import numpy as np
-from lm import SayCan
+from lm import SayCanOPT as SayCan
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32

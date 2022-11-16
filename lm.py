@@ -1,6 +1,8 @@
 from cmd import PROMPT
 import openai
 import numpy as np
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
 openai.api_key = "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"
 
@@ -246,3 +248,65 @@ class SayCan:
             echo=True,
         )
         return sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
+
+class SayCanOPT:
+    def __init__(self, task):
+        self.task = task
+        self.action_history = []
+        self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-6.7b", torch_dtype=torch.float16).cuda()
+        self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-6.7b", use_fast=False)
+        # self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-350m", torch_dtype=torch.float16).cuda()
+        # self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m", use_fast=False)
+        print("SayCan initialized with task:", task)
+
+    def get_action(self, affordances, affordance_labels):
+        affordance_likelihoods = {}
+        max_likelihood = -np.inf
+        best_affordance = None
+        best_label_str = None
+        for affordance, label in zip(affordances, affordance_labels):
+            label_obj = ' '.join(label[1].split("_")[:-1])
+            label_action = label[0].replace('goto', 'go to').replace('pickup', 'pick up').replace('putdown', 'put down').replace('drop_in', 'drop in')
+            label_str = ' '.join([label_action, 'the', label_obj])
+            prompt = self.get_prompt_from_history() + label_str
+            affordance_likelihoods[label] = self.get_text_likelihood(prompt)
+            if affordance_likelihoods[label] > max_likelihood:
+                max_likelihood = affordance_likelihoods[label]
+                best_affordance = affordance
+                best_label_str = label_str
+        self.action_history.append(best_label_str)
+        print(affordance_likelihoods, best_label_str)
+        return best_affordance
+
+    def get_prompt_from_history(self):
+        prompt = SAYCAN_PROMPT.format(self.task)
+        i = 1
+        if self.action_history:
+            for action in self.action_history:
+                prompt += f"\n{i}. {action}"
+                i += 1
+        prompt += f"\n{i}. "
+        return prompt
+
+    def get_text_likelihood(self, prompt):
+        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
+        outputs = self.model(input_ids, labels=input_ids)
+        sentence_prob = outputs['logits'].max(dim=2).values.sum()
+
+        # print(sum_logits)
+        # response = openai.Completion.create(
+        #     model="text-davinci-002",
+        #     prompt=prompt,
+        #     temperature=0,
+        #     max_tokens=1,
+        #     top_p=1,
+        #     frequency_penalty=0,
+        #     presence_penalty=0,
+        #     logprobs=0,
+        #     stop=["\n"],
+        #     echo=True,
+        # )
+        # sentence_prob_2 =  sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
+        #should be around -91
+        # breakpoint()
+        return sentence_prob
