@@ -154,7 +154,7 @@ class MiniBehaviorEnv(MiniGridEnv):
             self.agent_dir = state['agent_dir']
         return self.grid
 
-    def reset(self):
+    def reset(self, **kwargs):
         # Reinitialize episode-specific variables
         self.agent_pos = (-1, -1)
         self.agent_dir = -1
