@@ -1,0 +1,20 @@
+name: spt
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.8
+  - pip
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=11.7
+  - pip:
+    - openai
+    - transformers
+    - hydra-core
+    - tensorboard
+    - tensorboardx
+    - gymnasium
+    - minigrid 
