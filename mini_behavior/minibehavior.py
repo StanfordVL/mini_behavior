@@ -330,31 +330,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         fwd_pos = self.front_pos
         fwd_cell = self.grid.get(*fwd_pos)
 
-        # # Rotate left
-        # if action == self.actions.left:
-        #     self.agent_dir -= 1
-        #     if self.agent_dir < 0:
-        #         self.agent_dir += 4
-
-        # # Rotate right
-        # elif action == self.actions.right:
-        #     self.agent_dir = (self.agent_dir + 1) % 4
-
-        # # Move forward
-        # elif action == self.actions.forward:
-        #     can_overlap = True
-        #     for dim in fwd_cell:
-        #         for obj in dim:
-        #             if is_obj(obj) and not obj.can_overlap:
-        #                 can_overlap = False
-        #                 break
-        #     if can_overlap:
-        #         self.agent_pos = fwd_pos
-        #     else:
-        #         self.action_done = False
-
-        # else:
-        if True:
+        if False:
             obj_action = action
             obj = obj_action[1]
             action_class = obj_action[0]
@@ -363,58 +339,85 @@ class MiniBehaviorEnv(MiniGridEnv):
                 action_class(self).do(obj)
             else:
                 self.action_done = False
-            # if self.mode == 'human':
-            #     self.last_action = None
-            #     if action == 'choose':
-            #         choices = list(self.obj_instances.values())
-            #         if not choices:
-            #             print("No reachable objects")
-            #         else:
-            #             # get all reachable objects
-            #             text = ''.join('{}) {} \n'.format(i, choices[i].name) for i in range(len(choices)))
-            #             obj = input("Choose one of the following reachable objects: \n{}".format(text))
-            #             obj = choices[int(obj)]
-            #             assert obj is not None, "No object chosen"
+        else:
+            # Rotate left
+            if action == self.actions.left:
+                self.agent_dir -= 1
+                if self.agent_dir < 0:
+                    self.agent_dir += 4
 
-            #             actions = []
-            #             for action in self.actions:
-            #                 action_class = ACTION_FUNC_MAPPING.get(action.name, None)
-            #                 if action_class and action_class(self).can(obj):
-            #                     actions.append(action.name)
+            # Rotate right
+            elif action == self.actions.right:
+                self.agent_dir = (self.agent_dir + 1) % 4
 
-            #             if len(actions) == 0:
-            #                 print("No actions available")
-            #             else:
-            #                 text = ''.join('{}) {} \n'.format(i, actions[i]) for i in range(len(actions)))
+            # Move forward
+            elif action == self.actions.forward:
+                can_overlap = True
+                for dim in fwd_cell:
+                    for obj in dim:
+                        if is_obj(obj) and not obj.can_overlap:
+                            can_overlap = False
+                            break
+                if can_overlap:
+                    self.agent_pos = fwd_pos
+                else:
+                    self.action_done = False
 
-            #                 action = input("Choose one of the following actions: \n{}".format(text))
-            #                 action = actions[int(action)] # action name
+            else:
+                if self.mode == 'human':
+                    self.last_action = None
+                    if action == 'choose':
+                        choices = self.all_reachable()
+                        if not choices:
+                            print("No reachable objects")
+                        else:
+                            # get all reachable objects
+                            text = ''.join('{}) {} \n'.format(i, choices[i].name) for i in range(len(choices)))
+                            obj = input("Choose one of the following reachable objects: \n{}".format(text))
+                            obj = choices[int(obj)]
+                            assert obj is not None, "No object chosen"
 
-            #                 if action == 'drop' or action == 'drop_in':
-            #                     dims = ACTION_FUNC_MAPPING[action](self).drop_dims(fwd_pos)
-            #                     spots = ['bottom', 'middle', 'top']
-            #                     text = ''.join(f'{dim}) {spots[dim]} \n' for dim in dims)
-            #                     dim = input(f'Choose which dimension to drop the object: \n{text}')
-            #                     ACTION_FUNC_MAPPING[action](self).do(obj, int(dim))
-            #                 else:
-            #                     ACTION_FUNC_MAPPING[action](self).do(obj) # perform action
-            #                 self.last_action = self.actions[action]
+                            actions = []
+                            for action in self.actions:
+                                action_class = ACTION_FUNC_MAPPING.get(action.name, None)
+                                if action_class and action_class(self).can(obj):
+                                    actions.append(action.name)
 
-            #     # Done action (not used by default)
-            #     else:
-            #         assert False, "unknown action {}".format(action)
-            # else:
-            #     # TODO: with agent centric, how does agent choose which obj to do the action on
-            #     obj_action = self.actions(action).name.split('/') # list: [obj, action]
+                            if len(actions) == 0:
+                                print("No actions available")
+                            else:
+                                text = ''.join('{}) {} \n'.format(i, actions[i]) for i in range(len(actions)))
 
-            #     # try to perform action
-            #     obj = self.obj_instances[obj_action[0]]
-            #     action_class = ACTION_FUNC_MAPPING[obj_action[1]]
+                                action = input("Choose one of the following actions: \n{}".format(text))
+                                action = actions[int(action)] # action name
 
-            #     if action_class(self).can(obj):
-            #         action_class(self).do(obj)
-            #     else:
-            #         self.action_done = False
+                                if action == 'drop' or action == 'drop_in':
+                                    dims = ACTION_FUNC_MAPPING[action](self).drop_dims(fwd_pos)
+                                    spots = ['bottom', 'middle', 'top']
+                                    text = ''.join(f'{dim}) {spots[dim]} \n' for dim in dims)
+                                    dim = input(f'Choose which dimension to drop the object: \n{text}')
+                                    ACTION_FUNC_MAPPING[action](self).do(obj, int(dim))
+                                else:
+                                    ACTION_FUNC_MAPPING[action](self).do(obj) # perform action
+                                self.last_action = self.actions[action]
+
+                    # Done action (not used by default)
+                    else:
+                        assert False, "unknown action {}".format(action)
+                else:
+                    # TODO: with agent centric, how does agent choose which obj to do the action on
+                    obj_action = self.actions(action).name.split('/') # list: [obj, action]
+
+                    # try to perform action
+                    obj = self.obj_instances[obj_action[0]]
+                    action_class = ACTION_FUNC_MAPPING[obj_action[1]]
+
+                    if action_class(self).can(obj):
+                        action_class(self).do(obj)
+                    else:
+                        self.action_done = False
+
+        self.update_states()
 
         self.update_states()
         reward = self._reward()

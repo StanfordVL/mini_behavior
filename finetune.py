@@ -134,18 +134,21 @@ def train_step(optimizer, model, plan_length, affordances, affordance_labels):
     model.action_history = []
     return loss, logits
 
-if __name__ == "__main__":
-    original_task = "Pickup the printer from the floor, put it on the table, and turn it on"
-    test_task = "Pickup the scanner from the floor, put it on the counter, and turn it on"
-    lm = SayCanOPT(task=original_task)
-    affordance_labels = [
+tasks = {
+ "install_printer": [
         ("pickup", "printer_0"),
         ("toggle", "printer_0"),
         ("goto", "printer_0"),
         ("goto", "table_0"),
         ("putdown", "printer_0"),
     ]
-    affordances = [0, 1, 2, 3, 4]
+
+}
+if __name__ == "__main__":
+    original_task = "Pickup the printer from the floor, put it on the table, and turn it on"
+    test_task = "Pickup the scanner from the floor, put it on the counter, and turn it on"
+    lm = SayCanOPT(task=original_task)
+    affordance_labels =     affordances = [0, 1, 2, 3, 4]
     true_plan = [2, 0, 3, 4, 1]
 
     test_affordance_labels = [

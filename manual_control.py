@@ -2,7 +2,6 @@
 
 import argparse
 from minigrid.wrappers import *
-from lm import SayCan
 from mini_behavior.window import Window
 from mini_behavior.utils.save import get_step, save_demo
 from mini_behavior.grid import GridDimension
@@ -11,7 +10,6 @@ import numpy as np
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
 show_furniture = False
-saycan = None
 
 def redraw(img):
     if not args.agent_view:
@@ -78,8 +76,8 @@ def load():
 
 
 def step(action):
+    breakpoint()
     affordances, affordance_labels = env.affordances()
-    action = saycan.get_action(affordances, affordance_labels)
 
     obs, reward, terminated, truncated, info = env.step(action)
 
@@ -195,7 +193,6 @@ parser.add_argument(
 args = parser.parse_args()
 
 env = gym.make(args.env)
-saycan = SayCan(env.mission)
 
 all_steps = {}
 
