@@ -3,6 +3,7 @@ import matplotlib.gridspec as gridspec
 import numpy as np
 from mini_behavior.utils.save import get_step, save_demo
 from mini_behavior.grid import GridDimension
+from matplotlib.widgets import TextBox
 
 class Window(Window):
     """
@@ -135,6 +136,17 @@ class InteractiveWindow:
         self.seed = -1
         self.save = False
         self.all_steps = {}
+
+        # def submit(text):
+        #     ydata = eval(text)
+        #     # l.set_ydata(ydata)
+        #     self.window.ax.set_ylim(np.min(ydata), np.max(ydata))
+        #     self.env.step(int(text))
+        #     plt.draw()
+        #
+        # axbox = plt.axes([0.1, 0.05, 0.8, 0.075])
+        # text_box = TextBox(axbox, 'Evaluate', initial='0')
+        # text_box.on_submit(submit)
 
     def redraw(self, img):
         if not self.agent_view:

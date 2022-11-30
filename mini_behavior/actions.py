@@ -285,6 +285,8 @@ class GoTo(BaseAction):
         self.max_search_size = 10
 
     def can(self, obj):
+        if obj.check_abs_state(self.env, 'inhandofrobot'):
+            return False
         return True
 
     def do(self, obj):
