@@ -184,6 +184,10 @@ class DropIn(BaseAction):
 
         fwd_pos = self.env.front_pos
         obj.cur_pos = fwd_pos
+        dims = self.drop_dims(fwd_pos)
+
+        # TODO (mjlbach): Should we change this?
+        dim = dims[0]
         self.env.grid.set(*fwd_pos, obj, dim)
 
         # drop in and update
