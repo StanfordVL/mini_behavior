@@ -318,10 +318,10 @@ class MiniBehaviorEnv(MiniGridEnv):
 
     def step(self, action):
         # keep track of last action
-        if self.mode == 'human':
-            self.last_action = action
-        else:
-            self.last_action = self.actions(action)
+        # if self.mode == 'human':
+        #     self.last_action = action
+        # else:
+        #     self.last_action = self.actions(action)
 
         self.step_count += 1
         self.action_done = True

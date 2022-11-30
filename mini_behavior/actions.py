@@ -215,6 +215,10 @@ class Pickup(BaseAction):
         if obj.check_abs_state(self.env, 'inhandofrobot'):
             return False
 
+        # Can only pickup adjacent objects
+        if np.linalg.norm(self.env.agent_pos - np.array(obj.cur_pos)) >= 2:
+            return False
+
         return True
 
     def do(self, obj):
