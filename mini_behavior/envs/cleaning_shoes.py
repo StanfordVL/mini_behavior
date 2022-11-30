@@ -102,7 +102,8 @@ class CleaningShoesEnv(RoomGrid):
 # non human input env
 register(
     id='MiniGrid-CleaningShoes-16x16-N2-v0',
-    entry_point='mini_behavior.envs:CleaningShoesEnv'
+    entry_point='mini_behavior.envs:CleaningShoesEnv',
+    kwargs={}
 )
 
 # human input env

@@ -330,7 +330,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         fwd_pos = self.front_pos
         fwd_cell = self.grid.get(*fwd_pos)
 
-        if False:
+        if True:
             obj_action = action
             obj = obj_action[1]
             action_class = obj_action[0]

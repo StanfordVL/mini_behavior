@@ -76,7 +76,6 @@ def load():
 
 
 def step(action):
-    breakpoint()
     affordances, affordance_labels = env.affordances()
 
     obs, reward, terminated, truncated, info = env.step(action)
@@ -134,18 +133,18 @@ def key_handler(event):
     if event.key == 'pagedown':
         show_states()
         return
-    if event.key == '0':
-        switch_dim(None)
-        return
-    if event.key == '1':
-        switch_dim(0)
-        return
-    if event.key == '2':
-        switch_dim(1)
-        return
-    if event.key == '3':
-        switch_dim(2)
-        return
+    # if event.key == '0':
+    #     switch_dim(None)
+    #     return
+    # if event.key == '1':
+    #     switch_dim(0)
+    #     return
+    # if event.key == '2':
+    #     switch_dim(1)
+    #     return
+    # if event.key == '3':
+    #     switch_dim(2)
+    #     return
 
 
 parser = argparse.ArgumentParser()

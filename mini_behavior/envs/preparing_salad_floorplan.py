@@ -132,7 +132,8 @@ class PreparingSaladFloorplanEnv(FloorPlanEnv):
 # non human input env
 register(
     id='MiniGrid-PreparingSaladFloorplan-16x16-N2-v0',
-    entry_point='mini_behavior.envs:PreparingSaladFloorplanEnv'
+    entry_point='mini_behavior.envs:PreparingSaladFloorplanEnv',
+    kwargs={}
 )
 
 # human input env

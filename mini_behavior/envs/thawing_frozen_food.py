@@ -83,7 +83,8 @@ class ThawingFrozenFoodEnv(RoomGrid):
 # non human input env
 register(
     id='MiniGrid-ThawingFrozenFood-16x16-N2-v0',
-    entry_point='mini_behavior.envs:ThawingFrozenFoodEnv'
+    entry_point='mini_behavior.envs:ThawingFrozenFoodEnv',
+    kwargs={}
 )
 
 # human input env

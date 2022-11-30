@@ -88,7 +88,8 @@ class CleaningACarEnv(RoomGrid):
 # non human input env
 register(
     id='MiniGrid-CleaningACar-16x16-N2-v0',
-    entry_point='mini_behavior.envs:CleaningACarEnv'
+    entry_point='mini_behavior.envs:CleaningACarEnv',
+    kwargs = {}
 )
 
 # human input env

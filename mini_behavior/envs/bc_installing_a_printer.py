@@ -126,10 +126,11 @@ class SimpleInstallingAPrinterEnv(InstallingAPrinterEnv):
 
         self.update_states()
         reward = self._reward()
-        done = self._end_conditions() # self.step_count >= self.max_steps
+        terminated = self._end_conditions()
+        truncated = self.step_count >= self.max_steps
         obs = self.gen_obs()
 
-        return obs, reward, done, {}
+        return obs, reward, terminated, truncated, {}
 
     def _reward(self):
         if self._end_conditions():

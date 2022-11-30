@@ -56,7 +56,8 @@ class OpeningPackagesEnv(RoomGrid):
 # non human input env
 register(
     id='MiniGrid-OpeningPackages-16x16-N2-v0',
-    entry_point='mini_behavior.envs:OpeningPackagesEnv'
+    entry_point='mini_behavior.envs:OpeningPackagesEnv',
+    kwargs={}
 )
 
 # human input env

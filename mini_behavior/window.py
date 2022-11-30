@@ -1,6 +1,8 @@
 from minigrid.utils.window import *
 import matplotlib.gridspec as gridspec
 import numpy as np
+from mini_behavior.utils.save import get_step, save_demo
+from mini_behavior.grid import GridDimension
 
 class Window(Window):
     """
@@ -56,7 +58,7 @@ class Window(Window):
         # self.fig.canvas.set_window_title(title)
 
         # Turn off x/y axis numbering/ticks
-        for i, ax in enumerate(self.fig.axes):
+        for _, ax in enumerate(self.fig.axes):
             ax.tick_params(bottom=False, left=False, labelbottom=False, labelleft=False)
 
         # Flag indicating the window was closed
@@ -121,3 +123,108 @@ class Window(Window):
 
     def save_img(self, out_filepath):
         self.fig.savefig(out_filepath)
+
+class InteractiveWindow:
+    def __init__(self, env):
+        self.tile_pixels = 32
+        self.show_furniture = False
+        self.env = env
+        self.window = Window("mini_behavior")
+        self.agent_view = False
+        self.tile_size = 32
+        self.seed = -1
+        self.save = False
+        self.all_steps = {}
+
+    def redraw(self, img):
+        if not self.agent_view:
+            img = self.env.render("rgb_array", tile_size=self.tile_size)
+        self.window.no_closeup()
+        self.window.set_inventory(self.env)
+        self.window.show_img(img)
+
+    def render_furniture(self):
+        self.show_furniture = not self.show_furniture
+
+        if self.show_furniture:
+            img = np.copy(self.env.furniture_view)
+
+            # i, j = self.env.agent.cur_pos
+            i, j = self.env.agent_pos
+            ymin = j * self.tile_pixels
+            ymax = (j + 1) * self.tile_pixels
+            xmin = i * self.tile_pixels
+            xmax = (i + 1) * self.tile_pixels
+
+            img[ymin:ymax, xmin:xmax, :] = GridDimension.render_agent(
+                img[ymin:ymax, xmin:xmax, :], self.env.agent_dir
+            )
+            img = self.env.render_furniture_states(img)
+
+            self.window.show_img(img)
+        else:
+            obs = self.env.gen_obs()
+            self.redraw(obs)
+
+
+    def show_states(self):
+        imgs = self.env.render_states()
+        self.window.show_closeup(imgs)
+
+
+    def reset(self):
+        if self.seed != -1:
+            self.env.seed(self.seed)
+
+        obs = self.env.reset()
+
+        if hasattr(self.env, "mission"):
+            print("Mission: %s" % self.env.mission)
+            self.window.set_caption(self.env.mission)
+
+        self.redraw(obs)
+
+
+    def load(self):
+        if self.seed != -1:
+            self.env.seed(self.seed)
+
+        self.env.reset()
+        obs = self.env.load_state(args.load)
+
+        if hasattr(self.env, "mission"):
+            print("Mission: %s" % self.env.mission)
+            self.window.set_caption(self.env.mission)
+
+        self.redraw(obs)
+
+
+    def step(self, action):
+        print(action)
+        affordances, affordance_labels = self.env.affordances()
+
+        obs, reward, terminated, truncated, info = self.env.step(action)
+
+        print("step=%s, reward=%.2f" % (self.env.step_count, reward))
+        print("affordances", affordance_labels)
+
+        if self.save:
+            step_count, step = get_step(self.env)
+            self.all_steps[step_count] = step
+
+        if terminated or truncated:
+            print("done!")
+            if args.save:
+                save_demo(all_steps, args.env, self.env.episode)
+            self.reset()
+        else:
+            self.redraw(obs)
+
+
+    def switch_dim(self, dim):
+        self.env.switch_dim(dim)
+        print(f"switching to dim: {self.env.render_dim}")
+        obs = self.env.gen_obs()
+        self.redraw(obs)
+
+

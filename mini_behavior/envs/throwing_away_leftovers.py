@@ -104,7 +104,8 @@ class ThrowingAwayLeftoversEnv(RoomGrid):
 # non human input env
 register(
     id='MiniGrid-ThrowingAwayLeftovers-16x16-N2-v0',
-    entry_point='mini_behavior.envs:ThrowingAwayLeftoversEnv'
+    entry_point='mini_behavior.envs:ThrowingAwayLeftoversEnv',
+    kwargs={}
 )
 
 # human input env

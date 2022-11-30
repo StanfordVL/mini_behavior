@@ -134,6 +134,7 @@ class TransitionEnv(RoomGrid):
 register(
     id='MiniGrid-TransitionEnv-8x8x4-N2-v0',
     entry_point='mini_behavior.envs:TransitionEnv',
+    kwargs={}
 )
 
 register(

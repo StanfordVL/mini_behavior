@@ -82,7 +82,8 @@ class CollectMisplacedItemsEnv(RoomGrid):
 # non human input env
 register(
     id='MiniGrid-CollectMisplacedItems-16x16-N2-v0',
-    entry_point='mini_behavior.envs:CollectMisplacedItemsEnv'
+    entry_point='mini_behavior.envs:CollectMisplacedItemsEnv',
+    kwargs={}
 )
 
 # human input env

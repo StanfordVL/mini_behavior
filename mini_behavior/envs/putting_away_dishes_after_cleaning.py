@@ -58,7 +58,8 @@ class PuttingAwayDishesAfterCleaningEnv(RoomGrid):
 # non human input env
 register(
     id='MiniGrid-PuttingAwayDishesAfterCleaning-16x16-N2-v0',
-    entry_point='mini_behavior.envs:PuttingAwayDishesAfterCleaningEnv'
+    entry_point='mini_behavior.envs:PuttingAwayDishesAfterCleaningEnv',
+    kwargs={}
 )
 
 # human input env

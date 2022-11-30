@@ -68,7 +68,8 @@ class SettingUpCandlesEnv(RoomGrid):
 # non human input env
 register(
     id='MiniGrid-SettingUpCandles-16x16-N2-v0',
-    entry_point='mini_behavior.envs:SettingUpCandlesEnv'
+    entry_point='mini_behavior.envs:SettingUpCandlesEnv',
+    kwargs={}
 )
 
 # human input env

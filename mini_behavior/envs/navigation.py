@@ -95,7 +95,8 @@ class NavigationMultiEnv8x8_Human(NavigationEnv):
 # human control env
 register(
     id='MiniGrid-Navigation-16x16-N1-v0',
-    entry_point='mini_behavior.envs:NavigationEnv16x16_Human'
+    entry_point='mini_behavior.envs:NavigationEnv16x16_Human',
+    kwargs={}
 )
 
 
@@ -103,17 +104,20 @@ register(
 # human control env
 register(
     id='MiniGrid-NavigationMulti-16x16-N1-v0',
-    entry_point='mini_behavior.envs:NavigatioMultiEnv16x16_Human'
+    entry_point='mini_behavior.envs:NavigatioMultiEnv16x16_Human',
+    kwargs={}
 )
 
 # RL agent env
 register(
     id='MiniGrid-NavigationMulti-16x16-N2-v0',
-    entry_point='mini_behavior.envs:NavigatioMultiEnv16x16_RL'
+    entry_point='mini_behavior.envs:NavigatioMultiEnv16x16_RL',
+    kwargs={}
 )
 
 # human control env
 register(
     id='MiniGrid-NavigationMulti-8x8-N1-v0',
-    entry_point='mini_behavior.envs:NavigatioMultiEnv8x8_Human'
+    entry_point='mini_behavior.envs:NavigatioMultiEnv8x8_Human',
+    kwargs={}
 )

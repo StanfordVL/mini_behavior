@@ -60,7 +60,8 @@ class WateringHouseplantsEnv(RoomGrid):
 # non human input env
 register(
     id='MiniGrid-WateringHouseplants-16x16-N2-v0',
-    entry_point='mini_behavior.envs:WateringHouseplantsEnv'
+    entry_point='mini_behavior.envs:WateringHouseplantsEnv',
+    kwargs={}
 )
 
 # human input env
