@@ -52,7 +52,7 @@ class TwoRoomNavigationEnv(RoomGrid):
 
 
 register(
-    id='MiniGrid-TwoRoomNavigation-8x8-N2-v0',
+    id='MiniGrid-TwoRoomNavigation-8x8-N2-v1',
     entry_point='mini_behavior.envs:TwoRoomNavigationEnv',
     kwargs={}
 )

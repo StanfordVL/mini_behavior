@@ -103,21 +103,21 @@ class ThrowingAwayLeftoversEnv(RoomGrid):
 
 # non human input env
 register(
-    id='MiniGrid-ThrowingAwayLeftovers-16x16-N2-v0',
+    id='MiniGrid-ThrowingAwayLeftovers-16x16-N2-v1',
     entry_point='mini_behavior.envs:ThrowingAwayLeftoversEnv',
     kwargs={}
 )
 
 # human input env
 register(
-    id='MiniGrid-ThrowingAwayLeftovers-16x16-N2-v1',
+    id='MiniGrid-ThrowingAwayLeftovers-16x16-N2-human-v1',
     entry_point='mini_behavior.envs:ThrowingAwayLeftoversEnv',
     kwargs={'mode': 'human'}
 )
 
 # non-human input env
 register(
-    id='MiniGrid-ThrowingAwayLeftoversFour-8x8-N2-v0',
+    id='MiniGrid-ThrowingAwayLeftoversFour-8x8-N2-v1',
     entry_point='mini_behavior.envs:ThrowingAwayLeftoversEnv',
     kwargs={'mode': 'not_human',
             'room_size': 8,
@@ -127,7 +127,7 @@ register(
 
 # human input env
 register(
-    id='MiniGrid-ThrowingAwayLeftoversFour-8x8-N2-v1',
+    id='MiniGrid-ThrowingAwayLeftoversFour-8x8-N2-human-v1',
     entry_point='mini_behavior.envs:ThrowingAwayLeftoversEnv',
     kwargs={'mode': 'human',
             'room_size': 8,
@@ -137,7 +137,7 @@ register(
 
 # non human input env,
 register(
-    id='MiniGrid-ThrowingAwayLeftovers-8x8-N2-v0',
+    id='MiniGrid-ThrowingAwayLeftovers-8x8-N2-v1',
     entry_point='mini_behavior.envs:ThrowingAwayLeftoversEnv',
     kwargs={'mode': 'not_human',
             'room_size': 8}

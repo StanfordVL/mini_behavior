@@ -132,13 +132,13 @@ class TransitionEnv(RoomGrid):
             return 0
 
 register(
-    id='MiniGrid-TransitionEnv-8x8x4-N2-v0',
+    id='MiniGrid-TransitionEnv-8x8x4-N2-v1',
     entry_point='mini_behavior.envs:TransitionEnv',
     kwargs={}
 )
 
 register(
-    id='MiniGrid-TransitionEnv-8x8x4-N2-v1',
+    id='MiniGrid-TransitionEnv-8x8x4-N2-human-v1',
     entry_point='mini_behavior.envs:TransitionEnv',
     kwargs={'mode': 'human'}
 )

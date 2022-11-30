@@ -65,14 +65,14 @@ class LayingWoodFloorsEnv(RoomGrid):
 
 # non human input env
 register(
-    id='MiniGrid-LayingWoodFloors-16x16-N2-v0',
+    id='MiniGrid-LayingWoodFloors-16x16-N2-v1',
     entry_point='mini_behavior.envs:LayingWoodFloorsEnv',
     kwargs={}
 )
 
 # human input env
 register(
-    id='MiniGrid-LayingWoodFloors-16x16-N2-v1',
+    id='MiniGrid-LayingWoodFloors-16x16-N2-human-v1',
     entry_point='mini_behavior.envs:LayingWoodFloorsEnv',
     kwargs={'mode': 'human'}
 )

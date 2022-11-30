@@ -131,14 +131,14 @@ class PreparingSaladFloorplanEnv(FloorPlanEnv):
 
 # non human input env
 register(
-    id='MiniGrid-PreparingSaladFloorplan-16x16-N2-v0',
+    id='MiniGrid-PreparingSaladFloorplan-16x16-N2-v1',
     entry_point='mini_behavior.envs:PreparingSaladFloorplanEnv',
     kwargs={}
 )
 
 # human input env
 register(
-    id='MiniGrid-PreparingSaladFloorplan-16x16-N2-v1',
+    id='MiniGrid-PreparingSaladFloorplan-16x16-N2-human-v1',
     entry_point='mini_behavior.envs:PreparingSaladFloorplanEnv',
     kwargs={'mode': 'human'}
 )

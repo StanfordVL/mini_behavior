@@ -106,14 +106,14 @@ class OrganizingFileCabinetEnv(RoomGrid):
 
 # non human input env
 register(
-    id='MiniGrid-OrganizingFileCabinet-16x16-N2-v0',
+    id='MiniGrid-OrganizingFileCabinet-16x16-N2-v1',
     entry_point='mini_behavior.envs:OrganizingFileCabinetEnv',
     kwargs={}
 )
 
 # human input env
 register(
-    id='MiniGrid-OrganizingFileCabinet-16x16-N2-v1',
+    id='MiniGrid-OrganizingFileCabinet-16x16-N2-human-v1',
     entry_point='mini_behavior.envs:OrganizingFileCabinetEnv',
     kwargs={'mode': 'human'}
 )
