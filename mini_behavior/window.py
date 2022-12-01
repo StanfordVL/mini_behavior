@@ -212,13 +212,9 @@ class InteractiveWindow:
 
 
     def step(self, action):
-        print(action)
-        affordances, affordance_labels = self.env.affordances()
-
         obs, reward, terminated, truncated, info = self.env.step(action)
 
         print("step=%s, reward=%.2f" % (self.env.step_count, reward))
-        print("affordances", affordance_labels)
 
         if self.save:
             step_count, step = get_step(self.env)
@@ -226,8 +222,8 @@ class InteractiveWindow:
 
         if terminated or truncated:
             print("done!")
-            if args.save:
-                save_demo(all_steps, args.env, self.env.episode)
+            # if args.save:
+            #     save_demo(all_steps, args.env, self.env.episode)
             self.reset()
         else:
             self.redraw(obs)

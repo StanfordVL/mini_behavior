@@ -163,6 +163,7 @@ class WorldObj:
 
     def reset(self):
         self.contains = None
+        self.inside_of = None
         self.cur_pos = None
 
         # CHANGE

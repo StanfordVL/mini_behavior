@@ -53,13 +53,17 @@ if args.load is None:
 else:
     window.load()
 
-while True:
-    allowable_actions = {}
+def get_allowable_actions():
+    action_strs = []
+    actions = []
     for action_str, action in ACTION_FUNC_MAPPING.items():
-        for obj in env.obj_instances.values():
+        for obj in env.obj_instances.values(): #type: ignore
             if action(env).can(obj):
-                allowable_actions[f"{action_str} + {obj.name}"] = (action, obj)
+                actions.append((action, obj))
+                action_strs.append(f"{action_str} + {obj.name}")
+    return action_strs, actions
 
+def user_control(allowable_actions):
     print("Choose an action:")
     for idx, action_str in enumerate(allowable_actions):
         print(f"\t{idx} {action_str}")
@@ -68,9 +72,33 @@ while True:
         candidate_idx = input("Choice: ")
         if candidate_idx in map(str, range(20)):
             action_idx = int(candidate_idx)
+    assert action_idx is not None
+    return action_idx
 
-    action = list(allowable_actions.values())[action_idx]
+def solve_boxing():
+    plan = []
+    for idx in range(7):
+        plan += [
+           ("goto", f"book_{idx}"),
+           ("pickup", f"book_{idx}"),
+        ]
 
-    obs, reward, terminated, truncated, info = window.step(action)
-    if terminated or truncated:
-        print("Episode completed")
+    plan.append(("goto", "box_0"))
+    for idx in range(7):
+        plan.append(("drop_in", f"book_{idx}"))
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+
+while True:
+    while True:
+        action_strs, actions = get_allowable_actions()
+        # action_idx = user_control(action_strs)
+        # action = actions[action_idx]
+        terminated = False
+        truncated = True
+        for action in solve_boxing():
+            obs, reward, terminated, truncated, info = window.step(action)
+
+        if terminated or truncated:
+            break
