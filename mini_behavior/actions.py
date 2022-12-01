@@ -173,26 +173,53 @@ class DropIn(BaseAction):
         if not obj.check_abs_state(self.env, 'inhandofrobot'):
             return False
 
+        # Check if there is any furniture item we can drop the object in
         fwd_pos = self.env.front_pos
-        dims = self.drop_dims(fwd_pos)
-        return dims != []
+        furniture = None
+        for i in range(3):
+            furniture = self.env.grid.get_furniture(*fwd_pos, dim=i)
+            if furniture is not None:
+                break 
+
+        # If none, we can't drop the furniture object
+        if furniture is None:
+            return False
+
+        # Check if there is available room on the furniture object
+        # We test all valid positions
+        for pos in furniture.all_pos:
+            dims = self.drop_dims(pos)
+            if len(dims) > 0:
+                return True
+
+        return False
+
 
     def do(self, obj, dim=2):
-        # drop
         super().do(obj)
         self.env.carrying.discard(obj)
 
         fwd_pos = self.env.front_pos
-        obj.cur_pos = fwd_pos
-        dims = self.drop_dims(fwd_pos)
+        furniture = None
+        for i in range(3):
+            furniture = self.env.grid.get_furniture(*fwd_pos, dim=i)
+            if furniture is not None:
+                break 
 
-        # TODO (mjlbach): Should we change this?
-        dim = dims[0]
-        self.env.grid.set(*fwd_pos, obj, dim)
+        assert furniture is not None
 
-        # drop in and update
-        furniture = self.env.grid.get_furniture(*fwd_pos, dim)
-        obj.states['inside'].set_value(furniture, True)
+        for pos in furniture.all_pos:
+            dims = self.drop_dims(pos)
+            print(dims)
+            if len(dims) > 0:
+                # TODO (mjlbach): Should we change this?
+                dim = dims[0]
+                obj.cur_pos = pos
+                self.env.grid.set(*pos, obj, dim)
+                # drop in and update
+                obj.states['inside'].set_value(furniture, True)
+                break
+
 
 
 class Open(BaseAction):
