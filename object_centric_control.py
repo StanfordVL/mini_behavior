@@ -3,7 +3,6 @@ import argparse
 from mini_behavior.window import InteractiveWindow
 from bddl.actions import get_allowable_actions
 import mini_behavior.envs # type: ignore
-import mini_behavior
 from minigrid.wrappers import ImgObsWrapper, RGBImgPartialObsWrapper
 import gymnasium as gym
 

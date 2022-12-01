@@ -1,6 +1,5 @@
 import numpy as np
 from mini_behavior.utils.globals import DIR_TO_VEC
-from bddl.actions import ACTION_FUNC_MAPPING
 
 def find_tool(env, possible_tool_types):
     # returns whether agent is carrying a obj of possible_tool_types, and the obj_instance
@@ -10,17 +9,6 @@ def find_tool(env, possible_tool_types):
             if tool.check_abs_state(env, 'inhandofrobot'):
                 return True
     return False
-
-def get_allowable_actions(env):
-    action_strs = []
-    actions = []
-    for action_str, action in ACTION_FUNC_MAPPING.items():
-        print(action_str, action)
-        for obj in env.obj_instances.values(): #type: ignore
-            if action(env).can(obj):
-                actions.append((action, obj))
-                action_strs.append(f"{action_str} + {obj.name}")
-    return action_strs, actions
 
 class BaseAction:
     def __init__(self, env):
@@ -105,6 +93,7 @@ class Drop(BaseAction):
 
         all_items = self.env.grid.get_all_items(*pos)
         last_furniture, last_obj = 'floor', 'floor'
+        breakpoint()
         for i in range(3):
             furniture = all_items[2*i]
             obj = all_items[2*i + 1]
@@ -130,25 +119,12 @@ class Drop(BaseAction):
         if not obj.check_abs_state(self.env, 'inhandofrobot'):
             return False
 
-        # Check if there is any furniture which would prevent dropping the object on the floor
-        # Todo, technicaly drop dims should take care of this, dirty hack
         fwd_pos = self.env.front_pos
-        furniture = None
-        for i in range(3):
-            furniture = self.env.grid.get_furniture(*fwd_pos, dim=i)
-            if furniture is not None:
-                break 
-
-        # If none, we can't drop the furniture object
-        if furniture:
-            return False
-
         dims = self.drop_dims(fwd_pos)
 
         return dims != []
 
     def do(self, obj, dim=2):
-        breakpoint()
         super().do(obj)
 
         self.env.carrying.discard(obj)
@@ -160,98 +136,6 @@ class Drop(BaseAction):
         # change agent / grid
         self.env.grid.set(*fwd_pos, obj, dim)
 
-
-class Place(BaseAction):
-    def __init__(self, env):
-        super(Place, self).__init__(env)
-        self.key = 'place'
-
-    def drop_dims(self, pos):
-        dims = []
-
-        all_items = self.env.grid.get_all_items(*pos)
-        last_obj = 'floor'
-        for i in range(3):
-            furniture = all_items[2*i]
-            obj = all_items[2*i + 1]
-
-            if obj is None and furniture is not None and furniture.can_contain and i in furniture.can_contain:
-                if 'openable' not in furniture.states or furniture.check_abs_state(self.env, 'openable'):
-                    if last_obj is not None:
-                        dims.append(i)
-
-            last_obj = obj
-        return dims
-
-    def can(self, obj):
-        """
-        can drop obj under if:
-        - agent is carrying obj
-        - middle of forward cell is open
-        - obj does not contain another obj
-        """
-        print("=" * 20)
-        print(self, obj.name)
-        if not super().can(obj):
-            print('parent')
-            return False
-
-        if not obj.check_abs_state(self.env, 'inhandofrobot'):
-            return False
-
-        return True
-        # # Check if there is any furniture item we can drop the object in
-        # fwd_pos = self.env.front_pos
-        # furniture = None
-        #
-        # for i in range(3):
-        #     furniture = self.env.grid.get_furniture(*fwd_pos, dim=i)
-        #     if furniture is not None:
-        #         break 
-        #
-        # # If none, we can't drop the furniture object
-        # if furniture is None:
-        #     return False
-        #
-        # print(self, obj.name, furniture)
-        # # Check if there is available room on the furniture object
-        # # We test all valid positions
-        # print('test')
-        # print(furniture.all_pos)
-        # for pos in furniture.all_pos:
-        #     dims = self.drop_dims(pos)
-        #     print(dims, pos)
-        #     if len(dims) > 0:
-        #         print(dims)
-        #         return True
-        #
-        # print("=" * 20)
-        return False
-
-
-    def do(self, obj, dim=2):
-        super().do(obj)
-        self.env.carrying.discard(obj)
-
-        fwd_pos = self.env.front_pos
-        furniture = None
-        for i in range(3):
-            furniture = self.env.grid.get_furniture(*fwd_pos, dim=i)
-            if furniture is not None:
-                break 
-
-        assert furniture is not None
-
-        for pos in furniture.all_pos:
-            dims = self.drop_dims(pos)
-            if len(dims) > 0:
-                # TODO (mjlbach): Should we change this?
-                dim = dims[0]
-                obj.cur_pos = pos
-                self.env.grid.set(*pos, obj, dim)
-                # drop in and update
-                obj.states['inside'].set_value(furniture, True)
-                break
 
 class DropIn(BaseAction):
     def __init__(self, env):
@@ -458,3 +342,27 @@ class GoTo(BaseAction):
                     self.env.agent_pos = candidate_pos
                     self.env.agent_dir = candidate_dir
                     return
+
+ACTION_FUNC_MAPPING = {
+    'pickup': Pickup,
+    'drop': Drop,
+    'drop_in': DropIn,
+    'toggle': Toggle,
+    'open': Open,
+    'close': Close,
+    'slice': Slice,
+    'cook': Cook,
+    'goto': GoTo,
+}
+
+def get_allowable_actions(env):
+    action_strs = []
+    actions = []
+    for action_str, action in ACTION_FUNC_MAPPING.items():
+        print(action_str, action)
+        for obj in env.obj_instances.values(): #type: ignore
+            if action(env).can(obj):
+                actions.append((action, obj))
+                action_strs.append(f"{action_str} + {obj.name}")
+    return action_strs, actions
+
