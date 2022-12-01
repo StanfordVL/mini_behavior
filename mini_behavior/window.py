@@ -236,4 +236,17 @@ class InteractiveWindow:
         obs = self.env.gen_obs()
         self.redraw(obs)
 
+    def user_control(self, allowable_actions):
+        print("Choose an action:")
+        for idx, action_str in enumerate(allowable_actions):
+            print(f"\t{idx} {action_str}")
+        action_idx = None
+        while action_idx not in range(len(allowable_actions)):
+            candidate_idx = input("Choice: ")
+            if candidate_idx in map(str, range(20)):
+                action_idx = int(candidate_idx)
+        assert action_idx is not None
+        return action_idx
+
+
 
