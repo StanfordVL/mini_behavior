@@ -65,8 +65,12 @@ while True:
         print(f"\t{idx} {action_str}")
     action_idx = None
     while action_idx not in range(len(allowable_actions)):
-        action_idx = int(input("Choice: "))
+        candidate_idx = input("Choice: ")
+        if candidate_idx in map(str, range(20)):
+            action_idx = int(candidate_idx)
 
     action = list(allowable_actions.values())[action_idx]
 
-    window.step(action)
+    obs, reward, terminated, truncated, info = window.step(action)
+    if terminated or truncated:
+        print("Episode completed")

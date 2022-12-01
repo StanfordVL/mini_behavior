@@ -232,6 +232,8 @@ class InteractiveWindow:
         else:
             self.redraw(obs)
 
+        return obs, reward, terminated, truncated, info 
+
 
     def switch_dim(self, dim):
         self.env.switch_dim(dim)

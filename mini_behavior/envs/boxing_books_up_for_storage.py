@@ -55,6 +55,7 @@ class BoxingBooksUpForStorageEnv(RoomGrid):
 
         for obj in book:
             if not obj.check_rel_state(self, box, 'inside'):
+                print(obj.name, " not in box")
                 return False
 
         return True

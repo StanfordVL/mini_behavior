@@ -119,12 +119,25 @@ class Drop(BaseAction):
         if not obj.check_abs_state(self.env, 'inhandofrobot'):
             return False
 
+        # Check if there is any furniture which would prevent dropping the object on the floor
+        # Todo, technicaly drop dims should take care of this, dirty hack
         fwd_pos = self.env.front_pos
+        furniture = None
+        for i in range(3):
+            furniture = self.env.grid.get_furniture(*fwd_pos, dim=i)
+            if furniture is not None:
+                break 
+
+        # If none, we can't drop the furniture object
+        if furniture:
+            return False
+
         dims = self.drop_dims(fwd_pos)
 
         return dims != []
 
     def do(self, obj, dim=2):
+        breakpoint()
         super().do(obj)
 
         self.env.carrying.discard(obj)
@@ -146,7 +159,7 @@ class DropIn(BaseAction):
         dims = []
 
         all_items = self.env.grid.get_all_items(*pos)
-        last_furniture, last_obj = 'floor', 'floor'
+        last_obj = 'floor'
         for i in range(3):
             furniture = all_items[2*i]
             obj = all_items[2*i + 1]
@@ -156,7 +169,6 @@ class DropIn(BaseAction):
                     if last_obj is not None:
                         dims.append(i)
 
-            last_furniture = furniture
             last_obj = obj
         return dims
 
