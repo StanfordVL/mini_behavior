@@ -220,13 +220,12 @@ class InteractiveWindow:
             step_count, step = get_step(self.env)
             self.all_steps[step_count] = step
 
+        self.redraw(obs)
+
         if terminated or truncated:
-            print("done!")
             # if args.save:
             #     save_demo(all_steps, args.env, self.env.episode)
             self.reset()
-        else:
-            self.redraw(obs)
 
         return obs, reward, terminated, truncated, info 
 

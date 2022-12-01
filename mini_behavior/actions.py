@@ -222,7 +222,6 @@ class DropIn(BaseAction):
 
         for pos in furniture.all_pos:
             dims = self.drop_dims(pos)
-            print(dims)
             if len(dims) > 0:
                 # TODO (mjlbach): Should we change this?
                 dim = dims[0]
@@ -259,7 +258,7 @@ class Pickup(BaseAction):
             return False
 
         # Can only pickup adjacent objects
-        if np.linalg.norm(self.env.agent_pos - np.array(obj.cur_pos)) >= 2:
+        if np.linalg.norm(self.env.agent_pos - np.array(obj.cur_pos)) >= 3:
             return False
 
         return True
