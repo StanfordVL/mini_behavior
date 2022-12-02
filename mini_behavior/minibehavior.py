@@ -143,15 +143,18 @@ class MiniBehaviorEnv(MiniGridEnv):
             pkl.dump(state, f)
             print(f'saved to: {out_file}')
 
+    def load_state(self, state):
+        self.load_objs(state)
+        self.grid.load(state['grid'], self)
+        self.agent_pos = state['agent_pos']
+        self.agent_dir = state['agent_dir']
+
     # TODO: check this works
-    def load_state(self, load_file):
+    def load_state_from_file(self, load_file):
         assert os.path.isfile(load_file)
         with open(load_file, 'rb') as f:
             state = pkl.load(f)
-            self.load_objs(state)
-            self.grid.load(state['grid'], self)
-            self.agent_pos = state['agent_pos']
-            self.agent_dir = state['agent_dir']
+            self.load_state(state)
         return self.grid
 
     def reset(self, **kwargs):

@@ -145,7 +145,7 @@ class WorldObj:
                 for i in range(obj_idx+1, len(cell)):
                     self.contains.add(env.obj_instances[cell_names[i]])
 
-        inside = obj.states['inside'].inside_of
+        inside = obj.inside_of
         if inside:
             name = inside.name
             new_inside = env.obj_instances[name]
