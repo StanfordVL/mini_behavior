@@ -290,7 +290,28 @@ def putting_away_dishes_after_cleaning(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
+def throwing_away_leftovers(env):
+    plan = []
 
+    hamburgers = env.objs['hamburger']
+
+
+    for obj in hamburgers:
+        plan += [
+            ("goto", obj.name),
+            ("pickup", obj.name)
+        ]
+
+    plan += [
+        ("goto", "ashcan_0"),
+        ("open", "ashcan_0")
+    ]
+
+    for obj in hamburgers:
+        plan += [ ("drop_in", obj.name) ]
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
 task_to_plan = {
     'MiniGrid-BoxingBooksUpForStorage': boxing_books_up_for_storage,
@@ -306,4 +327,5 @@ task_to_plan = {
     'MiniGrid-SortingBooks': sorting_books,
     'MiniGrid-WateringHouseplants': watering_house_plants,
     'MiniGrid-PuttingAwayDishesAfterCleaning': putting_away_dishes_after_cleaning,
+    'MiniGrid-ThrowingAwayLeftoversFour': throwing_away_leftovers,
 }
