@@ -194,6 +194,23 @@ def cleaning_shoes(env):
 def cleaning_a_car(env):
     pass
 
+def moving_boxes_to_storage(env):
+    plan = []
+    cartons = env.objs['carton']
+
+    for carton in cartons:
+        plan += [
+            ("goto", carton.name),
+            ("pickup", carton.name)
+        ]
+    plan.append(("goto", "shelf_0"))
+    for carton in cartons:
+        plan += [
+            ("drop_in", carton.name)
+        ]
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+
 task_to_plan = {
     'MiniGrid-BoxingBooksUpForStorage': boxing_books_up_for_storage,
     'MiniGrid-InstallingAPrinter': installing_a_printer,
@@ -204,4 +221,5 @@ task_to_plan = {
     'MiniGrid-StoringFood': storing_food,
     'MiniGrid-CleaningShoes': cleaning_shoes,
     'MiniGrid-CleaningACar': cleaning_a_car,
+    'MiniGrid-MovingBoxesToStorage': moving_boxes_to_storage,
 }

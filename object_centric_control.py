@@ -58,9 +58,11 @@ if __name__ == "__main__":
 
     while True:
         while True:
-            # action_strs, actions = get_allowable_actions(env) action_idx = window.user_control(action_strs)
+            # action_strs, actions = get_allowable_actions(env)
+            # action_idx = window.user_control(action_strs)
             # action = actions[action_idx]
             # obs, reward, terminated, truncated, info = window.step(action)
+
             env_key = args.env.rsplit('-', 3)[0]
             terminated = False
             truncated = True
