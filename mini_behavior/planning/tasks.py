@@ -192,7 +192,23 @@ def cleaning_shoes(env):
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
 def cleaning_a_car(env):
-    pass
+    plan = [
+        ("goto", "rag_0"),
+        ("pickup", "rag_0"),
+        ("goto", "soap_0"),
+        ("pickup", "soap_0"),
+        ("goto", "sink_0"),
+        ("drop_in", "rag_0"),
+        ("toggle", "sink_0"),
+        ("pickup", "rag_0"),
+        ("goto", "car_0"),
+        ("clean", "car_0"),
+        ("goto", "bucket_0"),
+        ("drop_in", "rag_0"),
+        ("drop_in", "soap_0"),
+    ]
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
 def moving_boxes_to_storage(env):
     plan = []
