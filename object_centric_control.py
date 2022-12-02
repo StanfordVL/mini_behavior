@@ -40,7 +40,7 @@ def get_args():
     args = parser.parse_args()
     return args
 
-from mini_behavior.planning.tasks import solve_boxing_debug
+from mini_behavior.planning.tasks import solve_boxing, solve_printer
 
 if __name__ == "__main__":
     args = get_args()
@@ -58,14 +58,14 @@ if __name__ == "__main__":
 
     while True:
         while True:
-            action_strs, actions = get_allowable_actions(env)
-            action_idx = window.user_control(action_strs)
-            action = actions[action_idx]
-            obs, reward, terminated, truncated, info = window.step(action)
-            # terminated = False
-            # truncated = True
-            # for action in solve_boxing_debug(env):
-            #     obs, reward, terminated, truncated, info = window.step(action)
+            # action_strs, actions = get_allowable_actions(env)
+            # action_idx = window.user_control(action_strs)
+            # action = actions[action_idx]
+            # obs, reward, terminated, truncated, info = window.step(action)
+            terminated = False
+            truncated = True
+            for action in solve_printer(env):
+                obs, reward, terminated, truncated, info = window.step(action)
 
             if terminated or truncated:
                 break

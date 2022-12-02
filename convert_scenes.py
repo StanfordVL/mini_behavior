@@ -23,7 +23,3 @@ for img in args.imgs:
         print('grid for {} already generated'.format(img))
     else:
         grid = gen_grid_from_img(img=img, img_dir=img_dir, save_dir=grids_dir)
-
-
-
-

@@ -15,6 +15,18 @@ def solve_boxing(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
+def solve_printer(env):
+    plan = [
+       ("goto", "printer_0"),
+       ("pickup", "printer_0"),
+       ("goto", "table_0"),
+       ("drop", "printer_0"),
+       ("toggle", "printer_0"),
+    ]
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+
 def solve_boxing_debug(env):
     plan = []
     for idx in range(3):
