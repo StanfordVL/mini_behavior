@@ -141,7 +141,7 @@ class Drop(BaseAction):
         # change agent / grid
         dims = self.drop_dims(fwd_pos)
         assert len(dims) > 0
-        self.env.grid.set(*fwd_pos, obj, dims[0])
+        self.env.grid.set(*fwd_pos, obj, dims[-1])
 
 
 class DropIn(BaseAction):
