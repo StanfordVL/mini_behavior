@@ -1,6 +1,6 @@
 from bddl.actions import ACTION_FUNC_MAPPING
 
-def solve_boxing(env):
+def boxing_books_up_for_storage(env):
     plan = []
     for idx in range(7):
         plan += [
@@ -15,7 +15,7 @@ def solve_boxing(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
-def solve_printer(env):
+def installing_a_printer(env):
     plan = [
        ("goto", "printer_0"),
        ("pickup", "printer_0"),
@@ -27,7 +27,7 @@ def solve_printer(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
-def solve_misplaced_items(env):
+def collect_misplaced_items(env):
     plan = []
 
     items =  ['gym_shoe_0', 'necklace_0', 'notebook_0', 'sock_0', 'sock_1']
@@ -42,7 +42,7 @@ def solve_misplaced_items(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
-def solve_candles(env):
+def setting_up_candles(env):
     plan = []
     for idx in range(6):
         plan += [
@@ -63,7 +63,7 @@ def solve_candles(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
-def solve_open_packages(env):
+def opening_packages(env):
     plan = []
     for idx in range(2):
         plan += [
@@ -91,31 +91,7 @@ def solve_boxing_debug(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
-def solve_organizing_pantry(env):
-    oatmeals = env.objs['oatmeal']
-    chips = env.objs['chip']
-    vegetable_oils = env.objs['vegetable_oil']
-    sugars = env.objs['sugar']
-    cabinet = env.objs['cabinet'][0]
-
-    plan = []
-    for obj in oatmeals + chips + vegetable_oils + sugars:
-        plan += [
-           ("goto", obj.name),
-           ("pickup", obj.name),
-        ]
-    plan.append(("goto", cabinet.name))
-    plan.append(("open", cabinet.name))
-
-    for obj in oatmeals + chips + vegetable_oils + sugars:
-        plan += [
-           ("drop_in", obj.name),
-        ]
-
-    for elem in plan:
-        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
-
-def solve_organizing(env):
+def organizing_file_cabinet(env):
     plan = []
     plan += [
        ("goto", "marker_0"),
@@ -147,3 +123,85 @@ def solve_organizing(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
+def storing_food(env):
+    oatmeals = env.objs['oatmeal']
+    chips = env.objs['chip']
+    vegetable_oils = env.objs['vegetable_oil']
+    sugars = env.objs['sugar']
+    cabinet = env.objs['cabinet'][0]
+
+    plan = []
+    for obj in oatmeals + chips + vegetable_oils + sugars:
+        plan += [
+           ("goto", obj.name),
+           ("pickup", obj.name),
+        ]
+    plan.append(("goto", cabinet.name))
+    plan.append(("open", cabinet.name))
+
+    for obj in oatmeals + chips + vegetable_oils + sugars:
+        plan += [
+           ("drop_in", obj.name),
+        ]
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+
+def storing_food(env):
+    oatmeals = env.objs['oatmeal']
+    chips = env.objs['chip']
+    vegetable_oils = env.objs['vegetable_oil']
+    sugars = env.objs['sugar']
+    cabinet = env.objs['cabinet'][0]
+
+    plan = []
+    for obj in oatmeals + chips + vegetable_oils + sugars:
+        plan += [
+           ("goto", obj.name),
+           ("pickup", obj.name),
+        ]
+    plan.append(("goto", cabinet.name))
+    plan.append(("open", cabinet.name))
+
+    for obj in oatmeals + chips + vegetable_oils + sugars:
+        plan += [
+           ("drop_in", obj.name),
+        ]
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+
+def cleaning_shoes(env):
+    plan = [
+       ("goto", "rag_0"),
+       ("pickup", "rag_0"),
+       ("goto", "sink_0"),
+       ("toggle", "sink_0"),
+       ("drop_in", "rag_0"),
+       ("pickup", "rag_0"),
+    ]
+
+    shoes = env.objs['shoe']
+
+    for shoe in shoes:
+        plan += [
+            ("goto", shoe.name),
+            ("clean", shoe.name)
+        ]
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+
+def cleaning_a_car(env):
+    pass
+
+task_to_plan = {
+    'MiniGrid-BoxingBooksUpForStorage': boxing_books_up_for_storage,
+    'MiniGrid-InstallingAPrinter': installing_a_printer,
+    'MiniGrid-CollectMisplacedItems': collect_misplaced_items,
+    'MiniGrid-SettingUpCandles': setting_up_candles,
+    'MiniGrid-OpeningPackages': opening_packages,
+    'MiniGrid-OrganizingFileCabinet': organizing_file_cabinet,
+    'MiniGrid-StoringFood': storing_food,
+    'MiniGrid-CleaningShoes': cleaning_shoes,
+    'MiniGrid-CleaningACar': cleaning_a_car,
+}

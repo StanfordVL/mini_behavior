@@ -5,7 +5,7 @@ from bddl.actions import get_allowable_actions
 import mini_behavior.envs  # type: ignore
 from minigrid.wrappers import ImgObsWrapper, RGBImgPartialObsWrapper
 import gymnasium as gym
-
+from mini_behavior.planning.tasks import task_to_plan
 assert mini_behavior.envs is not None
 
 
@@ -42,16 +42,6 @@ def get_args():
     return args
 
 
-from mini_behavior.planning.tasks import (
-    solve_boxing,
-    solve_printer,
-    solve_misplaced_items,
-    solve_candles,
-    solve_open_packages,
-    solve_organizing,
-    solve_organizing_pantry,
-)
-
 if __name__ == "__main__":
     args = get_args()
     env = gym.make(args.env)
@@ -68,14 +58,14 @@ if __name__ == "__main__":
 
     while True:
         while True:
-            action_strs, actions = get_allowable_actions(env)
-            action_idx = window.user_control(action_strs)
-            action = actions[action_idx]
-            obs, reward, terminated, truncated, info = window.step(action)
-            # terminated = False
-            # truncated = True
-            # for action in solve_organizing_pantry(env):
-            #     obs, reward, terminated, truncated, info = window.step(action)
+            # action_strs, actions = get_allowable_actions(env) action_idx = window.user_control(action_strs)
+            # action = actions[action_idx]
+            # obs, reward, terminated, truncated, info = window.step(action)
+            env_key = args.env.rsplit('-', 3)[0]
+            terminated = False
+            truncated = True
+            for action in task_to_plan[env_key](env):
+                obs, reward, terminated, truncated, info = window.step(action)
 
             if terminated or truncated:
                 break
