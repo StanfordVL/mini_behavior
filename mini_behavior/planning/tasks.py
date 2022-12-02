@@ -246,6 +246,29 @@ def sorting_books(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
+def watering_house_plants(env):
+    plan = []
+
+    plants = env.objs['pot_plant']
+
+    for obj in plants:
+        plan += [
+            ("goto", obj.name),
+            ("pickup", obj.name)
+        ]
+
+    plan += [
+        ("goto", "sink_0"),
+        ("toggle", "sink_0")
+    ]
+
+    for obj in plants:
+        plan += [ ("drop_in", obj.name) ]
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+
+
 
 task_to_plan = {
     'MiniGrid-BoxingBooksUpForStorage': boxing_books_up_for_storage,
@@ -259,4 +282,5 @@ task_to_plan = {
     'MiniGrid-CleaningACar': cleaning_a_car,
     'MiniGrid-MovingBoxesToStorage': moving_boxes_to_storage,
     'MiniGrid-SortingBooks': sorting_books,
+    'MiniGrid-WateringHouseplants': watering_house_plants,
 }
