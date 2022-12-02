@@ -63,6 +63,16 @@ def solve_candles(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
+def solve_open_packages(env):
+    plan = []
+    for idx in range(2):
+        plan += [
+           ("goto", f"package_{idx}"),
+           ("open", f"package_{idx}"),
+        ]
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
 def solve_boxing_debug(env):
     plan = []

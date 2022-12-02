@@ -2,11 +2,12 @@
 import argparse
 from mini_behavior.window import InteractiveWindow
 from bddl.actions import get_allowable_actions
-import mini_behavior.envs # type: ignore
+import mini_behavior.envs  # type: ignore
 from minigrid.wrappers import ImgObsWrapper, RGBImgPartialObsWrapper
 import gymnasium as gym
 
 assert mini_behavior.envs is not None
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -40,7 +41,14 @@ def get_args():
     args = parser.parse_args()
     return args
 
-from mini_behavior.planning.tasks import solve_boxing, solve_printer, solve_misplaced_items, solve_candles
+
+from mini_behavior.planning.tasks import (
+    solve_boxing,
+    solve_printer,
+    solve_misplaced_items,
+    solve_candles,
+    solve_open_packages,
+)
 
 if __name__ == "__main__":
     args = get_args()
@@ -64,7 +72,7 @@ if __name__ == "__main__":
             # obs, reward, terminated, truncated, info = window.step(action)
             terminated = False
             truncated = True
-            for action in solve_candles(env):
+            for action in solve_open_packages(env):
                 obs, reward, terminated, truncated, info = window.step(action)
 
             if terminated or truncated:

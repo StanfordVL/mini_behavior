@@ -263,6 +263,15 @@ class Open(BaseAction):
         super(Open, self).__init__(env)
         self.key = 'open'
 
+    def can(self, obj):
+        if not super().can(obj):
+            return False
+
+        if np.linalg.norm(self.env.agent_pos - np.array(obj.cur_pos)) >= 3:
+            return False
+
+        return True
+
     def do(self, obj):
         super().do(obj)
         obj.states['openable'].set_value(True)
