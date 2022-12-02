@@ -51,6 +51,31 @@ class Close(BaseAction):
         obj.states['openable'].set_value(False)
         obj.update(self.env)
 
+class Clean(BaseAction):
+    def __init__(self, env):
+        super(Clean, self).__init__(env)
+        self.key = 'clean'
+
+    def can(self, obj):
+        tools = ["broom", "rag", "scrub_brush", "towel"]
+
+        if np.linalg.norm(self.env.agent_pos - np.array(obj.cur_pos)) >= 4:
+            return False
+
+        for tool_type in tools:
+            for cleaning_tool in self.env.objs.get(tool_type, []):
+                soaked = cleaning_tool.check_abs_state(self.env, 'soakable') 
+                inhand = cleaning_tool.check_abs_state(self.env, 'inhandofrobot')
+                if soaked and inhand:
+                    return True
+        else:
+            return False
+
+
+    def do(self, obj):
+        super().do(obj)
+        obj.states['stainable'].set_value(False)
+        obj.states['dustyable'].set_value(False)
 
 class Cook(BaseAction):
     def __init__(self, env):
@@ -392,6 +417,7 @@ ACTION_FUNC_MAPPING = {
     'slice': Slice,
     'cook': Cook,
     'goto': GoTo,
+    'clean': Clean,
 }
 
 def get_allowable_actions(env):

@@ -93,6 +93,8 @@ class CleaningShoesEnv(RoomGrid):
         towel = self.objs['towel'][0]
 
         for shoe in shoes:
+            print(shoe.check_abs_state(self, 'stainable'))
+            print(shoe.check_abs_state(self, 'dustyable'))
             if shoe.check_abs_state(self, 'stainable') or shoe.check_abs_state(self, 'dustyable'):
                 return False
 

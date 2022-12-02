@@ -172,7 +172,8 @@
     "gym_shoe": [
         "pickup",
         "drop",
-        "drop_in"
+        "drop_in",
+        "clean"
     ],
     "hamburger": [
         "pickup",

@@ -76,18 +76,6 @@ class Dusty(AbilityState):
         super(Dusty, self).__init__(obj, key)
         self.tools = ["broom", "rag", "scrub_brush", "towel"]
 
-    def _update(self, env):
-        """
-        Always init True
-        False if at any point, obj and cleaningTool are in the same location
-        """
-        # for tool_type in env.state_objs['cleaningTool']:
-        for tool_type in self.tools:
-            for tool in env.objs.get(tool_type, []):
-                if self.obj.check_rel_state(env, tool, 'atsamelocation'):
-                    self.value = False
-
-
 class Frozen(AbilityState):
     def __init__(self, obj, key):
         super(Frozen, self).__init__(obj, key)
@@ -147,18 +135,6 @@ class Stained(AbilityState):
         """
         super(Stained, self).__init__(obj, key)
         self.tools = ['rag', 'scrub_brush', 'towel']
-
-    def _update(self, env):
-        """
-        not reversible
-        False if at any point, the obj is at the same location as a soaked cleaning tool
-        """
-        for tool_type in self.tools:
-            for cleaning_tool in env.objs.get(tool_type, []):
-                if cleaning_tool.check_abs_state(env, 'soakable'):
-                    if self.obj.check_rel_state(env, cleaning_tool, 'atsamelocation'):
-                        self.value = False
-
 
 class ToggledOn(AbilityState):
     def __init__(self, obj, key): # env
