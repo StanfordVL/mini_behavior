@@ -40,7 +40,7 @@ def get_args():
     args = parser.parse_args()
     return args
 
-from mini_behavior.planning.tasks import solve_boxing, solve_printer, solve_misplaced_items
+from mini_behavior.planning.tasks import solve_boxing, solve_printer, solve_misplaced_items, solve_candles
 
 if __name__ == "__main__":
     args = get_args()
@@ -64,7 +64,7 @@ if __name__ == "__main__":
             # obs, reward, terminated, truncated, info = window.step(action)
             terminated = False
             truncated = True
-            for action in solve_misplaced_items(env):
+            for action in solve_candles(env):
                 obs, reward, terminated, truncated, info = window.step(action)
 
             if terminated or truncated:

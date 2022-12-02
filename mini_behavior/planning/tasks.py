@@ -42,6 +42,27 @@ def solve_misplaced_items(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
+def solve_candles(env):
+    plan = []
+    for idx in range(6):
+        plan += [
+           ("goto", f"candle_{idx}"),
+           ("pickup", f"candle_{idx}"),
+        ]
+
+    plan.append(("goto", "table_0"))
+
+    for idx in range(3):
+        plan.append(("drop", f"candle_{idx}"))
+
+    plan.append(("goto", "table_1"))
+
+    for idx in range(3, 6):
+        plan.append(("drop", f"candle_{idx}"))
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+
 
 def solve_boxing_debug(env):
     plan = []
