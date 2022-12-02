@@ -137,13 +137,13 @@ class WorldObj:
         self.can_seebehind = obj.can_seebehind
 
         # TODO: may not need this if statement anymore
-        if obj.can_contain:
-            cell = grid.get(*obj.cur_pos)
-            if isinstance(cell, list):
-                cell_names = [obj.name for obj in cell]
-                obj_idx = cell_names.index(obj.name)
-                for i in range(obj_idx+1, len(cell)):
-                    self.contains.add(env.obj_instances[cell_names[i]])
+        # if obj.can_contain:
+        #     cell = grid.get(*obj.cur_pos)
+        #     if isinstance(cell, list):
+        #         cell_names = [obj.name for obj in cell]
+        #         obj_idx = cell_names.index(obj.name)
+        #         for i in range(obj_idx+1, len(cell)):
+        #             self.contains.add(env.obj_instances[cell_names[i]])
 
         inside = obj.inside_of
         if inside:
