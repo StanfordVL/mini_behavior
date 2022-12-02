@@ -74,6 +74,10 @@ class CollectMisplacedItemsEnv(RoomGrid):
 
         for obj in gym_shoe + necklace + notebook + socks:
             if not obj.check_rel_state(self, tables[1], 'onTop'):
+                print(obj.name, ' not on top')
+
+        for obj in gym_shoe + necklace + notebook + socks:
+            if not obj.check_rel_state(self, tables[1], 'onTop'):
                 return False
 
         return True

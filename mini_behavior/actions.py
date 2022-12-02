@@ -92,8 +92,10 @@ class Drop(BaseAction):
         dims = []
         pos = self.env.agent_pos + DIR_TO_VEC[self.env.agent_dir]
 
+        # First, attempt to drop on a table
         all_items = self.env.grid.get_all_items(*pos)
         last_furniture, last_obj = 'floor', 'floor'
+
         # breakpoint()
         for i in range(3):
             furniture = all_items[2*i]
@@ -123,9 +125,27 @@ class Drop(BaseAction):
             return False
 
         fwd_pos = self.env.front_pos
-        dims = self.drop_dims(fwd_pos)
+        # First find the furniture in front of the agent
+        furniture = None
+        for i in range(3):
+            furniture = self.env.grid.get_furniture(*fwd_pos, dim=i)
+            if furniture is not None:
+                break 
 
-        return dims != []
+        # If there is no furniture, drop on floor
+        # Else drop on furniture
+        if furniture is None:
+            obj = self.env.grid.get_obj(*fwd_pos, dim=0)
+        else:
+            for pos in furniture.all_pos:
+                obj = self.env.grid.get_obj(*pos, dim=1)
+                if obj is None:
+                    break
+
+        if obj is None:
+            return True
+
+        return False
 
     def do(self, obj, dim=2):
         # global BLOCK
@@ -136,12 +156,22 @@ class Drop(BaseAction):
 
         fwd_pos = self.env.front_pos
 
-        # change object properties
-        obj.cur_pos = fwd_pos
-        # change agent / grid
-        dims = self.drop_dims(fwd_pos)
-        assert len(dims) > 0
-        self.env.grid.set(*fwd_pos, obj, dims[-1])
+        furniture = None
+        for i in range(3):
+            furniture = self.env.grid.get_furniture(*fwd_pos, dim=i)
+            if furniture is not None:
+                break 
+
+        if furniture is None and self.env.grid.get_obj(*fwd_pos, dim=0) is None:
+            obj.cur_pos = fwd_pos
+            self.env.grid.set(*fwd_pos, obj, 0)
+        else:
+            for pos in furniture.all_pos:
+                test_obj = self.env.grid.get_obj(*pos, dim=1)
+                if test_obj is None:
+                    obj.cur_pos = pos
+                    self.env.grid.set(*pos, obj, dim=1)
+                    break
 
 
 class DropIn(BaseAction):
