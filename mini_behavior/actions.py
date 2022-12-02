@@ -81,6 +81,7 @@ class Cook(BaseAction):
         super().do(obj)
         obj.states['cookable'].set_value(True)
 
+# BLOCK = False
 
 class Drop(BaseAction):
     def __init__(self, env):
@@ -93,7 +94,7 @@ class Drop(BaseAction):
 
         all_items = self.env.grid.get_all_items(*pos)
         last_furniture, last_obj = 'floor', 'floor'
-        breakpoint()
+        # breakpoint()
         for i in range(3):
             furniture = all_items[2*i]
             obj = all_items[2*i + 1]
@@ -113,6 +114,8 @@ class Drop(BaseAction):
         - agent is carrying obj
         - there is no obj in base of forward cell
         """
+        # if BLOCK:
+        #     breakpoint()
         if not super().can(obj):
             return False
 
@@ -125,7 +128,9 @@ class Drop(BaseAction):
         return dims != []
 
     def do(self, obj, dim=2):
+        # global BLOCK
         super().do(obj)
+        # BLOCK = True
 
         self.env.carrying.discard(obj)
 
@@ -134,7 +139,9 @@ class Drop(BaseAction):
         # change object properties
         obj.cur_pos = fwd_pos
         # change agent / grid
-        self.env.grid.set(*fwd_pos, obj, dim)
+        dims = self.drop_dims(fwd_pos)
+        assert len(dims) > 0
+        self.env.grid.set(*fwd_pos, obj, dims[0])
 
 
 class DropIn(BaseAction):
@@ -166,8 +173,6 @@ class DropIn(BaseAction):
         - middle of forward cell is open
         - obj does not contain another obj
         """
-        print("=" * 20)
-        print(self, obj.name)
         if not super().can(obj):
             return False
 
@@ -187,19 +192,13 @@ class DropIn(BaseAction):
         if furniture is None:
             return False
 
-        print(self, obj.name, furniture)
         # Check if there is available room on the furniture object
         # We test all valid positions
-        print('test')
-        print(furniture.all_pos)
         for pos in furniture.all_pos:
             dims = self.drop_dims(pos)
-            print(dims, pos)
             if len(dims) > 0:
-                print(dims)
                 return True
 
-        print("=" * 20)
         return False
 
 
@@ -264,6 +263,7 @@ class Pickup(BaseAction):
         self.env.carrying.add(obj)
 
         objs = self.env.grid.get_all_objs(*obj.cur_pos)
+
         dim = objs.index(obj)
 
         # remove obj from the grid and shift remaining objs
