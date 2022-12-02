@@ -329,13 +329,15 @@ def washing_pots_and_pans(env):
 
     plan += [
         ("goto", "sink_0"),
-        ("toggle", "sink_0"),
         ("drop_in", rag.name),
+        ("toggle", "sink_0"),
         ("pickup", rag.name)
     ]
 
-    for obj in pans + kettles + teapots + [ rag ]:
+    for obj in pans + kettles + teapots:
         plan += [
+            ("drop_in", obj.name),
+            ("clean", obj.name),
             ("pickup", obj.name)
         ]
 
