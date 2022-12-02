@@ -328,4 +328,5 @@ task_to_plan = {
     'MiniGrid-WateringHouseplants': watering_house_plants,
     'MiniGrid-PuttingAwayDishesAfterCleaning': putting_away_dishes_after_cleaning,
     'MiniGrid-ThrowingAwayLeftoversFour': throwing_away_leftovers,
+    'MiniGrid-ThrowLeftoversSceneEnv': throwing_away_leftovers,
 }

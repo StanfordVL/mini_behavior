@@ -13,7 +13,7 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
             mode='human',
             scene_id='rs_int',
             num_objs=None,
-            max_steps=1e5,
+            max_steps=int(1e5),
     ):
         if num_objs is None:
             num_objs = {'countertop': 1,
