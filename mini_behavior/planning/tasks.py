@@ -313,6 +313,46 @@ def throwing_away_leftovers(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
+def washing_pots_and_pans(env):
+    teapots = env.objs['teapot']
+    kettles = env.objs['kettle']
+    rag = env.objs['scrub_brush'][0]
+    pans = env.objs['pan']
+    cabinet = env.objs['cabinet'][0]
+    plan = []
+
+    for obj in pans + kettles + teapots + [ rag ]:
+        plan += [
+            ("goto", obj.name),
+            ("pickup", obj.name)
+        ]
+
+    plan += [
+        ("goto", "sink_0"),
+        ("toggle", "sink_0"),
+        ("drop_in", rag.name),
+        ("pickup", rag.name)
+    ]
+
+    for obj in pans + kettles + teapots + [ rag ]:
+        plan += [
+            ("pickup", obj.name)
+        ]
+
+    plan += [
+        ("goto", cabinet.name),
+        ("open", cabinet.name),
+    ]
+
+    for obj in pans + kettles + teapots + [ rag ]:
+        plan += [
+            ("drop_in", obj.name)
+        ]
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+
+
 task_to_plan = {
     'MiniGrid-BoxingBooksUpForStorage': boxing_books_up_for_storage,
     'MiniGrid-InstallingAPrinter': installing_a_printer,
@@ -329,4 +369,5 @@ task_to_plan = {
     'MiniGrid-PuttingAwayDishesAfterCleaning': putting_away_dishes_after_cleaning,
     'MiniGrid-ThrowingAwayLeftoversFour': throwing_away_leftovers,
     'MiniGrid-ThrowLeftoversSceneEnv': throwing_away_leftovers,
+    'MiniGrid-WashingPotsAndPans': washing_pots_and_pans,
 }
