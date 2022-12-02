@@ -267,7 +267,7 @@ class Open(BaseAction):
         if not super().can(obj):
             return False
 
-        if np.linalg.norm(self.env.agent_pos - np.array(obj.cur_pos)) >= 3:
+        if np.linalg.norm(self.env.agent_pos - np.array(obj.cur_pos)) >= 4:
             return False
 
         return True

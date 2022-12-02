@@ -83,7 +83,6 @@ class OrganizingFileCabinetEnv(RoomGrid):
         return 0
 
     def _end_conditions(self):
-        chair = self.objs['chair'][0]
         table = self.objs['table'][0]
         cabinet = self.objs['cabinet'][0]
         marker = self.objs['marker'][0]

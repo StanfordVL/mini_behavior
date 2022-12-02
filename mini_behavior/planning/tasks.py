@@ -91,3 +91,35 @@ def solve_boxing_debug(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
+def solve_organizing(env):
+    plan = []
+    plan += [
+       ("goto", "marker_0"),
+       ("pickup", "marker_0"),
+    ]
+    for idx in range(4):
+        plan += [
+           ("goto", f"document_{idx}"),
+           ("pickup", f"document_{idx}"),
+        ]
+
+    for idx in range(2):
+        plan += [
+           ("goto", f"folder_{idx}"),
+           ("pickup", f"folder_{idx}"),
+        ]
+
+    plan.append(("goto", "table_0"))
+    plan.append(("drop", "marker_0"))
+    plan.append(("goto", "cabinet_0"))
+    plan.append(("open", "cabinet_0"))
+
+    for idx in range(4):
+        plan.append(("drop_in", f"document_{idx}"))
+
+    for idx in range(2):
+        plan.append(("drop_in", f"folder_{idx}"))
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+

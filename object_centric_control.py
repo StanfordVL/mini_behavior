@@ -48,6 +48,7 @@ from mini_behavior.planning.tasks import (
     solve_misplaced_items,
     solve_candles,
     solve_open_packages,
+    solve_organizing,
 )
 
 if __name__ == "__main__":
@@ -72,7 +73,7 @@ if __name__ == "__main__":
             # obs, reward, terminated, truncated, info = window.step(action)
             terminated = False
             truncated = True
-            for action in solve_open_packages(env):
+            for action in solve_organizing(env):
                 obs, reward, terminated, truncated, info = window.step(action)
 
             if terminated or truncated:
