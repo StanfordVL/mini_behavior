@@ -27,6 +27,22 @@ def solve_printer(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
+def solve_misplaced_items(env):
+    plan = []
+
+    items =  ['gym_shoe_0', 'necklace_0', 'notebook_0', 'sock_0', 'sock_1']
+    for item in items:
+        plan += [ ("goto", item), ("pickup", item)]
+
+    plan.append(("goto", "table_1"))
+
+    for item in items:
+        plan += [ ("drop", item) ]
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+
+
 def solve_boxing_debug(env):
     plan = []
     for idx in range(3):
