@@ -68,6 +68,6 @@ if __name__ == "__main__":
             truncated = True
             for action in task_to_plan[env_key](env):
                 obs, reward, terminated, truncated, info = window.step(action)
-            #
+
             if terminated or truncated:
                 break

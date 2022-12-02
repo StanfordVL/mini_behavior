@@ -268,6 +268,28 @@ def watering_house_plants(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
+def putting_away_dishes_after_cleaning(env):
+    plan = []
+
+    dishes = env.objs['plate']
+
+    for obj in dishes:
+        plan += [
+            ("goto", obj.name),
+            ("pickup", obj.name)
+        ]
+
+    plan += [
+        ("goto", "cabinet_0"),
+        ("open", "cabinet_0")
+    ]
+
+    for obj in dishes:
+        plan += [ ("drop_in", obj.name) ]
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+
 
 
 task_to_plan = {
@@ -283,4 +305,5 @@ task_to_plan = {
     'MiniGrid-MovingBoxesToStorage': moving_boxes_to_storage,
     'MiniGrid-SortingBooks': sorting_books,
     'MiniGrid-WateringHouseplants': watering_house_plants,
+    'MiniGrid-PuttingAwayDishesAfterCleaning': putting_away_dishes_after_cleaning,
 }
