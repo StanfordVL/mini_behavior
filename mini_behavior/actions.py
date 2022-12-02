@@ -398,7 +398,6 @@ def get_allowable_actions(env):
     action_strs = []
     actions = []
     for action_str, action in ACTION_FUNC_MAPPING.items():
-        print(action_str, action)
         for obj in env.obj_instances.values(): #type: ignore
             if action(env).can(obj):
                 actions.append((action, obj))

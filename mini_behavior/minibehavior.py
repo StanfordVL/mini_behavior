@@ -341,7 +341,6 @@ class MiniBehaviorEnv(MiniGridEnv):
             if action_class(self).can(obj):
                 action_class(self).do(obj)
             else:
-                print('no can do')
                 self.action_done = False
         else:
             # Rotate left

@@ -91,6 +91,30 @@ def solve_boxing_debug(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
+def solve_organizing_pantry(env):
+    oatmeals = env.objs['oatmeal']
+    chips = env.objs['chip']
+    vegetable_oils = env.objs['vegetable_oil']
+    sugars = env.objs['sugar']
+    cabinet = env.objs['cabinet'][0]
+
+    plan = []
+    for obj in oatmeals + chips + vegetable_oils + sugars:
+        plan += [
+           ("goto", obj.name),
+           ("pickup", obj.name),
+        ]
+    plan.append(("goto", cabinet.name))
+    plan.append(("open", cabinet.name))
+
+    for obj in oatmeals + chips + vegetable_oils + sugars:
+        plan += [
+           ("drop_in", obj.name),
+        ]
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+
 def solve_organizing(env):
     plan = []
     plan += [
