@@ -227,6 +227,26 @@ def moving_boxes_to_storage(env):
     for elem in plan:
         yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
 
+def sorting_books(env):
+    plan = []
+
+    book = env.objs['book']
+    hardback = env.objs['hardback']
+    shelf = env.objs['shelf'][0]
+
+    for obj in book + hardback:
+        plan += [
+            ("goto", obj.name),
+            ("pickup", obj.name)
+        ]
+    plan.append(("goto", shelf.name))
+    for obj in book + hardback:
+        plan.append(("drop", obj.name))
+
+    for elem in plan:
+        yield (ACTION_FUNC_MAPPING[elem[0]], env.obj_instances[elem[1]]) #type: ignore
+
+
 task_to_plan = {
     'MiniGrid-BoxingBooksUpForStorage': boxing_books_up_for_storage,
     'MiniGrid-InstallingAPrinter': installing_a_printer,
@@ -238,4 +258,5 @@ task_to_plan = {
     'MiniGrid-CleaningShoes': cleaning_shoes,
     'MiniGrid-CleaningACar': cleaning_a_car,
     'MiniGrid-MovingBoxesToStorage': moving_boxes_to_storage,
+    'MiniGrid-SortingBooks': sorting_books,
 }
