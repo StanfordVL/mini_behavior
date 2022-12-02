@@ -45,6 +45,18 @@ class Close(BaseAction):
     def __init__(self, env):
         super(Close, self).__init__(env)
         self.key = 'close'
+    
+    def can(self, obj):
+        if not super().can(obj):
+            return False
+
+        if not is_within_range(self.env, obj):
+            return False
+        
+        if not obj.check_abs_state(self.env, 'openable'):
+            return False
+
+        return True
 
     def do(self, obj):
         super().do(obj)
@@ -59,7 +71,7 @@ class Clean(BaseAction):
     def can(self, obj):
         tools = ["broom", "rag", "scrub_brush", "towel"]
 
-        if np.linalg.norm(self.env.agent_pos - np.array(obj.cur_pos)) >= 4:
+        if not is_within_range(self.env, obj):
             return False
 
         for tool_type in tools:
@@ -292,7 +304,10 @@ class Open(BaseAction):
         if not super().can(obj):
             return False
 
-        if np.linalg.norm(self.env.agent_pos - np.array(obj.cur_pos)) >= 4:
+        if not is_within_range(self.env, obj):
+            return False
+        
+        if obj.check_abs_state(self.env, 'openable'):
             return False
 
         return True
@@ -317,7 +332,10 @@ class Pickup(BaseAction):
             return False
 
         # Can only pickup adjacent objects
-        if np.linalg.norm(self.env.agent_pos - np.array(obj.cur_pos)) >= 3:
+        if not is_within_range(self.env, obj):
+            return False
+        
+        if is_hidden(obj):
             return False
 
         return True
@@ -360,6 +378,8 @@ class Slice(BaseAction):
         """
         if not super().can(obj):
             return False
+        if not is_within_range(self.env, obj):
+            return False
         return find_tool(self.env, self.slicers)
 
     def do(self, obj):
@@ -377,6 +397,8 @@ class Toggle(BaseAction):
         toggle from on to off, or off to on
         """
         super().do(obj)
+        if not is_within_range(self.env, obj):
+            return False
         cur = obj.check_abs_state(self.env, 'toggleable')
         obj.states['toggleable'].set_value(not cur)
 
@@ -388,6 +410,8 @@ class GoTo(BaseAction):
 
     def can(self, obj):
         if obj.check_abs_state(self.env, 'inhandofrobot'):
+            return False
+        if is_hidden(obj):
             return False
         return True
 
@@ -430,3 +454,8 @@ def get_allowable_actions(env):
                 action_strs.append(f"{action_str} + {obj.name}")
     return action_strs, actions
 
+def is_within_range(env, obj, action_range=3):
+    return np.linalg.norm(env.agent_pos - np.array(obj.cur_pos)) <= action_range
+
+def is_hidden(obj):
+    return obj.inside_of and 'openable' in obj.inside_of.states.keys() and not obj.inside_of.check_abs_state(state='openable')
