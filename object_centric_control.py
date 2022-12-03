@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 import argparse
-from mini_behavior.window import InteractiveWindow
-from bddl.actions import get_allowable_actions
-import mini_behavior.envs  # type: ignore
-from minigrid.wrappers import ImgObsWrapper, RGBImgPartialObsWrapper
+
 import gymnasium as gym
+from minigrid.wrappers import ImgObsWrapper, RGBImgPartialObsWrapper
+
+import mini_behavior.envs
 from mini_behavior.planning.tasks import task_to_plan
+from mini_behavior.window import InteractiveWindow
+
+# Necessary to import custom models
 assert mini_behavior.envs is not None
 
 
