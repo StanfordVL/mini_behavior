@@ -6,11 +6,12 @@ from mini_behavior.actions import get_allowable_action_strings
 from collections import OrderedDict
 
 import gym
-from gym.spaces import Text, Tuple, Discrete, Sequence, Dict
+from gym.spaces import Text, Tuple, Dict, Discrete
 
 from lm import SayCanOPT
 from mini_behavior.envs import InstallingAPrinterEnv  # type: ignore
 from ray.tune.registry import register_env
+from mini_behavior.actions import ACTION_FUNC_MAPPING
 
 import numpy as np
 
@@ -67,17 +68,23 @@ class CompatibilityWrapper(gym.Env):
             }
         )
 
-        self.action_space = Tuple(
-            [Text(max_length=50, charset=chars), Text(max_length=50, charset=chars)]
-        )
+        self.action_space = Tuple([Discrete(len(ACTION_FUNC_MAPPING)), Discrete(20)])
 
-    def step(self, action):
-        obs, reward, terminated, truncated, info = self.env(action)
+    def step(self, action: tuple):
+
+        action_type = list(ACTION_FUNC_MAPPING.values())[action[0]]
+        if action[1] > len(self.env.obj_instances):
+            reward = 0
+            terminated = False
+            truncated = False
+            info = {}
+        else:
+            action = (action_type, list(self.env.obj_instances.values())[action[1]])
+            obs, reward, terminated, truncated, info = self.env.step(action)
+
         action_str = get_allowable_action_strings(self.env)
         obs = OrderedDict()
         obs["available_actions"] = action_str
-
-        breakpoint()
         return obs, reward, terminated or truncated, info
 
     def reset(self):
@@ -85,9 +92,6 @@ class CompatibilityWrapper(gym.Env):
         action_str = get_allowable_action_strings(self.env)
         obs = OrderedDict()
         obs["available_actions"] = action_str
-
-        breakpoint()
-        self.observation_space.contains(obs)
         return obs
 
 
@@ -107,6 +111,9 @@ class OptModel(TorchModelV2):
         breakpoint()
         pass
 
+    def to(self, device):
+        pass
+
 
 ModelCatalog.register_custom_model("opt_model", OptModel)
 
@@ -115,7 +122,8 @@ register_env(
     lambda cfg: CompatibilityWrapper(cfg, InstallingAPrinterEnv),
 )
 
-ray.init(local_mode=True)
+# ray.init(local_mode=True)
+ray.init()
 algo = ppo.PPO(
     env="MiniGrid-InstallingAPrinter-16x16-N2-v1",
     config={
@@ -125,5 +133,9 @@ algo = ppo.PPO(
             # Extra kwargs to be passed to your model's c'tor.
             "custom_model_config": {},
         },
+        "preprocessor_pref": None,
+        "num_gpus": 1,
+        "num_workers": 0,
+        # "num_gpus_per_worker": 1,
     },
 )
