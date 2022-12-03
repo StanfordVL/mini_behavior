@@ -454,6 +454,15 @@ def get_allowable_actions(env):
                 action_strs.append(f"{action_str} + {obj.name}")
     return action_strs, actions
 
+def get_allowable_action_strings(env):
+    action_strs = []
+    for action_str, action in ACTION_FUNC_MAPPING.items():
+        for obj in env.obj_instances.values(): #type: ignore
+            if action(env).can(obj):
+                action_strs.append((action_str, obj.name))
+    return action_strs
+
+
 def is_within_range(env, obj, action_range=3):
     return np.linalg.norm(env.agent_pos - np.array(obj.cur_pos)) <= action_range
 

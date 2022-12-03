@@ -302,14 +302,11 @@ class SayCan:
         return sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
 
 class SayCanOPT:
-    def __init__(self, task, use_soft_prompt=True):
-        self.task = task
-        self.action_history = []
+    def __init__(self, use_soft_prompt=True):
         # self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-6.7b", torch_dtype=torch.float16).cuda()
         # self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-6.7b", use_fast=False)
         self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-350m", torch_dtype=torch.float16).cuda()
         self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m", use_fast=False)
-
 
         self.use_soft_prompt = use_soft_prompt
         if use_soft_prompt:
@@ -322,7 +319,9 @@ class SayCanOPT:
                           initialize_from_vocab=initialize_from_vocab)
             self.model.set_input_embeddings(s_wte)
 
-        print("SayCan initialized with task:", task)
+    def initialize_task(self, task):
+        self.task = task
+        self.action_history = []
 
     def get_action(self, affordances, affordance_labels):
         affordance_likelihoods = {}
