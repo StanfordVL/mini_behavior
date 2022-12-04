@@ -1,13 +1,12 @@
 from collections import OrderedDict
 
 import gym
-from gym.spaces import Dict, Discrete, MultiDiscrete, Tuple
+from gym.spaces import Dict, Discrete, MultiDiscrete, Tuple, Box
 import numpy as np
 import ray
 from ray.rllib.algorithms import ppo
 from ray.rllib.models import ModelCatalog
 from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
-from ray.rllib.utils.spaces.repeated import Repeated
 from ray.tune.registry import register_env
 from torch import nn
 
@@ -17,17 +16,9 @@ from mini_behavior.actions import get_allowable_action_strings
 from mini_behavior.actions import ACTION_FUNC_MAPPING
 from mini_behavior.envs import InstallingAPrinterEnv
 
-
-def sample(self):
-    return [
-        self.child_space.sample()
-        for _ in range(self.np_random.integers(1, self.max_len + 1))
-    ]
-
-
-Repeated.sample = sample
-
-chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_ ")
+IDX_TO_GOAL = {
+    1: "install a printer",
+}
 
 
 class CompatibilityWrapper(gym.Env):
@@ -37,12 +28,19 @@ class CompatibilityWrapper(gym.Env):
         max_obj_types = max(OBJECT_TO_IDX.values())
         max_obj_instances = 20
         self.max_plan_length = 20
-        num_missions = 1
+        num_missions = 3
+        low = np.zeros((20, 3))
+        high = np.zeros((20, 3))
+        high[:, 0] = num_actions
+        high[:, 1] = max_obj_types
+        high[:, 2] = max_obj_instances
+
         self.observation_space = Dict(
             {
-                "available_actions": MultiDiscrete(
-                    [[num_actions, max_obj_types, max_obj_instances]]
-                    * self.max_plan_length
+                "available_actions": Box(
+                    low=low,
+                    high=high,
+                    dtype=int,
                 ),
                 "valid_plan": Discrete(self.max_plan_length),
                 "goal": Discrete(num_missions),
@@ -106,7 +104,6 @@ class CompatibilityWrapper(gym.Env):
     def reset(self):
         obs, _ = self.env.reset()
         obs = self.obs_wrapper()
-        self.observation_space['available_actions'].contains(obs['available_actions'])
         return obs
 
 
@@ -117,9 +114,31 @@ class OptModel(TorchModelV2, nn.Module):
 
     def forward(self, input_dict, state, seq_lens):
         breakpoint()
-        self.lm.initialize_task("test")
-        action_idx = self.lm.get_action(input_dict["obs"]["available_actions"])
+        action_idxs = []
+        for actions, goal in zip(
+            input_dict["obs"]["available_actions"], input_dict["obs"]["goal"]  # type: ignore
+        ):
+            goal_idx = goal.argmax().item()
+            if goal_idx not in IDX_TO_GOAL:
+                goal_idx = 1
+            self.lm.initialize_task(IDX_TO_GOAL[goal_idx])
+            breakpoint()
+            action_idx = self.lm.get_action(actions)
+            action_idxs.append(action_idx)
         return input_dict["obs"]["available_actions"][action_idx]
+
+    @staticmethod
+    def undiscretize_affordances(affordances, valid):
+        affordances = affordances[:valid]
+        text_affordances = []
+        for affordance in affordances:
+            action = affordance[0]
+            breakpoint()
+            obj_type = affordances[1]
+            obj_instance = affordance[2]
+
+            text_affordances.append((action_str, f"{obj_str}_{obj_instance}"))
+        return text_affordances
 
     def value_function(self):
         breakpoint()
