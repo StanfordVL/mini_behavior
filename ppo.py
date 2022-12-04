@@ -34,7 +34,7 @@ class CompatibilityWrapper(gym.Env):
     def __init__(self, config, env):
         self.env = env(config)
         num_actions = len(ACTION_FUNC_MAPPING)
-        max_obj_types = 20
+        max_obj_types = max(OBJECT_TO_IDX.values())
         max_obj_instances = 20
         self.max_plan_length = 20
         num_missions = 1
@@ -106,7 +106,7 @@ class CompatibilityWrapper(gym.Env):
     def reset(self):
         obs, _ = self.env.reset()
         obs = self.obs_wrapper()
-        # breakpoint()
+        self.observation_space['available_actions'].contains(obs['available_actions'])
         return obs
 
 
