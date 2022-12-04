@@ -40,12 +40,9 @@ class SayCanOPT:
 
         print("SayCan initialized with task:", task)
 
-    def get_action(self, affordances, affordance_labels):
-        affordance_likelihoods = {}
-        max_likelihood = -np.inf
-        best_affordance = None
-        best_label_str = None
-        for affordance, label in zip(affordances, affordance_labels):
+    def get_action(self, affordance_labels):
+        affordance_likelihoods = []
+        for label in affordance_labels:
             label_obj = " ".join(label[1].split("_")[:-1])
             label_action = (
                 label[0]
@@ -56,14 +53,8 @@ class SayCanOPT:
             )
             label_str = " ".join([label_action, "the", label_obj])
             prompt = self.get_prompt_from_history() + label_str
-            affordance_likelihoods[label] = self.get_text_likelihood(prompt)
-            if affordance_likelihoods[label] > max_likelihood:
-                max_likelihood = affordance_likelihoods[label]
-                best_affordance = affordance
-                best_label_str = label_str
-        self.action_history.append(best_label_str)
-        print(affordance_likelihoods, best_label_str)
-        return best_affordance
+            affordance_likelihoods.append(self.get_text_likelihood(prompt))
+        return max(range(len(affordance_likelihoods)), key=lambda i: affordance_likelihoods[i])
 
     def get_prompt_from_history(self):
         prompt = SAYCAN_PROMPT.format(self.task)

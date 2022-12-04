@@ -86,10 +86,8 @@ class OptModel(TorchModelV2, nn.Module):
 
     def forward(self, input_dict, state, seq_lens):
         self.lm.initialize_task("test")
-        breakpoint()
-        affordances = []
-        affordance_labels = []
-        self.lm.get_action(affordances, affordance_labels)
+        action_idx = self.lm.get_action(input_dict["available_actions"])
+        return input_dict["available_actions"][action_idx]
         pass
 
     def value_function(self):
