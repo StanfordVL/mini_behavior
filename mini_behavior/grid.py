@@ -1,6 +1,6 @@
 # MODIFIED FROM MINIGRID REPO
 from .objects import *
-from bddl import ABILITIES
+from bddl.states import ABILITIES
 from minigrid.core.grid import Grid
 
 # Size in pixels of a tile in the full-scale human view

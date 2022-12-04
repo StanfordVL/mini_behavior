@@ -1,5 +1,3 @@
-from mini_behavior.states import *
-
 ALL_STATES = [
     'atsamelocation',
     'cleaningTool',
@@ -56,33 +54,6 @@ ABILITIES = [
 ]
 
 
-# state (str) to state (function) mapping
-STATE_FUNC_MAPPING = {
-    'atsamelocation': AtSameLocation,
-    'cleaningTool': CleaningTool,
-    'coldSource': HeatSourceOrSink,
-    'cookable': Cooked,
-    'dustyable': Dusty,
-    'freezable': Frozen,
-    'heatSource': HeatSourceOrSink,
-    'infovofrobot': InFOVOfRobot,
-    'inhandofrobot': InHandOfRobot,
-    'inreachofrobot': InReachOfRobot,
-    'insameroomasrobot': InSameRoomAsRobot,
-    'inside': Inside,
-    'nextto': NextTo,
-    'onfloor': OnFloor,
-    'onTop': OnTop,
-    'openable': Opened,
-    'sliceable': Sliced,
-    'slicer': Slicer,
-    'soakable': Soaked,
-    'stainable': Stained,
-    'toggleable': ToggledOn,
-    'under': Under,
-    'waterSource': WaterSource
-    # 'touching', TODO: uncomment once implemented
-}
 
 
 ########################################################################################################################

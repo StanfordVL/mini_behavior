@@ -1,6 +1,9 @@
 import os
 from mini_behavior.rendering import *
-from bddl import DEFAULT_STATES, STATE_FUNC_MAPPING, DEFAULT_ACTIONS, OBJECT_TO_IDX, IDX_TO_OBJECT, OBJECTS, ABILITIES
+from bddl.objs import OBJECT_TO_IDX, IDX_TO_OBJECT, OBJECTS
+from mini_behavior.actions import DEFAULT_ACTIONS
+from bddl.states import DEFAULT_STATES, ABILITIES
+from mini_behavior.states import STATE_FUNC_MAPPING
 from .globals import COLOR_TO_IDX, IDX_TO_COLOR, COLORS
 from .load import load_json
 

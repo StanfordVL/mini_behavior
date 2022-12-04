@@ -1,7 +1,6 @@
 from .utils.states_base import *
 import numpy as np
 
-
 def get_obj_cell(self, env):
     obj = self.obj
     cell = [obj_ for obj_ in env.grid.get_all_items(*obj.cur_pos)]
@@ -292,3 +291,32 @@ class Slicer(ObjectProperty):
 class WaterSource(ObjectProperty):
     def __init__(self, obj, key):
         super(WaterSource, self).__init__(obj, key)
+
+# state (str) to state (function) mapping
+STATE_FUNC_MAPPING = {
+    'atsamelocation': AtSameLocation,
+    'cleaningTool': CleaningTool,
+    'coldSource': HeatSourceOrSink,
+    'cookable': Cooked,
+    'dustyable': Dusty,
+    'freezable': Frozen,
+    'heatSource': HeatSourceOrSink,
+    'infovofrobot': InFOVOfRobot,
+    'inhandofrobot': InHandOfRobot,
+    'inreachofrobot': InReachOfRobot,
+    'insameroomasrobot': InSameRoomAsRobot,
+    'inside': Inside,
+    'nextto': NextTo,
+    'onfloor': OnFloor,
+    'onTop': OnTop,
+    'openable': Opened,
+    'sliceable': Sliced,
+    'slicer': Slicer,
+    'soakable': Soaked,
+    'stainable': Stained,
+    'toggleable': ToggledOn,
+    'under': Under,
+    'waterSource': WaterSource
+    # 'touching', TODO: uncomment once implemented
+}
+

@@ -1,6 +1,8 @@
 import numpy as np
 from mini_behavior.utils.globals import DIR_TO_VEC
 
+DEFAULT_ACTIONS = []
+
 def find_tool(env, possible_tool_types):
     # returns whether agent is carrying a obj of possible_tool_types, and the obj_instance
     for tool_type in possible_tool_types:

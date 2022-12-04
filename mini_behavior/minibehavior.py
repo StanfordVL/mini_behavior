@@ -5,7 +5,7 @@ import pickle as pkl
 from enum import IntEnum
 from gymnasium import spaces
 from minigrid.minigrid_env import MiniGridEnv, MissionSpace
-from bddl.actions import ACTION_FUNC_MAPPING
+from mini_behavior.actions import ACTION_FUNC_MAPPING
 from .objects import *
 from .grid import BehaviorGrid, GridDimension, is_obj
 from mini_behavior.window import Window
