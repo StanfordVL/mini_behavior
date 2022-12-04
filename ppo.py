@@ -14,10 +14,6 @@ from ray.tune.registry import register_env
 from mini_behavior.actions import ACTION_FUNC_MAPPING
 from ray.rllib.utils.spaces.repeated import Repeated
 
-import numpy as np
-
-chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
-
 
 def sample(self):
     return [
@@ -28,6 +24,7 @@ def sample(self):
 
 Repeated.sample = sample
 
+chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
 
 class CompatibilityWrapper(gym.Env):
     def __init__(self, config, env):
@@ -78,6 +75,11 @@ class CompatibilityWrapper(gym.Env):
 
 class OptModel(TorchModelV2):
     def __init__(self, obs_space, action_space, num_outputs, model_config, name):
+        self.model_config = model_config
+        self.obs_space = obs_space
+        self.action_space = action_space
+        self.num_outputs = num_outputs
+        self.name = name
         self.lm = SayCanOPT(use_soft_prompt=True)
 
     def forward(self, input_dict, state, seq_lens):
@@ -100,6 +102,9 @@ class OptModel(TorchModelV2):
 
     def parameters(self):
         return self.lm.model.get_input_embeddings().parameters()
+
+    def eval(self):
+        pass
 
 
 ModelCatalog.register_custom_model("opt_model", OptModel)
