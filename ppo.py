@@ -112,7 +112,13 @@ class OptModel(TorchModelV2):
         pass
 
     def to(self, device):
-        pass
+        return self
+
+    def get_initial_state(self):
+        return []
+
+    def parameters(self):
+        return self.lm.model.get_input_embeddings().parameters()
 
 
 ModelCatalog.register_custom_model("opt_model", OptModel)
