@@ -13,6 +13,7 @@ from mini_behavior.envs import InstallingAPrinterEnv  # type: ignore
 from ray.tune.registry import register_env
 from mini_behavior.actions import ACTION_FUNC_MAPPING
 from ray.rllib.utils.spaces.repeated import Repeated
+from torch import nn
 
 
 def sample(self):
@@ -73,13 +74,14 @@ class CompatibilityWrapper(gym.Env):
         return obs
 
 
-class OptModel(TorchModelV2):
+class OptModel(TorchModelV2, nn.Module):
     def __init__(self, obs_space, action_space, num_outputs, model_config, name):
-        self.model_config = model_config
-        self.obs_space = obs_space
-        self.action_space = action_space
-        self.num_outputs = num_outputs
-        self.name = name
+        super().__init__(obs_space, action_space, num_outputs, model_config, name)
+        # self.model_config = model_config
+        # self.obs_space = obs_space
+        # self.action_space = action_space
+        # self.num_outputs = num_outputs
+        # self.name = name
         self.lm = SayCanOPT(use_soft_prompt=True)
 
     def forward(self, input_dict, state, seq_lens):
