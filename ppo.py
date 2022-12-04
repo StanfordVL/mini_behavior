@@ -12,43 +12,21 @@ from lm import SayCanOPT
 from mini_behavior.envs import InstallingAPrinterEnv  # type: ignore
 from ray.tune.registry import register_env
 from mini_behavior.actions import ACTION_FUNC_MAPPING
+from ray.rllib.utils.spaces.repeated import Repeated
 
 import numpy as np
 
 chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
 
 
-class Repeated(gym.Space):
-    """Represents a variable-length list of child spaces.
+def sample(self):
+    return [
+        self.child_space.sample()
+        for _ in range(self.np_random.integers(1, self.max_len + 1))
+    ]
 
-    Example:
-        self.observation_space = spaces.Repeated(spaces.Box(4,), max_len=10)
-            --> from 0 to 10 boxes of shape (4,)
 
-    See also: documentation for rllib.models.RepeatedValues, which shows how
-        the lists are represented as batched input for ModelV2 classes.
-    """
-
-    def __init__(self, child_space: gym.Space, max_len: int):
-        super().__init__()
-        self.child_space = child_space
-        self.max_len = max_len
-
-    def sample(self):
-        return [
-            self.child_space.sample()
-            for _ in range(self.np_random.integers(1, self.max_len + 1))
-        ]
-
-    def contains(self, x):
-        return (
-            isinstance(x, (list, np.ndarray))
-            and len(x) <= self.max_len
-            and all(self.child_space.contains(c) for c in x)
-        )
-
-    def __repr__(self):
-        return "Repeated({}, {})".format(self.child_space, self.max_len)
+Repeated.sample = sample
 
 
 class CompatibilityWrapper(gym.Env):
@@ -59,11 +37,13 @@ class CompatibilityWrapper(gym.Env):
                 "available_actions": Repeated(
                     Tuple(
                         [
-                            Text(max_length=50, charset=chars),
-                            Text(max_length=50, charset=chars),
+                            Discrete(20),
+                            Discrete(20),
+                            # Text(max_length=50, charset=chars),
+                            # Text(max_length=50, charset=chars),
                         ]
                     ),
-                    max_len=20,
+                    max_len=50,
                 )
             }
         )
@@ -84,14 +64,15 @@ class CompatibilityWrapper(gym.Env):
 
         action_str = get_allowable_action_strings(self.env)
         obs = OrderedDict()
-        obs["available_actions"] = action_str
+        # obs["available_actions"] = action_str
+        obs["available_actions"] = [(0, 1)]
         return obs, reward, terminated or truncated, info
 
     def reset(self):
         obs, info = self.env.reset()
         action_str = get_allowable_action_strings(self.env)
         obs = OrderedDict()
-        obs["available_actions"] = action_str
+        obs["available_actions"] = [(0, 1)]
         return obs
 
 
@@ -139,7 +120,7 @@ algo = ppo.PPO(
             # Extra kwargs to be passed to your model's c'tor.
             "custom_model_config": {},
         },
-        "preprocessor_pref": None,
+        # "preprocessor_pref": None,
         "num_gpus": 1,
         "num_workers": 0,
         # "num_gpus_per_worker": 1,
