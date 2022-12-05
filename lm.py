@@ -279,13 +279,7 @@ class SayCan:
         return best_affordance
 
     def get_prompt_from_history(self):
-        prompt = SAYCAN_PROMPT.format(self.task)
-        i = 1
-        if self.action_history:
-            for action in self.action_history:
-                prompt += f"\n{i}. {action}"
-                i += 1
-        prompt += f"\n{i}. "
+        prompt = format_task_context(self.task)
         return prompt
 
     def get_text_likelihood(self, prompt):
@@ -307,7 +301,7 @@ class SayCanOPT:
     def __init__(self, use_soft_prompt=True, output_reward=True):
         # self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-6.7b", torch_dtype=torch.float16).cuda()
         # self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-6.7b", use_fast=False)
-        self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-350m", torch_dtype=torch.float16).cuda()
+        self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-350m", torch_dtype=torch.float32)
         self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m", use_fast=False)
 
         self.output_reward = output_reward
@@ -332,34 +326,20 @@ class SayCanOPT:
     def get_action(self, affordance_labels):
         affordance_likelihoods = []
         for label in affordance_labels:
-            label_obj = " ".join(label[1].split("_")[:-1])
-            label_action = (
-                label[0]
-                .replace("goto", "go to")
-                .replace("pickup", "pick up")
-                .replace("putdown", "put down")
-                .replace("drop_in", "drop in")
-            )
-            label_str = " ".join([label_action, "the", label_obj])
+            label_str = format_affordance_label(label)
             prompt = self.get_prompt_from_history() + label_str
             affordance_likelihoods.append(self.get_text_likelihood(prompt))
         return max(range(len(affordance_likelihoods)), key=lambda i: affordance_likelihoods[i])
 
     def get_prompt_from_history(self):
-        prompt = SAYCAN_PROMPT.format(self.task)
-        i = 1
-        if self.action_history:
-            for action in self.action_history:
-                prompt += f"\n{i}. {action}"
-                i += 1
-        prompt += f"\n{i}. "
+        prompt = format_task_context(self.task)
         return prompt
 
     def get_text_likelihood(self, prompt):
-        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
+        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
 
         if self.use_soft_prompt:
-            input_ids = torch.cat([torch.full((1, self.n_tokens), 50256).cuda(), input_ids], 1)
+            input_ids = torch.cat([torch.full((1, self.n_tokens), 50256), input_ids], 1)
 
         outputs = self.model(input_ids, labels=input_ids, output_hidden_states=True)
 
@@ -386,3 +366,25 @@ class SayCanOPT:
 
     def get_reward(self):
         return self.reward
+
+def format_task_context(self, task, action_history):
+    prompt = SAYCAN_PROMPT.format(task)
+    i = 1
+    if action_history:
+        for action in action_history:
+            prompt += f"\n{i}. {action}"
+            i += 1
+    prompt += f"\n{i}. "
+    return prompt
+
+def format_affordance_label(label):
+    label_obj = " ".join(label[1].split("_")[:-1])
+    label_action = (
+        label[0]
+        .replace("goto", "go to")
+        .replace("pickup", "pick up")
+        .replace("putdown", "put down")
+        .replace("drop_in", "drop in")
+    )
+    label_str = " ".join([label_action, "the", label_obj])
+    return label_str
