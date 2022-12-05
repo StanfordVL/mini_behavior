@@ -255,6 +255,8 @@ class SayCan:
         self.task = task
         self.action_history = []
         print("SayCan initialized with task:", task)
+        self.reward = 0
+
 
     def get_action(self, affordances, affordance_labels):
         affordance_likelihoods = {}
@@ -302,11 +304,15 @@ class SayCan:
         return sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
 
 class SayCanOPT:
-    def __init__(self, use_soft_prompt=True):
+    def __init__(self, use_soft_prompt=True, output_reward=True):
         # self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-6.7b", torch_dtype=torch.float16).cuda()
         # self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-6.7b", use_fast=False)
         self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-350m", torch_dtype=torch.float16).cuda()
         self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m", use_fast=False)
+
+        self.output_reward = output_reward
+        if output_reward:
+            self.reward_head = nn.Linear(self.model.config.word_embed_proj_dim, 1, bias=False).cuda()
 
         self.use_soft_prompt = use_soft_prompt
         if use_soft_prompt:
@@ -355,7 +361,28 @@ class SayCanOPT:
         if self.use_soft_prompt:
             input_ids = torch.cat([torch.full((1, self.n_tokens), 50256).cuda(), input_ids], 1)
 
-        outputs = self.model(input_ids, labels=input_ids)
+        outputs = self.model(input_ids, labels=input_ids, output_hidden_states=True)
+
+        if self.output_reward:
+            hidden_states = outputs['hidden_states'][-1]
+            logits = self.reward_head(hidden_states.float())
+
+            batch_size, _ = input_ids.shape[:2]
+
+            if self.model.config.pad_token_id is None:
+                sequence_lengths = -1
+            else:
+                if input_ids is not None:
+                    sequence_lengths = torch.ne(input_ids, self.model.config.pad_token_id).sum(-1) - 1
+                else:
+                    sequence_lengths = -1
+
+            pooled_logits = logits[torch.arange(batch_size, device=logits.device), sequence_lengths]
+            self.reward = pooled_logits
+
         # sentence_prob = outputs['logits'].max(dim=2).values.sum()
 
         return -math.exp(outputs['loss'].item())
+
+    def get_reward(self):
+        return self.reward

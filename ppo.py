@@ -185,8 +185,7 @@ class OptModel(TorchModelV2, nn.Module):
 
     def value_function(self):
         # https://github.com/openai/summarize-from-feedback/blob/master/summarize_from_feedback/reward_model.py
-        breakpoint()
-        pass
+        return self.lm.get_reward()
 
     def to(self, device):
         return self
