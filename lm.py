@@ -334,7 +334,7 @@ class SayCanOPT(nn.Module):
         return max(range(len(affordance_likelihoods)), key=lambda i: affordance_likelihoods[i])
 
     def get_prompt_from_history(self):
-        prompt = format_task_context(self.task)
+        prompt = format_task_context(self.task, self.action_history)
         return prompt
 
     def get_text_likelihood(self, prompt):
@@ -369,7 +369,7 @@ class SayCanOPT(nn.Module):
     def get_reward(self):
         return self.reward
 
-def format_task_context(self, task, action_history):
+def format_task_context(task, action_history):
     prompt = SAYCAN_PROMPT.format(task)
     i = 1
     if action_history:

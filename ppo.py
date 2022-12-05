@@ -185,6 +185,7 @@ class OptModel(TorchModelV2, nn.Module):
             else:
                 self.lm.initialize_task(IDX_TO_GOAL[goal])
                 text_actions = undiscretize_affordances(actions, valid.item())  # type: ignore
+                breakpoint()
 
             action_idx = self.lm.get_action(text_actions)
             selected_actions.append(action_idx)
@@ -194,25 +195,6 @@ class OptModel(TorchModelV2, nn.Module):
     def value_function(self):
         # https://github.com/openai/summarize-from-feedback/blob/master/summarize_from_feedback/reward_model.py
         return self.lm.get_reward()
-
-    # def to(self, device):
-    #     return self
-    #
-    # def train(self):
-    #     self.lm.model.train()
-    #     return self
-
-    # def parameters(self):
-    #     return list(self.lm.model.get_input_embeddings().parameters()) + list(self.lm.reward_head.parameters())
-
-    # def eval(self):
-    #     self.lm.model.eval()
-    #     return self
-    # #
-    # @property
-    # def _parameters(self):
-    #     return self.parameters()
-
 
 ModelCatalog.register_custom_model("opt_model", OptModel)
 
