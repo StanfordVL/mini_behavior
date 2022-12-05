@@ -84,8 +84,8 @@ class CompatibilityWrapper(gym.Env):
                     high=high,
                     dtype=int,
                 ),
-                "valid_plan": Discrete(self.max_plan_length),
-                "goal": Discrete(num_missions),
+                "valid_plan": Discrete(20),
+                "goal": Discrete(20),
             }
         )
         # self.action_space = Tuple((
@@ -190,11 +190,16 @@ class OptModel(TorchModelV2, nn.Module):
     def to(self, device):
         return self
 
+    def train(self):
+        self.lm.model.train()
+        return self
+
     def parameters(self):
         return self.lm.model.get_input_embeddings().parameters()
 
     def eval(self):
-        pass
+        self.lm.model.eval()
+        return self
 
 
 ModelCatalog.register_custom_model("opt_model", OptModel)
