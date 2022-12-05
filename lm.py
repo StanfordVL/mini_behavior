@@ -378,7 +378,7 @@ class SayCanOPT:
                     sequence_lengths = -1
 
             pooled_logits = logits[torch.arange(batch_size, device=logits.device), sequence_lengths]
-            self.reward = pooled_logits
+            self.reward = pooled_logits.reshape(-1)
 
         # sentence_prob = outputs['logits'].max(dim=2).values.sum()
 

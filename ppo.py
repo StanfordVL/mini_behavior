@@ -181,7 +181,7 @@ class OptModel(TorchModelV2, nn.Module):
             action_idx = self.lm.get_action(text_actions)
             selected_actions.append(action_idx)
 
-        return torch.tensor(selected_actions).reshape(-1, 1), []
+        return torch.tensor(selected_actions).reshape(-1, 1).cuda(), []
 
     def value_function(self):
         # https://github.com/openai/summarize-from-feedback/blob/master/summarize_from_feedback/reward_model.py
