@@ -18,3 +18,5 @@ dependencies:
     - tensorboardx
     - gymnasium
     - minigrid 
+    - gputil
+    - gym
