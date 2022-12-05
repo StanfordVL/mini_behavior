@@ -196,11 +196,15 @@ class OptModel(TorchModelV2, nn.Module):
         return self
 
     def parameters(self):
-        return self.lm.model.get_input_embeddings().parameters()
+        return list(self.lm.model.get_input_embeddings().parameters()) + list(self.lm.reward_head.parameters())
 
     def eval(self):
         self.lm.model.eval()
         return self
+
+    @property
+    def _parameters(self):
+        return self.parameters()
 
 
 ModelCatalog.register_custom_model("opt_model", OptModel)
