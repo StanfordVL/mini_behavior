@@ -224,7 +224,7 @@ algo = ppo.PPO(
         # "preprocessor_pref": None,
         "num_gpus": 1,
         "num_workers": 0,
-        "train_batch_size": 4
+        "sgd_minibatch_size": 4
         # "num_gpus_per_worker": 1,
     },
 )
