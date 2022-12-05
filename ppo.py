@@ -183,9 +183,10 @@ class OptModel(TorchModelV2, nn.Module):
 
         return torch.tensor(selected_actions).reshape(-1, 1), []
 
-    # def value_function(self):
-    #     breakpoint()
-    #     pass
+    def value_function(self):
+        # https://github.com/openai/summarize-from-feedback/blob/master/summarize_from_feedback/reward_model.py
+        breakpoint()
+        pass
 
     def to(self, device):
         return self
