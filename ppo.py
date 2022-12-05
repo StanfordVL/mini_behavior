@@ -9,6 +9,7 @@ from ray.rllib.models import ModelCatalog
 from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
 from ray.tune.registry import register_env
 from torch import nn
+import torch
 
 from bddl.objs import OBJECT_TO_IDX
 from lm import SayCanOPT
@@ -16,9 +17,50 @@ from mini_behavior.actions import get_allowable_action_strings
 from mini_behavior.actions import ACTION_FUNC_MAPPING
 from mini_behavior.envs import InstallingAPrinterEnv
 
+ACTION_FUNC_IDX = {idx: val for idx, val in enumerate(ACTION_FUNC_MAPPING)}
+IDX_TO_OBJECT = {val: idx for idx, val in OBJECT_TO_IDX.items()}
+
 IDX_TO_GOAL = {
     1: "install a printer",
 }
+
+
+def discretize_affordances(affordances, pad_len=None):
+    discretized_affordances = []
+    for affordance in affordances:
+        action = affordance[0]
+        obj_type, obj_instance = affordance[1].split("_")
+
+        obj_instance = int(obj_instance)
+        discretized_obj_type = OBJECT_TO_IDX[obj_type]
+        discretized_action = list(ACTION_FUNC_MAPPING).index(action)
+
+        discretized_affordances.append(
+            [discretized_action, discretized_obj_type, obj_instance]
+        )
+    # mask = [1] * len(discretized_affordances)
+    valid = len(discretized_affordances)
+
+    if pad_len:
+        to_pad = pad_len - len(discretized_affordances)
+        discretized_affordances = discretized_affordances + [[0, 0, 0]] * to_pad
+        # mask = mask + [0] * to_pad
+    return np.array(discretized_affordances, dtype=int), valid
+
+
+def undiscretize_affordances(affordances, valid):
+    affordances = affordances[:valid]
+    text_affordances = []
+    for affordance in affordances:
+        action = affordance[0].item()
+        obj_type = affordance[1].item()
+        obj_instance = affordance[2].item()
+
+        action_str = ACTION_FUNC_IDX[action]
+        obj_str = IDX_TO_OBJECT[obj_type]
+
+        text_affordances.append((action_str, f"{obj_str}_{obj_instance}"))
+    return text_affordances
 
 
 class CompatibilityWrapper(gym.Env):
@@ -31,7 +73,7 @@ class CompatibilityWrapper(gym.Env):
         num_missions = 3
         low = np.zeros((20, 3))
         high = np.zeros((20, 3))
-        high[:, 0] = num_actions
+        high[:, 0] = num_actions -  1
         high[:, 1] = max_obj_types
         high[:, 2] = max_obj_instances
 
@@ -46,37 +88,29 @@ class CompatibilityWrapper(gym.Env):
                 "goal": Discrete(num_missions),
             }
         )
-
-        self.action_space = MultiDiscrete(
-            [num_actions, max_obj_types, max_obj_instances]
-        )
-
-    @staticmethod
-    def discretize_affordances(affordances, pad_len=None):
-        discretized_affordances = []
-        for affordance in affordances:
-            action = affordance[0]
-            obj_type, obj_instance = affordance[1].split("_")
-
-            obj_instance = int(obj_instance)
-            discretized_obj_type = OBJECT_TO_IDX[obj_type]
-            discretized_action = list(ACTION_FUNC_MAPPING).index(action)
-
-            discretized_affordances.append(
-                [discretized_action, discretized_obj_type, obj_instance]
+        # self.action_space = Tuple((
+        #     Box(
+        #         low=low,
+        #         high=high,
+        #         dtype=int,
+        #     ),
+        #     Box(low=0, high=self.max_plan_length, dtype=int)))
+        self.action_space = Box(
+                low=low,
+                high=high,
+                dtype=int,
             )
-        # mask = [1] * len(discretized_affordances)
-        valid = len(discretized_affordances)
+        # self.action_space = MultiDiscrete(
+        #     [num_actions, max_obj_types, max_obj_instances]
+        # )
 
-        if pad_len:
-            to_pad = pad_len - len(discretized_affordances)
-            discretized_affordances = discretized_affordances + [[0, 0, 0]] * to_pad
-            # mask = mask + [0] * to_pad
-        return np.array(discretized_affordances), valid
+        # self.action_space = MultiDiscrete(
+        #     [num_actions, max_obj_types, max_obj_instances]
+        # )
 
     def obs_wrapper(self):
         action_str = get_allowable_action_strings(self.env)
-        discretized_affordances, valid = self.discretize_affordances(
+        discretized_affordances, valid = discretize_affordances(
             action_str, pad_len=self.max_plan_length
         )
         obs = OrderedDict()
@@ -86,17 +120,25 @@ class CompatibilityWrapper(gym.Env):
         obs["goal"] = 1
         return obs
 
-    def step(self, action: tuple):
+    def convert_text_to_action(self):
+        pass
 
-        action_type = list(ACTION_FUNC_MAPPING.values())[action[0]]
-        if action[1] > len(self.env.obj_instances):
-            reward = 0
-            terminated = False
-            truncated = False
-            info = {}
-        else:
-            action = (action_type, list(self.env.obj_instances.values())[action[1]])
-            obs, reward, terminated, truncated, info = self.env.step(action)
+    def step(self, action: tuple):
+        text_actions = undiscretize_affordances(action, valid=len(action))
+        # text_actions = undiscretize_affordances(action[0], action[1].item())
+        reward = 0
+        terminated = False 
+        truncated = True 
+        info = {}
+
+        for text_action in text_actions:
+            action_type = ACTION_FUNC_MAPPING[text_action[0]]
+            if text_action[1] not in self.env.obj_instances:
+                break
+            else:
+                obj = self.env.obj_instances[text_action[1]]
+                action = (action_type, obj)
+                obs, reward, terminated, truncated, info = self.env.step(action)
 
         obs = self.obs_wrapper()
         return obs, reward, terminated or truncated, info
@@ -113,36 +155,29 @@ class OptModel(TorchModelV2, nn.Module):
         self.lm = SayCanOPT(use_soft_prompt=True)
 
     def forward(self, input_dict, state, seq_lens):
-        breakpoint()
-        action_idxs = []
-        for actions, goal in zip(
-            input_dict["obs"]["available_actions"], input_dict["obs"]["goal"]  # type: ignore
-        ):
+
+        available_actions = input_dict["obs"]["available_actions"].int()  # type: ignore
+        goal = input_dict["obs"]["goal"].int()  # type: ignore
+        valid_plan = input_dict["obs"]["valid_plan"].int()  # type: ignore
+
+        selected_actions = []
+
+        for actions, goal, valid in zip(available_actions, goal, valid_plan):
             goal_idx = goal.argmax().item()
             if goal_idx not in IDX_TO_GOAL:
                 goal_idx = 1
+                valid = torch.tensor([0, 1])
             self.lm.initialize_task(IDX_TO_GOAL[goal_idx])
-            breakpoint()
-            action_idx = self.lm.get_action(actions)
-            action_idxs.append(action_idx)
-        return input_dict["obs"]["available_actions"][action_idx]
+            text_actions = undiscretize_affordances(actions, valid.argmax())  # type: ignore
+            action_idx = self.lm.get_action(text_actions)
+            selected_actions.append(actions[action_idx])
 
-    @staticmethod
-    def undiscretize_affordances(affordances, valid):
-        affordances = affordances[:valid]
-        text_affordances = []
-        for affordance in affordances:
-            action = affordance[0]
-            breakpoint()
-            obj_type = affordances[1]
-            obj_instance = affordance[2]
+        # return (torch.stack(selected_actions), valid_plan), []
+        return torch.stack(selected_actions), []
 
-            text_affordances.append((action_str, f"{obj_str}_{obj_instance}"))
-        return text_affordances
-
-    def value_function(self):
-        breakpoint()
-        pass
+    # def value_function(self):
+    #     breakpoint()
+    #     pass
 
     def to(self, device):
         return self
