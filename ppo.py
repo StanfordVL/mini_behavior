@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 import gym
-from gym.spaces import Dict, Discrete, MultiDiscrete, Tuple, Box
+from gym.spaces import Dict, Discrete, Box
 import numpy as np
 import ray
 from ray.rllib.algorithms import ppo
@@ -221,3 +221,11 @@ algo = ppo.PPO(
         # "num_gpus_per_worker": 1,
     },
 )
+for i in range(1000):
+   # Perform one iteration of training the policy with PPO
+   result = algo.train()
+   print(pretty_print(result))
+
+   if i % 100 == 0:
+       checkpoint = algo.save()
+       print("checkpoint saved at", checkpoint)
