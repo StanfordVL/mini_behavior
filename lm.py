@@ -303,8 +303,9 @@ class SayCan:
         )
         return sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
 
-class SayCanOPT:
+class SayCanOPT(nn.Module):
     def __init__(self, use_soft_prompt=True, output_reward=True):
+        super().__init__()
         # self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-6.7b", torch_dtype=torch.float16).cuda()
         # self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-6.7b", use_fast=False)
         self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-350m", torch_dtype=torch.float16).cuda()
@@ -312,6 +313,7 @@ class SayCanOPT:
 
         self.output_reward = output_reward
         if output_reward:
+            self.reward = np.array([0])
             self.reward_head = nn.Linear(self.model.config.word_embed_proj_dim, 1, bias=False).cuda()
 
         self.use_soft_prompt = use_soft_prompt

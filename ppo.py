@@ -22,7 +22,7 @@ ACTION_FUNC_IDX = {idx: val for idx, val in enumerate(ACTION_FUNC_MAPPING)}
 IDX_TO_OBJECT = {val: idx for idx, val in OBJECT_TO_IDX.items()}
 
 IDX_TO_GOAL = {
-    1: "install a printer",
+    0: "install a printer",
 }
 
 
@@ -85,8 +85,9 @@ class CompatibilityWrapper(gym.Env):
                     high=high,
                     dtype=int,
                 ),
-                "valid_plan": Discrete(20),
-                "goal": Discrete(20),
+                "valid_plan": Box(low=0, high=20, dtype=int),# Discrete(20),
+                "goal": Box(low=0, high=20, dtype=int),# Discrete(20),
+                # "goal": Discrete(20),
             }
         )
         # self.action_space = Tuple((
@@ -119,8 +120,8 @@ class CompatibilityWrapper(gym.Env):
         obs = OrderedDict()
         # obs["available_actions"] = action_str
         obs["available_actions"] = discretized_affordances
-        obs["valid_plan"] = valid
-        obs["goal"] = 1
+        obs["valid_plan"] = np.array([valid], dtype=int)
+        obs["goal"] = np.array([1], dtype=int)
         return obs
 
     def convert_text_to_action(self):
@@ -159,9 +160,12 @@ class CompatibilityWrapper(gym.Env):
         return obs
 
 
+from transformers import AutoModelForCausalLM, AutoTokenizer
 class OptModel(TorchModelV2, nn.Module):
     def __init__(self, obs_space, action_space, num_outputs, model_config, name):
-        super().__init__(obs_space, action_space, num_outputs, model_config, name)
+        TorchModelV2.__init__(self, obs_space, action_space, num_outputs, model_config, name)
+        nn.Module.__init__(self)
+
         self.lm = SayCanOPT(use_soft_prompt=True)
 
     def forward(self, input_dict, state, seq_lens):
@@ -173,12 +177,15 @@ class OptModel(TorchModelV2, nn.Module):
         selected_actions = []
 
         for actions, goal, valid in zip(available_actions, goal, valid_plan):
-            goal_idx = goal.argmax().item()
-            if goal_idx not in IDX_TO_GOAL:
-                goal_idx = 1
-                valid = torch.tensor([0, 1])
-            self.lm.initialize_task(IDX_TO_GOAL[goal_idx])
-            text_actions = undiscretize_affordances(actions, valid.argmax())  # type: ignore
+            goal = goal.item()
+            # Dummy for initializing model
+            if goal not in IDX_TO_GOAL or valid == 0:
+                text_actions = [("dummy", "object")]
+                self.lm.initialize_task(IDX_TO_GOAL[0])
+            else:
+                self.lm.initialize_task(IDX_TO_GOAL[goal])
+                text_actions = undiscretize_affordances(actions, valid.item())  # type: ignore
+
             action_idx = self.lm.get_action(text_actions)
             selected_actions.append(action_idx)
 
@@ -188,23 +195,23 @@ class OptModel(TorchModelV2, nn.Module):
         # https://github.com/openai/summarize-from-feedback/blob/master/summarize_from_feedback/reward_model.py
         return self.lm.get_reward()
 
-    def to(self, device):
-        return self
+    # def to(self, device):
+    #     return self
+    #
+    # def train(self):
+    #     self.lm.model.train()
+    #     return self
 
-    def train(self):
-        self.lm.model.train()
-        return self
+    # def parameters(self):
+    #     return list(self.lm.model.get_input_embeddings().parameters()) + list(self.lm.reward_head.parameters())
 
-    def parameters(self):
-        return list(self.lm.model.get_input_embeddings().parameters()) + list(self.lm.reward_head.parameters())
-
-    def eval(self):
-        self.lm.model.eval()
-        return self
-
-    @property
-    def _parameters(self):
-        return self.parameters()
+    # def eval(self):
+    #     self.lm.model.eval()
+    #     return self
+    # #
+    # @property
+    # def _parameters(self):
+    #     return self.parameters()
 
 
 ModelCatalog.register_custom_model("opt_model", OptModel)
@@ -228,7 +235,8 @@ algo = ppo.PPO(
         # "preprocessor_pref": None,
         "num_gpus": 1,
         "num_workers": 0,
-        "sgd_minibatch_size": 4
+        "sgd_minibatch_size": 4,
+        "train_batch_size": 16,
         # "num_gpus_per_worker": 1,
     },
 )
