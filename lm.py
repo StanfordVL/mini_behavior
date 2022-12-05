@@ -338,10 +338,10 @@ class SayCanOPT(nn.Module):
         return prompt
 
     def get_text_likelihood(self, prompt):
-        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
+        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
 
         if self.use_soft_prompt:
-            input_ids = torch.cat([torch.full((1, self.n_tokens), 50256), input_ids], 1)
+            input_ids = torch.cat([torch.full((1, self.n_tokens), 50256).cuda(), input_ids], 1)
 
         outputs = self.model(input_ids, labels=input_ids, output_hidden_states=True)
 
