@@ -139,7 +139,8 @@ if __name__ == "__main__":
     original_task = "Pickup the printer from the floor, put it on the table, and turn it on"
     test_task = "Pickup the scanner from the floor, put it on the counter, and turn it on"
     lm = SayCanOPT(task=original_task)
-    affordance_labels =     affordances = [0, 1, 2, 3, 4]
+    affordance_labels = [("toggle", "scanner_0"), ("putdown", "scanner_0"), ("pickup", "scanner_0"), ("goto", "scanner_0"), ("goto", "counter_0")]
+    affordances = [0, 1, 2, 3, 4]
     true_plan = [2, 0, 3, 4, 1]
 
     test_affordance_labels = [

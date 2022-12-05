@@ -1,4 +1,4 @@
-from bddl.actions import ACTION_FUNC_MAPPING
+from mini_behavior.actions import ACTION_FUNC_MAPPING
 
 def boxing_books_up_for_storage(env):
     plan = []
