@@ -73,7 +73,7 @@ class CompatibilityWrapper(gym.Env):
         num_missions = 3
         low = np.zeros((20, 3))
         high = np.zeros((20, 3))
-        high[:, 0] = num_actions -  1
+        high[:, 0] = num_actions - 1
         high[:, 1] = max_obj_types
         high[:, 2] = max_obj_instances
 
@@ -95,11 +95,13 @@ class CompatibilityWrapper(gym.Env):
         #         dtype=int,
         #     ),
         #     Box(low=0, high=self.max_plan_length, dtype=int)))
-        self.action_space = Box(
-                low=low,
-                high=high,
-                dtype=int,
-            )
+        # self.action_space = Box(
+        #         low=low,
+        #         high=high,
+        #         dtype=int,
+        #     )
+        self.possible_actions =num_actions * max_obj_types * max_obj_instances
+        self.action_space = Discrete(self.possible_actions)
         # self.action_space = MultiDiscrete(
         #     [num_actions, max_obj_types, max_obj_instances]
         # )
@@ -123,23 +125,30 @@ class CompatibilityWrapper(gym.Env):
     def convert_text_to_action(self):
         pass
 
-    def step(self, action: tuple):
-        text_actions = undiscretize_affordances(action, valid=len(action))
+    def step(self, action):
+        # text_actions = undiscretize_affordances(action, valid=len(action))
         # text_actions = undiscretize_affordances(action[0], action[1].item())
         reward = 0
-        terminated = False 
-        truncated = True 
+        terminated = False
+        truncated = True
         info = {}
 
-        for text_action in text_actions:
-            action_type = ACTION_FUNC_MAPPING[text_action[0]]
-            if text_action[1] not in self.env.obj_instances:
-                break
-            else:
-                obj = self.env.obj_instances[text_action[1]]
-                action = (action_type, obj)
-                obs, reward, terminated, truncated, info = self.env.step(action)
-
+        action_str = get_allowable_action_strings(self.env)
+        # for text_action in text_actions:
+        #     action_type = ACTION_FUNC_MAPPING[text_action[0]]
+        #     if text_action[1] not in self.env.obj_instances:
+        #         break
+        #     else:
+        #         obj = self.env.obj_instances[text_action[1]]
+        #         action = (action_type, obj)
+        #         obs, reward, terminated, truncated, info = self.env.step(action)
+       
+        if action < len(action_str):
+            action = action_str[action]
+            action_type = ACTION_FUNC_MAPPING[action[0]]
+            obj = self.env.obj_instances[action[1]]
+            action = (action_type, obj)
+            obs, reward, terminated, truncated, info = self.env.step(action)
         obs = self.obs_wrapper()
         return obs, reward, terminated or truncated, info
 
@@ -170,10 +179,9 @@ class OptModel(TorchModelV2, nn.Module):
             self.lm.initialize_task(IDX_TO_GOAL[goal_idx])
             text_actions = undiscretize_affordances(actions, valid.argmax())  # type: ignore
             action_idx = self.lm.get_action(text_actions)
-            selected_actions.append(actions[action_idx])
+            selected_actions.append(action_idx)
 
-        # return (torch.stack(selected_actions), valid_plan), []
-        return torch.stack(selected_actions), []
+        return torch.tensor(selected_actions).reshape(-1, 1), []
 
     # def value_function(self):
     #     breakpoint()
