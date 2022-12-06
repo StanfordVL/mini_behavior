@@ -65,7 +65,7 @@ class CompatibilityWrapper(gym.Env):
         obs["action_history"] = self.action_history.copy()
         obs["available_actions"] = discretized_affordances
         obs["goal"] = np.array([0], dtype=int)
-        obs["step"] = self.cur_idx
+        obs["step"] = np.array([self.cur_idx], dtype=int)
         obs["valid_plan"] = np.array([valid], dtype=int)
         return obs
 
