@@ -124,9 +124,18 @@ class OptModel(TorchModelV2, nn.Module):
         nn.Module.__init__(self)
 
         self.lm = SayCanOPT(use_soft_prompt=True)
+        
+        # Freeze most of the model
+        for param in self.parameters():
+            param.requires_grad = False
+
+        for param in self.lm.reward_head.parameters():
+            param.requires_grad = True
+
+        for param in self.lm.model.model.decoder.embed_tokens.wte.parameters():
+            param.requires_grad = True
 
     def forward(self, input_dict, state, seq_lens):
-
         available_actions = input_dict["obs"]["available_actions"].int()  # type: ignore
         batch_goal = input_dict["obs"]["goal"].int()  # type: ignore
         batch_valid = input_dict["obs"]["valid_plan"].int()  # type: ignore
