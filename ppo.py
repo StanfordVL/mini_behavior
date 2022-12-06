@@ -10,13 +10,21 @@ from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
 from ray.tune.logger import pretty_print
 from ray.tune.registry import register_env
 from torch import nn
+import torch
 
 from bddl.objs import OBJECT_TO_IDX
 from lm import SayCanOPT, format_affordance_label
 from mini_behavior.actions import get_allowable_action_strings
 from mini_behavior.actions import ACTION_FUNC_MAPPING
 from mini_behavior.envs import InstallingAPrinterEnv
-from utils import IDX_TO_GOAL, IDX_TO_OBJECT, discretize_affordances, undiscretize_affordances, ACTION_IDX_TO_ACTION
+from utils import (
+    ACTION_IDX_TO_ACTION,
+    IDX_TO_GOAL,
+    IDX_TO_OBJECT,
+    discretize_affordances,
+    undiscretize_affordances,
+)
+
 # from ray.rllib.utils.exploration.stochastic_sampling import StochasticSampling
 
 
@@ -32,9 +40,8 @@ class CompatibilityWrapper(gym.Env):
         self.action_history = np.zeros((self.max_action_history, 3))
         self.cur_idx = 0
 
-        self.action_space = Tuple(
-            [Discrete(actions), Discrete(obj_types), Discrete(obj_instances)]
-        )
+        self.action_space = Discrete(20)
+
         self.observation_space = Dict(
             {
                 "action_history": Box(
@@ -71,7 +78,13 @@ class CompatibilityWrapper(gym.Env):
         return obs
 
     def step(self, action):
+        action_str = get_allowable_action_strings(self.env)
+        discretized_affordances, valid = discretize_affordances(
+            action_str, pad_len=self.max_actions
+        )
+        action = discretized_affordances[action]
         self.action_history[self.cur_idx] = action
+
         self.cur_idx += 1
         reward = 0
         terminated = False
@@ -88,10 +101,11 @@ class CompatibilityWrapper(gym.Env):
                 action = (action_type, self.env.obj_instances[obj_str])
                 obs, reward, terminated, truncated, info = self.env.step(action)
 
-
         obs = self.obs_wrapper()
+
         if self.cur_idx >= self.max_action_history:
             truncated = True
+
         return obs, reward, terminated or truncated, info
 
     def reset(self):
@@ -120,8 +134,9 @@ class OptModel(TorchModelV2, nn.Module):
         batch_step = input_dict["obs"]["step"].int()  # type: ignore
 
         batch_size = available_actions.shape[0]
+        chosen_actions = np.zeros((batch_size, self.action_space.n))
 
-        chosen_actions = []
+        # chosen_actions = []
         for batch_idx in range(batch_size):
             goal = batch_goal[batch_idx].item()
             valid = batch_valid[batch_idx].item()
@@ -130,30 +145,35 @@ class OptModel(TorchModelV2, nn.Module):
             if goal not in IDX_TO_GOAL or valid == 0:
                 self.lm.initialize_task(IDX_TO_GOAL[0])
                 action_idx = self.lm.get_action([("dummy", "object")])
-                chosen_actions.append((0, 0, 0))
+                # chosen_actions.append((0, 0, 0))
+                chosen_actions[batch_idx][action_idx] = 1
             else:
                 self.lm.initialize_task(IDX_TO_GOAL[goal])  # type: ignore
                 self.lm.action_history = [format_affordance_label(label) for label in undiscretize_affordances(action_history[batch_idx], batch_step[batch_idx].item())]  # type: ignore
                 candidate_actions = undiscretize_affordances(available_actions[batch_idx], valid)  # type: ignore
                 action_idx = self.lm.get_action(candidate_actions)
-                chosen_actions.append(available_actions[batch_idx][action_idx])
+                # chosen_actions.append(available_actions[batch_idx][action_idx])
+                # chosen_actions.append(action_idx)
+                chosen_actions[batch_idx][action_idx] = 1
+                chosen_actions[batch_idx][valid:] = -torch.inf
                 # print(self.lm.action_history)
                 # print(action_idx)
                 # print(candidate_actions)
                 # print(candidate_actions[action_idx])
 
-        processed_actions = []
-        for action in chosen_actions:
-            idx_0, idx_1, idx_2 = action
-            one_hot_0 = np.eye(self.action_space[0].n)[idx_0]  # type: ignore
-            one_hot_1 = np.eye(self.action_space[1].n)[idx_1]  # type: ignore
-            one_hot_2 = np.eye(self.action_space[2].n)[idx_2]  # type: ignore
-            one_hot = np.hstack([one_hot_0, one_hot_1, one_hot_2])
-            processed_actions.append(one_hot)
+        # processed_actions = []
+        # for action in chosen_actions:
+        #     idx_0, idx_1, idx_2 = action
+        #     one_hot_0 = np.eye(self.action_space[0].n)[idx_0]  # type: ignore
+        #     one_hot_1 = np.eye(self.action_space[1].n)[idx_1]  # type: ignore
+        #     one_hot_2 = np.eye(self.action_space[2].n)[idx_2]  # type: ignore
+        #     one_hot = np.hstack([one_hot_0, one_hot_1, one_hot_2])
+        #     processed_actions.append(one_hot)
+        #
+        # processed_actions = np.array(processed_actions)
+        # processed_actions[processed_actions == 0] = -np.inf
 
-        processed_actions = np.array(processed_actions)
-        processed_actions[processed_actions == 0] = -np.inf
-        return processed_actions, []
+        return chosen_actions, []
 
     def value_function(self):
         # https://github.com/openai/summarize-from-feedback/blob/master/summarize_from_feedback/reward_model.py
