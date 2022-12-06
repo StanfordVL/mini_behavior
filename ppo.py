@@ -134,14 +134,13 @@ class OptModel(TorchModelV2, nn.Module):
             else:
                 self.lm.initialize_task(IDX_TO_GOAL[goal])  # type: ignore
                 self.lm.action_history = [format_affordance_label(label) for label in undiscretize_affordances(action_history[batch_idx], batch_step[batch_idx].item())]  # type: ignore
-                print(self.lm.action_history)
                 candidate_actions = undiscretize_affordances(available_actions[batch_idx], valid)  # type: ignore
                 action_idx = self.lm.get_action(candidate_actions)
                 chosen_actions.append(available_actions[batch_idx][action_idx])
-                print(self.lm.action_history)
-                print(action_idx)
-                print(candidate_actions)
-                print(candidate_actions[action_idx])
+                # print(self.lm.action_history)
+                # print(action_idx)
+                # print(candidate_actions)
+                # print(candidate_actions[action_idx])
 
         processed_actions = []
         for action in chosen_actions:
