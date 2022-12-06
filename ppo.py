@@ -1,13 +1,12 @@
 from collections import OrderedDict
 
 import gym
-from gym.spaces import Box, Dict, Tuple, Discrete
+from gym.spaces import Box, Dict, Discrete, Tuple
 import numpy as np
 import ray
 from ray.rllib.algorithms import ppo
 from ray.rllib.models import ModelCatalog
 from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
-from ray.rllib.policy.view_requirement import ViewRequirement
 from ray.tune.logger import pretty_print
 from ray.tune.registry import register_env
 from torch import nn
@@ -17,7 +16,7 @@ from lm import SayCanOPT
 from mini_behavior.actions import get_allowable_action_strings
 from mini_behavior.actions import ACTION_FUNC_MAPPING
 from mini_behavior.envs import InstallingAPrinterEnv
-from utils import discretize_affordances, ACTION_FUNC_IDX, IDX_TO_OBJECT, IDX_TO_GOAL
+from utils import ACTION_FUNC_IDX, IDX_TO_GOAL, IDX_TO_OBJECT, discretize_affordances
 
 
 class CompatibilityWrapper(gym.Env):
@@ -37,18 +36,23 @@ class CompatibilityWrapper(gym.Env):
         )
         self.observation_space = Dict(
             {
-                "available_actions": Box(
-                    low=np.array([[0, 0, 0]] * self.max_actions),
-                    high=np.array([[actions, obj_types, obj_instances]] * self.max_actions),
-                    dtype=int,
-                ),
                 "action_history": Box(
                     low=np.array([[0, 0, 0]] * self.max_action_history),
-                    high=np.array([[actions, obj_types, obj_instances]] * self.max_action_history),
+                    high=np.array(
+                        [[actions, obj_types, obj_instances]] * self.max_action_history
+                    ),
                     dtype=int,
                 ),
-                "valid_plan": Box(low=0, high=20, dtype=int),
+                "available_actions": Box(
+                    low=np.array([[0, 0, 0]] * self.max_actions),
+                    high=np.array(
+                        [[actions, obj_types, obj_instances]] * self.max_actions
+                    ),
+                    dtype=int,
+                ),
                 "goal": Box(low=0, high=20, dtype=int),
+                "step": Box(low=0, high=self.max_action_history, dtype=int),
+                "valid_plan": Box(low=0, high=20, dtype=int),
             }
         )
 
@@ -58,10 +62,11 @@ class CompatibilityWrapper(gym.Env):
             action_str, pad_len=self.max_actions
         )
         obs = OrderedDict()
-        obs["available_actions"] = discretized_affordances
         obs["action_history"] = self.action_history.copy()
+        obs["available_actions"] = discretized_affordances
+        obs["goal"] = np.array([0], dtype=int)
+        obs["step"] = self.cur_idx
         obs["valid_plan"] = np.array([valid], dtype=int)
-        obs["goal"] = np.array([1], dtype=int)
         return obs
 
     def step(self, action):
@@ -78,7 +83,7 @@ class CompatibilityWrapper(gym.Env):
         obj_str = f"{obj_type}_{obj_instance}"
 
         if obj_str in self.env.obj_instances:
-            if action_type.can(self.env.obj_instances[obj_str]):
+            if action_type(self.env).can(self.env.obj_instances[obj_str]):
                 action = (action_type, self.env.obj_instances[obj_str])
                 obs, reward, terminated, truncated, info = self.env.step(action)
 
@@ -109,6 +114,7 @@ class OptModel(TorchModelV2, nn.Module):
         available_actions = input_dict["obs"]["available_actions"]  # type: ignore
         batch_goal = input_dict["obs"]["goal"]  # type: ignore
         batch_valid = input_dict["obs"]["valid_plan"].int()  # type: ignore
+        action_history = input_dict['obs']['action_history'].input() #type: ignore
 
         batch_size = available_actions.shape[0]
 
