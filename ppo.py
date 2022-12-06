@@ -16,7 +16,7 @@ from lm import SayCanOPT
 from mini_behavior.actions import get_allowable_action_strings
 from mini_behavior.actions import ACTION_FUNC_MAPPING
 from mini_behavior.envs import InstallingAPrinterEnv
-from utils import ACTION_FUNC_IDX, IDX_TO_GOAL, IDX_TO_OBJECT, discretize_affordances
+from utils import ACTION_FUNC_IDX, IDX_TO_GOAL, IDX_TO_OBJECT, discretize_affordances, undiscretize_affordances
 
 
 class CompatibilityWrapper(gym.Env):
@@ -111,10 +111,11 @@ class OptModel(TorchModelV2, nn.Module):
 
     def forward(self, input_dict, state, seq_lens):
 
-        available_actions = input_dict["obs"]["available_actions"]  # type: ignore
+        available_actions = input_dict["obs"]["available_actions"].int()  # type: ignore
         batch_goal = input_dict["obs"]["goal"]  # type: ignore
         batch_valid = input_dict["obs"]["valid_plan"].int()  # type: ignore
-        action_history = input_dict['obs']['action_history'].input() #type: ignore
+        action_history = input_dict["obs"]["action_history"].int()  # type: ignore
+        step = input_dict["obs"]["step"].int()  # type: ignore
 
         batch_size = available_actions.shape[0]
 
@@ -129,24 +130,11 @@ class OptModel(TorchModelV2, nn.Module):
                 action_idx = self.lm.get_action([("dummy", "object")])
                 chosen_actions.append((0, 0, 0))
             else:
-                breakpoint()
                 self.lm.initialize_task(IDX_TO_GOAL[goal])  # type: ignore
-
-                actions = []
-                for action_candidate in available_actions:
-                    (
-                        batch_action_type,
-                        batch_obj_type,
-                        batch_obj_instance,
-                    ) = action_candidate
-                    action_type = batch_action_type[batch_idx]
-                    obj_type = batch_obj_type[batch_idx]
-                    obj_instance = batch_obj_instance[batch_idx]
-                    action = (action_type, obj_type, obj_instance)
-                    actions.append(action)
-
-                text_actions = undiscretize_affordances(actions, valid.item())  # type: ignore
-                action_idx = self.lm.get_action(text_actions)
+                self.lm.action_history = undiscretize_affordances(action_history[batch_idx], step)  # type: ignore
+                candidate_actions = undiscretize_affordances(available_actions[batch_idx], valid)  # type: ignore
+                breakpoint()
+                action_idx = self.lm.get_action(candidate_actions)
                 chosen_actions.append(actions[action_idx])
 
         processed_actions = []
