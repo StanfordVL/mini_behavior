@@ -27,13 +27,26 @@ class CompatibilityWrapper(gym.Env):
         obj_types = max(OBJECT_TO_IDX.values())
         obj_instances = 10
         self.max_actions = 20
+        self.max_action_history = 20
+
+        self.action_history = np.zeros((self.max_action_history, 3))
+        self.cur_idx = 0
 
         self.action_space = Tuple(
             [Discrete(actions), Discrete(obj_types), Discrete(obj_instances)]
         )
         self.observation_space = Dict(
             {
-                "available_actions": Tuple([self.action_space] * self.max_actions),
+                "available_actions": Box(
+                    low=np.array([[0, 0, 0]] * self.max_actions),
+                    high=np.array([[actions, obj_types, obj_instances]] * self.max_actions),
+                    dtype=int,
+                ),
+                "action_history": Box(
+                    low=np.array([[0, 0, 0]] * self.max_action_history),
+                    high=np.array([[actions, obj_types, obj_instances]] * self.max_action_history),
+                    dtype=int,
+                ),
                 "valid_plan": Box(low=0, high=20, dtype=int),
                 "goal": Box(low=0, high=20, dtype=int),
             }
@@ -51,6 +64,8 @@ class CompatibilityWrapper(gym.Env):
         return obs
 
     def step(self, action):
+        self.action_history[self.cur_idx] = action
+        self.cur_idx += 1
         reward = 0
         terminated = False
         truncated = True
@@ -58,7 +73,7 @@ class CompatibilityWrapper(gym.Env):
 
         action_type = ACTION_FUNC_IDX[action[0]]  # type: ignore
         obj_type = IDX_TO_OBJECT[action[1]]  # type: ignore
-        obj_instance = action[2] # type: ignore
+        obj_instance = action[2]  # type: ignore
         obj_str = f"{obj_type}_{obj_instance}"
 
         if obj_str in self.env.obj_instances:
@@ -67,11 +82,17 @@ class CompatibilityWrapper(gym.Env):
                 obs, reward, terminated, truncated, info = self.env.step(action)
 
         obs = self.obs_wrapper()
+        if self.cur_idx > self.max_action_history:
+            truncated = True
+        obs["action_history"] = self.action_history
         return obs, reward, terminated or truncated, info
 
     def reset(self):
         obs, _ = self.env.reset()
         obs = self.obs_wrapper()
+        obs["action_history"] = self.action_history
+        self.action_history = np.zeros((self.max_action_history, 3))
+        self.cur_idx = 0
         return obs
 
 
@@ -84,36 +105,36 @@ class OptModel(TorchModelV2, nn.Module):
 
         self.lm = SayCanOPT(use_soft_prompt=True)
 
-        self.view_requirements["prev_actions"] = ViewRequirement(
-            data_col="actions",
-            shift="-{}:-1".format(10),
-            space=self.action_space,
-        )
-
     def forward(self, input_dict, state, seq_lens):
 
         available_actions = input_dict["obs"]["available_actions"]  # type: ignore
         batch_goal = input_dict["obs"]["goal"]  # type: ignore
         batch_valid = input_dict["obs"]["valid_plan"].int()  # type: ignore
 
-        batch_size = available_actions[0][0].shape[0]
+        batch_size = available_actions.shape[0]
 
         chosen_actions = []
         for batch_idx in range(batch_size):
             goal = int(batch_goal[batch_idx].item())
             valid = int(batch_valid[batch_idx].item())
 
+            input_dict['obs']['action_history'][batch_idx]
             # Dummy for initializing model
             if goal not in IDX_TO_GOAL or valid == 0:
                 self.lm.initialize_task(IDX_TO_GOAL[0])
                 action_idx = self.lm.get_action([("dummy", "object")])
                 chosen_actions.append((0, 0, 0))
             else:
-                self.lm.initialize_task(IDX_TO_GOAL[goal]) #type: ignore
+                breakpoint()
+                self.lm.initialize_task(IDX_TO_GOAL[goal])  # type: ignore
 
                 actions = []
                 for action_candidate in available_actions:
-                    batch_action_type, batch_obj_type, batch_obj_instance = action_candidate
+                    (
+                        batch_action_type,
+                        batch_obj_type,
+                        batch_obj_instance,
+                    ) = action_candidate
                     action_type = batch_action_type[batch_idx]
                     obj_type = batch_obj_type[batch_idx]
                     obj_instance = batch_obj_instance[batch_idx]
@@ -127,9 +148,9 @@ class OptModel(TorchModelV2, nn.Module):
         processed_actions = []
         for action in chosen_actions:
             idx_0, idx_1, idx_2 = action
-            one_hot_0 = np.eye(self.action_space[0].n)[idx_0] #type: ignore
-            one_hot_1 = np.eye(self.action_space[1].n)[idx_1] #type: ignore
-            one_hot_2 = np.eye(self.action_space[2].n)[idx_2] #type: ignore
+            one_hot_0 = np.eye(self.action_space[0].n)[idx_0]  # type: ignore
+            one_hot_1 = np.eye(self.action_space[1].n)[idx_1]  # type: ignore
+            one_hot_2 = np.eye(self.action_space[2].n)[idx_2]  # type: ignore
             one_hot = np.hstack([one_hot_0, one_hot_1, one_hot_2])
             processed_actions.append(one_hot)
 
