@@ -16,7 +16,7 @@ from lm import SayCanOPT
 from mini_behavior.actions import get_allowable_action_strings
 from mini_behavior.actions import ACTION_FUNC_MAPPING
 from mini_behavior.envs import InstallingAPrinterEnv
-from utils import ACTION_FUNC_IDX, IDX_TO_GOAL, IDX_TO_OBJECT, discretize_affordances, undiscretize_affordances
+from utils import IDX_TO_GOAL, IDX_TO_OBJECT, discretize_affordances, undiscretize_affordances, ACTION_IDX_TO_ACTION
 
 
 class CompatibilityWrapper(gym.Env):
@@ -77,7 +77,7 @@ class CompatibilityWrapper(gym.Env):
         truncated = True
         info = {}
 
-        action_type = ACTION_FUNC_IDX[action[0]]  # type: ignore
+        action_type = ACTION_IDX_TO_ACTION[action[0]]  # type: ignore
         obj_type = IDX_TO_OBJECT[action[1]]  # type: ignore
         obj_instance = action[2]  # type: ignore
         obj_str = f"{obj_type}_{obj_instance}"
@@ -86,6 +86,7 @@ class CompatibilityWrapper(gym.Env):
             if action_type(self.env).can(self.env.obj_instances[obj_str]):
                 action = (action_type, self.env.obj_instances[obj_str])
                 obs, reward, terminated, truncated, info = self.env.step(action)
+
 
         obs = self.obs_wrapper()
         if self.cur_idx > self.max_action_history:
@@ -112,17 +113,17 @@ class OptModel(TorchModelV2, nn.Module):
     def forward(self, input_dict, state, seq_lens):
 
         available_actions = input_dict["obs"]["available_actions"].int()  # type: ignore
-        batch_goal = input_dict["obs"]["goal"]  # type: ignore
+        batch_goal = input_dict["obs"]["goal"].int()  # type: ignore
         batch_valid = input_dict["obs"]["valid_plan"].int()  # type: ignore
         action_history = input_dict["obs"]["action_history"].int()  # type: ignore
-        step = input_dict["obs"]["step"].int()  # type: ignore
+        batch_step = input_dict["obs"]["step"].int()  # type: ignore
 
         batch_size = available_actions.shape[0]
 
         chosen_actions = []
         for batch_idx in range(batch_size):
-            goal = int(batch_goal[batch_idx].item())
-            valid = int(batch_valid[batch_idx].item())
+            goal = batch_goal[batch_idx].item()
+            valid = batch_valid[batch_idx].item()
 
             # Dummy for initializing model
             if goal not in IDX_TO_GOAL or valid == 0:
@@ -131,11 +132,10 @@ class OptModel(TorchModelV2, nn.Module):
                 chosen_actions.append((0, 0, 0))
             else:
                 self.lm.initialize_task(IDX_TO_GOAL[goal])  # type: ignore
-                self.lm.action_history = undiscretize_affordances(action_history[batch_idx], step)  # type: ignore
+                self.lm.action_history = undiscretize_affordances(action_history[batch_idx], batch_step[batch_idx].item())  # type: ignore
                 candidate_actions = undiscretize_affordances(available_actions[batch_idx], valid)  # type: ignore
-                breakpoint()
                 action_idx = self.lm.get_action(candidate_actions)
-                chosen_actions.append(actions[action_idx])
+                chosen_actions.append(available_actions[batch_idx][action_idx])
 
         processed_actions = []
         for action in chosen_actions:
