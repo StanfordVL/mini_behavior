@@ -12,11 +12,12 @@ from ray.tune.registry import register_env
 from torch import nn
 
 from bddl.objs import OBJECT_TO_IDX
-from lm import SayCanOPT
+from lm import SayCanOPT, format_affordance_label
 from mini_behavior.actions import get_allowable_action_strings
 from mini_behavior.actions import ACTION_FUNC_MAPPING
 from mini_behavior.envs import InstallingAPrinterEnv
 from utils import IDX_TO_GOAL, IDX_TO_OBJECT, discretize_affordances, undiscretize_affordances, ACTION_IDX_TO_ACTION
+# from ray.rllib.utils.exploration.stochastic_sampling import StochasticSampling
 
 
 class CompatibilityWrapper(gym.Env):
@@ -89,7 +90,7 @@ class CompatibilityWrapper(gym.Env):
 
 
         obs = self.obs_wrapper()
-        if self.cur_idx > self.max_action_history:
+        if self.cur_idx >= self.max_action_history:
             truncated = True
         return obs, reward, terminated or truncated, info
 
@@ -132,10 +133,15 @@ class OptModel(TorchModelV2, nn.Module):
                 chosen_actions.append((0, 0, 0))
             else:
                 self.lm.initialize_task(IDX_TO_GOAL[goal])  # type: ignore
-                self.lm.action_history = undiscretize_affordances(action_history[batch_idx], batch_step[batch_idx].item())  # type: ignore
+                self.lm.action_history = [format_affordance_label(label) for label in undiscretize_affordances(action_history[batch_idx], batch_step[batch_idx].item())]  # type: ignore
+                print(self.lm.action_history)
                 candidate_actions = undiscretize_affordances(available_actions[batch_idx], valid)  # type: ignore
                 action_idx = self.lm.get_action(candidate_actions)
                 chosen_actions.append(available_actions[batch_idx][action_idx])
+                print(self.lm.action_history)
+                print(action_idx)
+                print(candidate_actions)
+                print(candidate_actions[action_idx])
 
         processed_actions = []
         for action in chosen_actions:
@@ -147,6 +153,7 @@ class OptModel(TorchModelV2, nn.Module):
             processed_actions.append(one_hot)
 
         processed_actions = np.array(processed_actions)
+        processed_actions[processed_actions == 0] = -np.inf
         return processed_actions, []
 
     def value_function(self):

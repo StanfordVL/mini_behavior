@@ -330,6 +330,7 @@ class SayCanOPT(nn.Module):
         for label in affordance_labels:
             label_str = format_affordance_label(label)
             prompt = self.get_prompt_from_history() + label_str
+            print(prompt)
             affordance_likelihoods.append(self.get_text_likelihood(prompt))
         return max(range(len(affordance_likelihoods)), key=lambda i: affordance_likelihoods[i])
 
