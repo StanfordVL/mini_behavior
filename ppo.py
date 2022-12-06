@@ -59,6 +59,7 @@ class CompatibilityWrapper(gym.Env):
         )
         obs = OrderedDict()
         obs["available_actions"] = discretized_affordances
+        obs["action_history"] = self.action_history.copy()
         obs["valid_plan"] = np.array([valid], dtype=int)
         obs["goal"] = np.array([1], dtype=int)
         return obs
@@ -84,13 +85,11 @@ class CompatibilityWrapper(gym.Env):
         obs = self.obs_wrapper()
         if self.cur_idx > self.max_action_history:
             truncated = True
-        obs["action_history"] = self.action_history
         return obs, reward, terminated or truncated, info
 
     def reset(self):
         obs, _ = self.env.reset()
         obs = self.obs_wrapper()
-        obs["action_history"] = self.action_history
         self.action_history = np.zeros((self.max_action_history, 3))
         self.cur_idx = 0
         return obs
@@ -118,7 +117,6 @@ class OptModel(TorchModelV2, nn.Module):
             goal = int(batch_goal[batch_idx].item())
             valid = int(batch_valid[batch_idx].item())
 
-            input_dict['obs']['action_history'][batch_idx]
             # Dummy for initializing model
             if goal not in IDX_TO_GOAL or valid == 0:
                 self.lm.initialize_task(IDX_TO_GOAL[0])
