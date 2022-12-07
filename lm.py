@@ -5,6 +5,12 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import math
 
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_fixed
+)  # for exponential backoff
+
 import torch
 import torch.nn as nn
 
@@ -263,6 +269,77 @@ class SayCan:
         max_likelihood = -np.inf
         best_affordance = None
         best_label_str = None
+        idx = 0
+        for affordance, label in zip(affordances, affordance_labels):
+            label_obj = ' '.join(label[1].split("_")[:-1])
+            label_action = label[0].replace('goto', 'go to').replace('pickup', 'pick up').replace('putdown', 'put down').replace('drop_in', 'drop in')
+            label_str = ' '.join([label_action, 'the', label_obj])
+            prompt = self.get_prompt_from_history() + label_str
+            affordance_likelihoods[label] = self.get_text_likelihood(prompt)
+            if affordance_likelihoods[label] > max_likelihood:
+                max_likelihood = affordance_likelihoods[label]
+                best_affordance = affordance
+                best_label_str = label_str
+            print(f"Completed idx {idx}")
+            idx += 1
+        self.action_history.append(best_label_str)
+        return best_affordance
+
+    def get_prompt_from_history(self):
+        prompt = format_task_context(self.task, self.action_history)
+        return prompt
+
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(6))
+    def get_text_likelihood(self, prompt):
+        print('trying')
+        import time
+        time.sleep(10)
+        response = openai.Completion.create(
+            model="text-davinci-002",
+            prompt=prompt,
+            temperature=0,
+            max_tokens=1,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            logprobs=0,
+            stop=["\n"],
+            echo=True,
+            timeout=3,
+        )
+        print('returned out timed out')
+        return sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
+
+class SayCanOPTCompat:
+    def __init__(self, use_soft_prompt=False):
+        print("Loading model")
+        self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-6.7b", torch_dtype=torch.float16).cuda()
+        self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-6.7b", use_fast=False)
+        print("Finished loading model")
+        # self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-350m", torch_dtype=torch.float16).cuda()
+        # self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m", use_fast=False)
+
+        self.use_soft_prompt = use_soft_prompt
+        if use_soft_prompt:
+            n_tokens = 20
+            self.n_tokens = n_tokens
+            initialize_from_vocab = True
+
+            s_wte = SoftEmbedding(self.model.get_input_embeddings(), 
+                          n_tokens=n_tokens, 
+                          initialize_from_vocab=initialize_from_vocab)
+            self.model.set_input_embeddings(s_wte)
+
+
+    def set_task(self, task):
+        self.task = task
+        self.action_history = []
+
+    def get_action(self, affordances, affordance_labels):
+        affordance_likelihoods = {}
+        max_likelihood = -np.inf
+        best_affordance = None
+        best_label_str = None
         for affordance, label in zip(affordances, affordance_labels):
             label_obj = ' '.join(label[1].split("_")[:-1])
             label_action = label[0].replace('goto', 'go to').replace('pickup', 'pick up').replace('putdown', 'put down').replace('drop_in', 'drop in')
@@ -277,23 +354,25 @@ class SayCan:
         return best_affordance
 
     def get_prompt_from_history(self):
-        prompt = format_task_context(self.task)
+        prompt = SAYCAN_PROMPT.format(self.task)
+        i = 1
+        if self.action_history:
+            for action in self.action_history:
+                prompt += f"\n{i}. {action}"
+                i += 1
+        prompt += f"\n{i}. "
         return prompt
 
     def get_text_likelihood(self, prompt):
-        response = openai.Completion.create(
-            model="text-davinci-002",
-            prompt=prompt,
-            temperature=0,
-            max_tokens=1,
-            top_p=1,
-            frequency_penalty=0,
-            presence_penalty=0,
-            logprobs=0,
-            stop=["\n"],
-            echo=True,
-        )
-        return sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
+        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
+
+        if self.use_soft_prompt:
+            input_ids = torch.cat([torch.full((1, self.n_tokens), 50256).cuda(), input_ids], 1)
+
+        outputs = self.model(input_ids, labels=input_ids)
+        # sentence_prob = outputs['logits'].max(dim=2).values.sum()
+
+        return -math.exp(outputs['loss'].item())
 
 class SayCanOPT(nn.Module):
     def __init__(self, use_soft_prompt=True, output_reward=True):

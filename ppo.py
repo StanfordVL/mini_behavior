@@ -40,7 +40,7 @@ class CompatibilityWrapper(gym.Env):
         self.action_history = np.zeros((self.max_action_history, 3))
         self.cur_idx = 0
 
-        self.action_space = Discrete(20)
+        self.action_space = Discrete(self.max_actions)
 
         self.observation_space = Dict(
             {
@@ -165,6 +165,7 @@ class OptModel(TorchModelV2, nn.Module):
                 # chosen_actions.append(action_idx)
                 chosen_actions[batch_idx][action_idx] = 1
                 chosen_actions[batch_idx][valid:] = -torch.inf
+                breakpoint()
                 # print(self.lm.action_history)
                 # print(action_idx)
                 # print(candidate_actions)
