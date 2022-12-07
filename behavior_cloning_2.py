@@ -4,6 +4,7 @@ import torch
 import math
 import json
 import random
+import argparse
 
 from lm import SoftEmbedding
 import torch
@@ -17,16 +18,16 @@ Plan:"""
 
 
 class SayCanOPT:
-    def __init__(self, task, use_soft_prompt=True):
+    def __init__(self, task, model_name, use_soft_prompt=True):
         self.task = task
         self.action_history = []
         # self.model = AutoModelForCausalLM.from_pretrained("facebook/opt-6.7b", torch_dtype=torch.float16).to(DEVICE)
         # self.tokenizer = AutoTokenizer.from_pretrained("facebook/opt-6.7b", use_fast=False)
         self.model = AutoModelForCausalLM.from_pretrained(
-            "facebook/opt-350m"#, torch_dtype=torch.float16
+            model_name#, torch_dtype=torch.float16
         ).to(DEVICE)
         self.tokenizer = AutoTokenizer.from_pretrained(
-            "facebook/opt-350m", use_fast=False
+            model_name, use_fast=False
         )
 
         self.use_soft_prompt = use_soft_prompt
@@ -144,12 +145,17 @@ def train_step(optimizer, model, plan_length, affordances, affordance_labels, tr
 # }
 dataset = json.loads(open("behavior_cloning_dataset_2.json").read())
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_name", type=str, default="facebook/opt-125m")
+    args = parser.parse_args()
+    model_name = args.model_name
+
     dataset_train_task = random.choice(dataset[:-1])
     dataset_test_task = dataset[-1]
 
     original_task = dataset_train_task['mission']
     test_task = dataset_test_task['mission']
-    lm = SayCanOPT(task=original_task)
+    lm = SayCanOPT(model_name=model_name, task=original_task)
     affordance_labels = dataset_train_task['affordance_labels']
     affordances = list(range(len(affordance_labels)))
     true_plan = list(range(len(affordance_labels)))
