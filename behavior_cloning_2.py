@@ -241,10 +241,10 @@ if __name__ == "__main__":
                 lm.task = original_task
         
         # save model
-        pickle.dump(lm.model, open("{}.pkl".format(model_name), "wb"))
+        pickle.dump(lm.model, open("{}.pkl".format(save_path), "wb"))
     
     # load model
-    lm.model = pickle.load(open("{}.pkl".format(model_name), "rb"))
+    lm.model = pickle.load(open("{}.pkl".format(save_path), "rb"))
     
 
     # measure the success rate on n_rollouts of the test task
