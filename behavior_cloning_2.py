@@ -6,6 +6,7 @@ import json
 import random
 import argparse
 import gymnasium as gym
+import mini_behavior.envs
 
 from lm import SoftEmbedding
 import torch
@@ -151,22 +152,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_name = args.model_name
 
-    dataset_train_task = random.choice(dataset[1:])
     dataset_test_task = dataset[0]
 
-    original_task = dataset_train_task['mission']
     test_task = dataset_test_task['mission']
-    lm = SayCanOPT(model_name=model_name, task=original_task)
-    affordance_labels = dataset_train_task['affordance_labels']
-    affordances = list(range(len(affordance_labels)))
-    true_plan = list(range(len(affordance_labels)))
+    lm = SayCanOPT(model_name=model_name, task='')
 
     test_affordance_labels = dataset_test_task['affordance_labels']
     test_affordances = list(range(len(test_affordance_labels)))
     test_true_plan = list(range(len(test_affordance_labels)))
     test_plan_length = len(test_affordances)
 
-    true_logits = torch.nn.functional.one_hot(torch.tensor(true_plan), len(affordances)).float()
     test_true_logits = torch.nn.functional.one_hot(torch.tensor(test_true_plan), len(test_affordances)).float()
 
     parameters = lm.model.get_input_embeddings().parameters()
@@ -174,9 +169,19 @@ if __name__ == "__main__":
     optimizer.zero_grad()
 
     writer = SummaryWriter()
-    plan_length = len(affordances)
     for i in range(1000):
         print(i)
+
+        dataset_train_task = random.choice(dataset[1:])
+        original_task = dataset_train_task['mission']
+        lm.task = original_task
+
+        affordance_labels = dataset_train_task['affordance_labels']
+        affordances = list(range(len(affordance_labels)))
+        true_plan = list(range(len(affordance_labels)))
+        plan_length = len(affordances)
+
+        true_logits = torch.nn.functional.one_hot(torch.tensor(true_plan), len(affordances)).float()
 
         loss, logits = train_step(optimizer, lm, plan_length, affordances, affordance_labels, true_logits)
         predicted_plan = torch.argmax(logits, dim=1)
