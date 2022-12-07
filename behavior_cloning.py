@@ -81,7 +81,7 @@ class SayCanOPT:
 def train_step(optimizer, model, plan_length, contexts, affordance_labels, num_possible_affordances, test=False):
     logits = torch.zeros(plan_length, num_possible_affordances)
     for idx in range(plan_length):
-        breakpoint()
+        # breakpoint()
         step_logits = model.train_step(contexts[idx], affordance_labels[idx], num_possible_affordances)
         logits[idx] = step_logits
     loss = torch.nn.functional.cross_entropy(logits, true_logits)
@@ -113,6 +113,7 @@ if __name__ == "__main__":
     num_possible_affordances = max([max([len(plan_step["negative_labels"]) for plan_step in dataset[task]]) for task in list(dataset.keys())]) + 1
 
     for i in range(1000):
+        print(i)
 
         task = np.random.choice(list(dataset_train.keys()))
         possible_affordances_by_step = [[plan_step["positive_label"]] + plan_step["negative_labels"] for plan_step in dataset[task]]
