@@ -163,6 +163,7 @@ if __name__ == "__main__":
     max_length = args.max_length
 
     dataset_test_task = dataset[0]
+    dataset_train = dataset[1:]
 
     test_task = dataset_test_task['mission']
     lm = SayCanOPT(model_name=model_name, task='')
@@ -182,25 +183,34 @@ if __name__ == "__main__":
     for i in range(1000):
         print(i)
 
-        dataset_train_task = random.choice(dataset[1:])
-        original_task = dataset_train_task['mission']
-        lm.task = original_task
+        random.shuffle(dataset_train)
+        avg_acc = 0
+        avg_solved = 0
+        for dataset_train_task in dataset_train:
+            original_task = dataset_train_task['mission']
+            lm.task = original_task
 
-        affordance_labels = dataset_train_task['affordance_labels'][:max_length]
-        affordances = list(range(len(affordance_labels)))
-        true_plan = list(range(len(affordance_labels)))
-        plan_length = len(affordances)
+            affordance_labels = dataset_train_task['affordance_labels'][:max_length]
+            affordances = list(range(len(affordance_labels)))
+            true_plan = list(range(len(affordance_labels)))
+            plan_length = len(affordances)
 
-        true_logits = torch.nn.functional.one_hot(torch.tensor(true_plan), len(affordances)).float()
+            true_logits = torch.nn.functional.one_hot(torch.tensor(true_plan), len(affordances)).float()
 
-        loss, logits = train_step(optimizer, lm, plan_length, affordances, affordance_labels, true_logits)
-        predicted_plan = torch.argmax(logits, dim=1)
-        acc = (predicted_plan == torch.tensor(true_plan)).float().mean()
-        print(f"Plan accuracy {acc}")
-        writer.add_scalar('plan-accuracy/train', acc, i)
-        print(f"Loss: {loss}")
-        writer.add_scalar('loss/train', loss, i)
-        print(f"Predicted plan: {predicted_plan}")
+            loss, logits = train_step(optimizer, lm, plan_length, affordances, affordance_labels, true_logits)
+            predicted_plan = torch.argmax(logits, dim=1)
+            acc = (predicted_plan == torch.tensor(true_plan)).float().mean()
+            avg_acc += acc
+            avg_solved += (acc == 1).float()
+            print(f"Plan accuracy {acc}")
+            writer.add_scalar('plan-accuracy/train', acc, i)
+            print(f"Loss: {loss}")
+            writer.add_scalar('loss/train', loss, i)
+            print(f"Predicted plan: {predicted_plan}")
+        avg_acc /= len(dataset_train)
+        avg_solved /= len(dataset_train)
+        print(f"Average plan accuracy {avg_acc}")
+        print(f"Average proportion solved {avg_solved}")
 
         if i % 10 == 0:
             lm.task = test_task
