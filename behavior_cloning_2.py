@@ -160,7 +160,7 @@ if __name__ == "__main__":
     test_plan_length = len(test_affordances)
 
     true_logits = torch.nn.functional.one_hot(torch.tensor(true_plan), len(affordances)).float()
-    test_true_logits = torch.nn.functional.one_hot(torch.tensor(test_true_plan), len(affordances)).float()
+    test_true_logits = torch.nn.functional.one_hot(torch.tensor(test_true_plan), len(test_affordances)).float()
 
     parameters = lm.model.get_input_embeddings().parameters()
     optimizer = torch.optim.Adam(parameters, lr=1e-4)
