@@ -5,6 +5,7 @@ import math
 import json
 import random
 import argparse
+import gymnasium as gym
 
 from lm import SoftEmbedding
 import torch
@@ -150,8 +151,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_name = args.model_name
 
-    dataset_train_task = random.choice(dataset[:-1])
-    dataset_test_task = dataset[-1]
+    dataset_train_task = random.choice(dataset[1:])
+    dataset_test_task = dataset[0]
 
     original_task = dataset_train_task['mission']
     test_task = dataset_test_task['mission']
@@ -196,3 +197,26 @@ if __name__ == "__main__":
             print(f"Loss: {loss}")
             writer.add_scalar('loss/test', loss, i)
             lm.task = original_task
+    
+    # measure the success rate on n_rollouts of the test task
+    n_rollouts = 10
+    lm.task = test_task
+    success_rate = 0
+    rng = np.random.default_rng()
+    seed = rng.integers(int(1e6))
+    env = gym.make(dataset_test_task['env_id'])
+    for i in range(n_rollouts):
+        env.reset(seed=seed, options={})
+        while True:
+            affordances, affordance_labels = env.affordances()
+            action = lm.get_action(affordances, affordance_labels)
+
+            obs, reward, terminated, truncated, info = env.step(action)
+
+            print('step=%s, reward=%.2f' % (env.step_count, reward))
+
+            if terminated or truncated:
+                break
+        # success_rate += lm.rollout()
+    success_rate /= n_rollouts
+    print(f"Success rate: {success_rate}")

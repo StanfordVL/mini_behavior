@@ -26,7 +26,7 @@ for task_name in task_to_plan.keys():
     mission = env.mission
     if len(plan) > MAX_PLAN_LENGTH:
         continue
-    dataset.append({'affordance_labels': [], 'mission': mission})
+    dataset.append({'affordance_labels': [], 'mission': mission, 'env_id': env_id})
     # dataset[env_id]['mission'] = env.mission
     for i, affordance_chosen in enumerate(plan):
         possible_affordances, possible_affordance_labels = env.affordances()
