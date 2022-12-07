@@ -246,9 +246,41 @@ openai.api_key = "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"
 # 6. done.
 # Human: {}
 # Robot:"""
+
+
 SAYCAN_PROMPT = """You are a robotic task planner.
 Task: {}
 Plan:"""
+
+GPT3_PROMPT = """You are a robotic task planner.
+Task: install a printer
+Plan:
+1. go to the printer_0
+2. pick up the printer_0
+3. go to the table_0
+4. drop the printer_0
+5. toggle the printer_0
+
+You are a robotic task planner.
+Task: open packages
+Plan:
+1. go to the package_0
+2. open the package_0
+3. go to the package_1
+4. open the package_1
+
+You are a robotic task planner.
+Task: move boxes to storage
+Plan:
+1. go to the carton_0
+2. pick up the carton_0
+3. go to the carton_1
+4. pick up the carton_1
+5. go to the shelf_0
+6. drop in the carton_0
+7. drop in the carton_1
+
+""" + SAYCAN_PROMPT
 
 class SayCan:
     def __init__(self, task):
@@ -264,9 +296,7 @@ class SayCan:
         best_affordance = None
         best_label_str = None
         for affordance, label in zip(affordances, affordance_labels):
-            label_obj = ' '.join(label[1].split("_")[:-1])
-            label_action = label[0].replace('goto', 'go to').replace('pickup', 'pick up').replace('putdown', 'put down').replace('drop_in', 'drop in')
-            label_str = ' '.join([label_action, 'the', label_obj])
+            label_str = format_affordance_label(label)
             prompt = self.get_prompt_from_history() + label_str
             affordance_likelihoods[label] = self.get_text_likelihood(prompt)
             if affordance_likelihoods[label] > max_likelihood:
@@ -277,7 +307,7 @@ class SayCan:
         return best_affordance
 
     def get_prompt_from_history(self):
-        prompt = format_task_context(self.task)
+        prompt = format_task_context(self.task, self.action_history, GPT3_PROMPT)
         return prompt
 
     def get_text_likelihood(self, prompt):
@@ -367,8 +397,8 @@ class SayCanOPT(nn.Module):
     def get_reward(self):
         return self.reward
 
-def format_task_context(task, action_history):
-    prompt = SAYCAN_PROMPT.format(task)
+def format_task_context(task, action_history, prompt_template=SAYCAN_PROMPT):
+    prompt = prompt_template.format(task)
     i = 1
     if action_history:
         for action in action_history:
