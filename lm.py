@@ -7,6 +7,7 @@ import math
 
 import torch
 import torch.nn as nn
+import time
 
 # from https://raw.githubusercontent.com/kipgparker/soft-prompt-tuning/main/soft_embedding.py
 class SoftEmbedding(nn.Module):
@@ -316,6 +317,7 @@ class SayCan:
 
     def get_text_likelihood(self, prompt):
         print('waiting for openai')
+        time.sleep(0.5)
         response = openai.Completion.create(
             model="text-davinci-002",
             prompt=prompt,

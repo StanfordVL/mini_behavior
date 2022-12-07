@@ -7,6 +7,7 @@ import random
 import argparse
 import gymnasium as gym
 import mini_behavior.envs
+import pickle
 
 from lm import SoftEmbedding
 import torch
@@ -162,9 +163,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name", type=str, default="facebook/opt-125m")
     parser.add_argument("--max_length", type=int, default=10)
+    parser.add_argument("--train", action="store_true")
+
     args = parser.parse_args()
     model_name = args.model_name
     max_length = args.max_length
+    do_train = args.train
+
+    if model_name == "facebook/opt-125m":
+        save_path = "opt-125m"
+    elif model_name == "facebook/opt-350m":
+        save_path = "opt-350m"
+    elif model_name == "facebook/opt-1.6b":
+        save_path = "opt-1_6b"
 
     dataset_test_task = dataset[0]
     dataset_train = dataset[1:]
@@ -184,49 +195,58 @@ if __name__ == "__main__":
     optimizer.zero_grad()
 
     writer = SummaryWriter()
-    for i in range(100):
-        print(i)
 
-        random.shuffle(dataset_train)
-        avg_acc = 0
-        avg_solved = 0
-        for dataset_train_task in dataset_train:
-            original_task = dataset_train_task['mission']
-            lm.task = original_task
+    if do_train:
+        for i in range(100):
+            print(i)
 
-            affordance_labels = dataset_train_task['affordance_labels'][:max_length]
-            affordances = list(range(len(affordance_labels)))
-            true_plan = list(range(len(affordance_labels)))
-            plan_length = len(affordances)
+            random.shuffle(dataset_train)
+            avg_acc = 0
+            avg_solved = 0
+            for dataset_train_task in dataset_train:
+                original_task = dataset_train_task['mission']
+                lm.task = original_task
 
-            true_logits = torch.nn.functional.one_hot(torch.tensor(true_plan), len(affordances)).float()
+                affordance_labels = dataset_train_task['affordance_labels'][:max_length]
+                affordances = list(range(len(affordance_labels)))
+                true_plan = list(range(len(affordance_labels)))
+                plan_length = len(affordances)
 
-            loss, logits = train_step(optimizer, lm, plan_length, affordances, affordance_labels, true_logits)
-            predicted_plan = torch.argmax(logits, dim=1)
-            acc = (predicted_plan == torch.tensor(true_plan)).float().mean()
-            avg_acc += acc
-            avg_solved += (acc == 1).float()
-            print(f"Plan accuracy {acc}")
-            writer.add_scalar('plan-accuracy/train', acc, i)
-            print(f"Loss: {loss}")
-            writer.add_scalar('loss/train', loss, i)
-            print(f"Predicted plan: {predicted_plan}")
-        avg_acc /= len(dataset_train)
-        avg_solved /= len(dataset_train)
-        print(f"Average plan accuracy {avg_acc}")
-        print(f"Average proportion solved {avg_solved}")
+                true_logits = torch.nn.functional.one_hot(torch.tensor(true_plan), len(affordances)).float()
 
-        if i % 10 == 0:
-            lm.task = test_task
-            loss, logits = train_step(optimizer, lm, test_plan_length, test_affordances, test_affordance_labels, test_true_logits, test=True)
-            predicted_plan = torch.argmax(logits, dim=1)
-            acc = (predicted_plan == torch.tensor(test_true_plan)).float().mean()
-            print(f"Test plan accuracy {acc}")
-            writer.add_scalar('plan-accuracy/test', acc, i)
-            print(f"Loss: {loss}")
-            writer.add_scalar('loss/test', loss, i)
-            lm.task = original_task
+                loss, logits = train_step(optimizer, lm, plan_length, affordances, affordance_labels, true_logits)
+                predicted_plan = torch.argmax(logits, dim=1)
+                acc = (predicted_plan == torch.tensor(true_plan)).float().mean()
+                avg_acc += acc
+                avg_solved += (acc == 1).float()
+                print(f"Plan accuracy {acc}")
+                writer.add_scalar('plan-accuracy/train', acc, i)
+                print(f"Loss: {loss}")
+                writer.add_scalar('loss/train', loss, i)
+                print(f"Predicted plan: {predicted_plan}")
+            avg_acc /= len(dataset_train)
+            avg_solved /= len(dataset_train)
+            print(f"Average plan accuracy {avg_acc}")
+            print(f"Average proportion solved {avg_solved}")
+
+            if i % 10 == 0:
+                lm.task = test_task
+                loss, logits = train_step(optimizer, lm, test_plan_length, test_affordances, test_affordance_labels, test_true_logits, test=True)
+                predicted_plan = torch.argmax(logits, dim=1)
+                acc = (predicted_plan == torch.tensor(test_true_plan)).float().mean()
+                print(f"Test plan accuracy {acc}")
+                writer.add_scalar('plan-accuracy/test', acc, i)
+                print(f"Loss: {loss}")
+                writer.add_scalar('loss/test', loss, i)
+                lm.task = original_task
+        
+        # save model
+        pickle.dump(lm.model, open("{}.pkl".format(model_name), "wb"))
     
+    # load model
+    lm.model = pickle.load(open("{}.pkl".format(model_name), "rb"))
+    
+
     # measure the success rate on n_rollouts of the test task
     n_rollouts = 1
     lm.task = test_task
