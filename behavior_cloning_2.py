@@ -157,6 +157,7 @@ if __name__ == "__main__":
     test_affordance_labels = dataset_test_task['affordance_labels']
     test_affordances = list(range(len(test_affordance_labels)))
     test_true_plan = list(range(len(test_affordance_labels)))
+    test_plan_length = len(test_affordances)
 
     true_logits = torch.nn.functional.one_hot(torch.tensor(true_plan), len(affordances)).float()
 
@@ -180,7 +181,7 @@ if __name__ == "__main__":
 
         if i % 10 == 0:
             lm.task = test_task
-            loss, logits = train_step(optimizer, lm, plan_length, test_affordances, test_affordance_labels, test=True)
+            loss, logits = train_step(optimizer, lm, test_plan_length, test_affordances, test_affordance_labels, test=True)
             predicted_plan = torch.argmax(logits, dim=1)
             acc = (predicted_plan == torch.tensor(test_true_plan)).float().mean()
             print(f"Test plan accuracy {acc}")
