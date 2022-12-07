@@ -118,7 +118,7 @@ class SayCanOPT:
         self.action_history.append(labels[idx])
         return logits
 
-def train_step(optimizer, model, plan_length, affordances, affordance_labels, test=False):
+def train_step(optimizer, model, plan_length, affordances, affordance_labels, true_logits, test=False):
     logits = torch.zeros(plan_length, plan_length)
     for idx in range(plan_length):
         step_logits = model.train_step(affordances, affordance_labels)
@@ -160,6 +160,7 @@ if __name__ == "__main__":
     test_plan_length = len(test_affordances)
 
     true_logits = torch.nn.functional.one_hot(torch.tensor(true_plan), len(affordances)).float()
+    test_true_logits = torch.nn.functional.one_hot(torch.tensor(test_true_plan), len(affordances)).float()
 
     parameters = lm.model.get_input_embeddings().parameters()
     optimizer = torch.optim.Adam(parameters, lr=1e-4)
@@ -170,7 +171,7 @@ if __name__ == "__main__":
     for i in range(1000):
         print(i)
 
-        loss, logits = train_step(optimizer, lm, plan_length, affordances, affordance_labels)
+        loss, logits = train_step(optimizer, lm, plan_length, affordances, affordance_labels, true_logits)
         predicted_plan = torch.argmax(logits, dim=1)
         acc = (predicted_plan == torch.tensor(true_plan)).float().mean()
         print(f"Plan accuracy {acc}")
@@ -181,7 +182,7 @@ if __name__ == "__main__":
 
         if i % 10 == 0:
             lm.task = test_task
-            loss, logits = train_step(optimizer, lm, test_plan_length, test_affordances, test_affordance_labels, test=True)
+            loss, logits = train_step(optimizer, lm, test_plan_length, test_affordances, test_affordance_labels, test_true_logits, test=True)
             predicted_plan = torch.argmax(logits, dim=1)
             acc = (predicted_plan == torch.tensor(test_true_plan)).float().mean()
             print(f"Test plan accuracy {acc}")
