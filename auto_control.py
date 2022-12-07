@@ -5,7 +5,9 @@ from lm import SayCan#OPT as SayCan
 import numpy as np
 
 
-env_id = 'MiniGrid-InstallingAPrinter-16x16-N2-v1'
+# env_id = 'MiniGrid-InstallingAPrinter-16x16-N2-v1'
+# env_id = "MiniGrid-OpeningPackages-16x16-N2-v1"
+env_id = "MiniGrid-MovingBoxesToStorage-16x16-N2-v1"
 env = gym.make(env_id)
 saycan = SayCan(task=env.mission)
 

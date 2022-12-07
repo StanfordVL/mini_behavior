@@ -49,6 +49,7 @@ class SayCanOPT:
 
     def get_action(self, affordance_labels):
         affordance_likelihoods = []
+        affordance_labels_formatted = []
         for label in affordance_labels:
             label_obj = label[1]
             label_action = (
@@ -60,9 +61,12 @@ class SayCanOPT:
             )
             label_str = " ".join([label_action, "the", label_obj])
             prompt = self.get_prompt_from_history() + label_str
-            breakpoint()
+            # breakpoint()
             affordance_likelihoods.append(self.get_text_likelihood(prompt))
-        return max(range(len(affordance_likelihoods)), key=lambda i: affordance_likelihoods[i])
+            affordance_labels_formatted.append(label_str)
+        idx = max(range(len(affordance_likelihoods)), key=lambda i: affordance_likelihoods[i])
+        self.action_history.append(affordance_labels_formatted[idx])
+        return idx
 
     def get_prompt_from_history(self):
         prompt = SAYCAN_PROMPT.format(self.task)
@@ -180,7 +184,7 @@ if __name__ == "__main__":
     optimizer.zero_grad()
 
     writer = SummaryWriter()
-    for i in range(1000):
+    for i in range(100):
         print(i)
 
         random.shuffle(dataset_train)
@@ -224,24 +228,28 @@ if __name__ == "__main__":
             lm.task = original_task
     
     # measure the success rate on n_rollouts of the test task
-    # n_rollouts = 10
-    # lm.task = test_task
-    # success_rate = 0
-    # rng = np.random.default_rng()
-    # seed = rng.integers(int(1e6))
-    # env = gym.make(dataset_test_task['env_id'])
-    # for i in range(n_rollouts):
-    #     env.reset(seed=seed, options={})
-    #     while True:
-    #         affordances, affordance_labels = env.affordances()
-    #         action = lm.get_action(affordances, affordance_labels)
+    n_rollouts = 1
+    lm.task = test_task
+    success_rate = 0
+    rng = np.random.default_rng()
+    seed = rng.integers(int(1e6))
+    env = gym.make(dataset_test_task['env_id'])
+    lm.action_history = []
+    for i in range(n_rollouts):
+        env.reset(seed=seed, options={})
+        while True:
+            affordances, affordance_labels = env.affordances()
+            action_idx = lm.get_action(affordance_labels)
+            action = affordances[action_idx]
+            # lm.action_history.append(affordance_labels[action_idx])
+            print("action", action)
 
-    #         obs, reward, terminated, truncated, info = env.step(action)
+            obs, reward, terminated, truncated, info = env.step(action)
 
-    #         print('step=%s, reward=%.2f' % (env.step_count, reward))
+            print('step=%s, reward=%.2f' % (env.step_count, reward))
 
-    #         if terminated or truncated:
-    #             break
-    #     # success_rate += lm.rollout()
-    # success_rate /= n_rollouts
-    # print(f"Success rate: {success_rate}")
+            if terminated or truncated:
+                break
+        # success_rate += lm.rollout()
+    success_rate /= n_rollouts
+    print(f"Success rate: {success_rate}")

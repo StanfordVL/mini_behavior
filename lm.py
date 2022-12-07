@@ -311,6 +311,7 @@ class SayCan:
         return prompt
 
     def get_text_likelihood(self, prompt):
+        print('waiting for openai')
         response = openai.Completion.create(
             model="text-davinci-002",
             prompt=prompt,
@@ -323,6 +324,7 @@ class SayCan:
             stop=["\n"],
             echo=True,
         )
+        print('done waiting for openai')
         return sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
 
 class SayCanOPT(nn.Module):
