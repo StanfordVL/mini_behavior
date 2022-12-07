@@ -88,9 +88,10 @@ class SayCanOPT:
 
         return -math.exp(outputs["loss"].item())
 
-    def train_step(self, affordances, affordance_labels):
+    def train_step(self, affordances, affordance_labels, skip=False):
         logits = torch.zeros(len(affordances))
         labels = []
+        # if not skip:
         for idx, label in enumerate(affordance_labels):
             label_obj = label[1]
             label_action = (
@@ -122,10 +123,17 @@ class SayCanOPT:
         return logits
 
 def train_step(optimizer, model, plan_length, affordances, affordance_labels, true_logits, test=False):
+    # num_not_skipped = 5 if not test else plan_length
     logits = torch.zeros(plan_length, plan_length)
+    # skipped_steps = np.random.choice(plan_length, plan_length - num_not_skipped, replace=False)
+    # idx_with_skips = 0
     for idx in range(plan_length):
+        # if idx in skipped_steps:
+            # step_logits = model.train_step(affordances, affordance_labels, skip=True)
+        # else:
         step_logits = model.train_step(affordances, affordance_labels)
         logits[idx] = step_logits
+        # idx_with_skips += 1
     loss = torch.nn.functional.cross_entropy(logits, true_logits)
 
     if not test:
@@ -149,15 +157,17 @@ dataset = json.loads(open("behavior_cloning_dataset_2.json").read())
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name", type=str, default="facebook/opt-125m")
+    parser.add_argument("--max_length", type=int, default=10)
     args = parser.parse_args()
     model_name = args.model_name
+    max_length = args.max_length
 
     dataset_test_task = dataset[0]
 
     test_task = dataset_test_task['mission']
     lm = SayCanOPT(model_name=model_name, task='')
 
-    test_affordance_labels = dataset_test_task['affordance_labels']
+    test_affordance_labels = dataset_test_task['affordance_labels'][:max_length]
     test_affordances = list(range(len(test_affordance_labels)))
     test_true_plan = list(range(len(test_affordance_labels)))
     test_plan_length = len(test_affordances)
@@ -176,7 +186,7 @@ if __name__ == "__main__":
         original_task = dataset_train_task['mission']
         lm.task = original_task
 
-        affordance_labels = dataset_train_task['affordance_labels']
+        affordance_labels = dataset_train_task['affordance_labels'][:max_length]
         affordances = list(range(len(affordance_labels)))
         true_plan = list(range(len(affordance_labels)))
         plan_length = len(affordances)
@@ -204,24 +214,24 @@ if __name__ == "__main__":
             lm.task = original_task
     
     # measure the success rate on n_rollouts of the test task
-    n_rollouts = 10
-    lm.task = test_task
-    success_rate = 0
-    rng = np.random.default_rng()
-    seed = rng.integers(int(1e6))
-    env = gym.make(dataset_test_task['env_id'])
-    for i in range(n_rollouts):
-        env.reset(seed=seed, options={})
-        while True:
-            affordances, affordance_labels = env.affordances()
-            action = lm.get_action(affordances, affordance_labels)
+    # n_rollouts = 10
+    # lm.task = test_task
+    # success_rate = 0
+    # rng = np.random.default_rng()
+    # seed = rng.integers(int(1e6))
+    # env = gym.make(dataset_test_task['env_id'])
+    # for i in range(n_rollouts):
+    #     env.reset(seed=seed, options={})
+    #     while True:
+    #         affordances, affordance_labels = env.affordances()
+    #         action = lm.get_action(affordances, affordance_labels)
 
-            obs, reward, terminated, truncated, info = env.step(action)
+    #         obs, reward, terminated, truncated, info = env.step(action)
 
-            print('step=%s, reward=%.2f' % (env.step_count, reward))
+    #         print('step=%s, reward=%.2f' % (env.step_count, reward))
 
-            if terminated or truncated:
-                break
-        # success_rate += lm.rollout()
-    success_rate /= n_rollouts
-    print(f"Success rate: {success_rate}")
+    #         if terminated or truncated:
+    #             break
+    #     # success_rate += lm.rollout()
+    # success_rate /= n_rollouts
+    # print(f"Success rate: {success_rate}")

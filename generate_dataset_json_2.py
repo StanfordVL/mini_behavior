@@ -8,7 +8,7 @@ from mini_behavior.actions import ACTION_FUNC_MAPPING
 
 ACTION_FUNC_TO_NAME = {v: k for k, v in ACTION_FUNC_MAPPING.items()}
 
-MAX_PLAN_LENGTH = 15
+MAX_PLAN_LENGTH = 100
 
 dataset = []
 
