@@ -8,6 +8,8 @@ from mini_behavior.actions import ACTION_FUNC_MAPPING
 
 ACTION_FUNC_TO_NAME = {v: k for k, v in ACTION_FUNC_MAPPING.items()}
 
+MAX_PLAN_LENGTH = 15
+
 dataset = []
 
 for task_name in task_to_plan.keys():
@@ -22,6 +24,8 @@ for task_name in task_to_plan.keys():
     plan = list(task_to_plan[task_name](env))
     plan_text = [format_affordance_label((ACTION_FUNC_TO_NAME[affordance_chosen[0]], affordance_chosen[1].name)) for affordance_chosen in plan]
     mission = env.mission
+    if len(plan) > MAX_PLAN_LENGTH:
+        continue
     dataset.append({'affordance_labels': [], 'mission': mission})
     # dataset[env_id]['mission'] = env.mission
     for i, affordance_chosen in enumerate(plan):
@@ -37,5 +41,6 @@ for task_name in task_to_plan.keys():
         dataset[-1]['affordance_labels'].append(positive_label)
         # dataset[env_id][i]['negative_labels'] = negative_labels
         # breakpoint()
+    print(len(dataset[-1]['affordance_labels']))
 print(dataset)
 json.dump(dataset, open('behavior_cloning_dataset_2.json', 'w'))

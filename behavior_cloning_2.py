@@ -100,7 +100,7 @@ class SayCanOPT:
             label_str = " ".join([label_action, "the", label_obj])
             prompt = self.get_prompt_from_history() + label_str
             labels.append(label_str)
-            breakpoint()
+            # breakpoint()
 
             input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.to(DEVICE)
 
