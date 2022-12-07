@@ -378,7 +378,8 @@ def format_task_context(task, action_history):
     return prompt
 
 def format_affordance_label(label):
-    label_obj = " ".join(label[1].split("_")[:-1])
+    # label_obj = " ".join(label[1].split("_")[:-1])
+    label_obj = label[1]
     label_action = (
         label[0]
         .replace("goto", "go to")
