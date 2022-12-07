@@ -253,32 +253,36 @@ Task: {}
 Plan:"""
 
 GPT3_PROMPT = """You are a robotic task planner.
-Task: install a printer
+Task: sort books
 Plan:
-1. go to the printer_0
-2. pick up the printer_0
-3. go to the table_0
-4. drop the printer_0
-5. toggle the printer_0
+1. go to the book_0
+2. pick up the book_0
+3. go to the book_1
+4. pick up the book_1
+5. go to the hardback_0
+6. pick up the hardback_0
+7. go to the hardback_1
+8. pick up the hardback_1
+9. go to the shelf_0
+10. drop the book_0
+11. drop the book_1
+12. drop the hardback_0
+13. drop the hardback_1
 
 You are a robotic task planner.
-Task: open packages
+Task: water houseplants
 Plan:
-1. go to the package_0
-2. open the package_0
-3. go to the package_1
-4. open the package_1
-
-You are a robotic task planner.
-Task: move boxes to storage
-Plan:
-1. go to the carton_0
-2. pick up the carton_0
-3. go to the carton_1
-4. pick up the carton_1
-5. go to the shelf_0
-6. drop in the carton_0
-7. drop in the carton_1
+1. go to the pot_plant_0
+2. pick up the pot_plant_0
+3. go to the pot_plant_1
+4. pick up the pot_plant_1
+5. go to the pot_plant_2
+6. pick up the pot_plant_2
+7. go to the sink_0
+8. toggle the sink_0
+9. drop in the pot_plant_0
+10. drop in the pot_plant_1
+11. drop in the pot_plant_2
 
 """ + SAYCAN_PROMPT
 
