@@ -270,18 +270,21 @@ class SayCan:
         best_affordance = None
         best_label_str = None
         idx = 0
+        prompts = []
+        label_strs = []
         for affordance, label in zip(affordances, affordance_labels):
             label_obj = ' '.join(label[1].split("_")[:-1])
             label_action = label[0].replace('goto', 'go to').replace('pickup', 'pick up').replace('putdown', 'put down').replace('drop_in', 'drop in')
             label_str = ' '.join([label_action, 'the', label_obj])
-            prompt = self.get_prompt_from_history() + label_str
-            affordance_likelihoods[label] = self.get_text_likelihood(prompt)
-            if affordance_likelihoods[label] > max_likelihood:
-                max_likelihood = affordance_likelihoods[label]
+            prompts.append(self.get_prompt_from_history() + label_str)
+            label_strs.append(label_str)
+            idx += 1
+        affordance_likelihoods = self.get_text_likelihoods(prompts)
+        for affordance, label_str, likelihood in zip(affordances, label_strs, affordance_likelihoods):
+            if likelihood > max_likelihood:
+                max_likelihood = likelihood
                 best_affordance = affordance
                 best_label_str = label_str
-            print(f"Completed idx {idx}")
-            idx += 1
         self.action_history.append(best_label_str)
         return best_affordance
 
@@ -293,7 +296,7 @@ class SayCan:
     def get_text_likelihood(self, prompt):
         print('trying')
         import time
-        time.sleep(10)
+        time.sleep(1)
         response = openai.Completion.create(
             model="text-davinci-002",
             prompt=prompt,
@@ -308,7 +311,29 @@ class SayCan:
             timeout=3,
         )
         print('returned out timed out')
-        return sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
+        return sum(response["choices"][0]["logprobs"]["token_logprobs"][1:-1])
+
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(6))
+    def get_text_likelihoods(self, prompts):
+        print('trying')
+        import time
+        time.sleep(1)
+        response = openai.Completion.create(
+            model="text-davinci-002",
+            prompt=prompts,
+            temperature=0,
+            max_tokens=1,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            logprobs=0,
+            stop=["\n"],
+            echo=True,
+            timeout=3,
+        )
+        print('returned out timed out')
+        return [sum(prompt_response["logprobs"]["token_logprobs"][1:-1]) for prompt_response in response["choices"]]
+
 
 class SayCanOPTCompat:
     def __init__(self, use_soft_prompt=False):
