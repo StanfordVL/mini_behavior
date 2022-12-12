@@ -13,6 +13,7 @@ from tenacity import (
 
 import torch
 import torch.nn as nn
+import time
 
 # from https://raw.githubusercontent.com/kipgparker/soft-prompt-tuning/main/soft_embedding.py
 class SoftEmbedding(nn.Module):
@@ -252,9 +253,45 @@ openai.api_key = "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"
 # 6. done.
 # Human: {}
 # Robot:"""
+
+
 SAYCAN_PROMPT = """You are a robotic task planner.
 Task: {}
 Plan:"""
+
+GPT3_PROMPT = """You are a robotic task planner.
+Task: sort books
+Plan:
+1. go to the book_0
+2. pick up the book_0
+3. go to the book_1
+4. pick up the book_1
+5. go to the hardback_0
+6. pick up the hardback_0
+7. go to the hardback_1
+8. pick up the hardback_1
+9. go to the shelf_0
+10. drop the book_0
+11. drop the book_1
+12. drop the hardback_0
+13. drop the hardback_1
+
+You are a robotic task planner.
+Task: water houseplants
+Plan:
+1. go to the pot_plant_0
+2. pick up the pot_plant_0
+3. go to the pot_plant_1
+4. pick up the pot_plant_1
+5. go to the pot_plant_2
+6. pick up the pot_plant_2
+7. go to the sink_0
+8. toggle the sink_0
+9. drop in the pot_plant_0
+10. drop in the pot_plant_1
+11. drop in the pot_plant_2
+
+""" + SAYCAN_PROMPT
 
 class SayCan:
     def __init__(self, task):
@@ -366,9 +403,7 @@ class SayCanOPTCompat:
         best_affordance = None
         best_label_str = None
         for affordance, label in zip(affordances, affordance_labels):
-            label_obj = ' '.join(label[1].split("_")[:-1])
-            label_action = label[0].replace('goto', 'go to').replace('pickup', 'pick up').replace('putdown', 'put down').replace('drop_in', 'drop in')
-            label_str = ' '.join([label_action, 'the', label_obj])
+            label_str = format_affordance_label(label)
             prompt = self.get_prompt_from_history() + label_str
             affordance_likelihoods[label] = self.get_text_likelihood(prompt)
             if affordance_likelihoods[label] > max_likelihood:
@@ -471,8 +506,8 @@ class SayCanOPT(nn.Module):
     def get_reward(self):
         return self.reward
 
-def format_task_context(task, action_history):
-    prompt = SAYCAN_PROMPT.format(task)
+def format_task_context(task, action_history, prompt_template=SAYCAN_PROMPT):
+    prompt = prompt_template.format(task)
     i = 1
     if action_history:
         for action in action_history:
@@ -482,7 +517,8 @@ def format_task_context(task, action_history):
     return prompt
 
 def format_affordance_label(label):
-    label_obj = " ".join(label[1].split("_")[:-1])
+    # label_obj = " ".join(label[1].split("_")[:-1])
+    label_obj = label[1]
     label_action = (
         label[0]
         .replace("goto", "go to")
