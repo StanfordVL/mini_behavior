@@ -8,6 +8,9 @@
 ### Run Code 
 To run in interactive mode: ./manual_control.py
 
+To generate the dataset for behavioral cloning: python generate_dataset_json_2.py
+To train the behavioral cloning agent: python behavior_cloning_2.py
+
 ### File Descriptions 
 * **gym_minigrid/actions.py**
     * Contains base class for actions 
