@@ -15,6 +15,9 @@ def put_ontop(env, obj1, obj2):
         pos = None
         while pos is None:
             all_pos = obj2.all_pos
+            if len(all_pos) == 1:
+                pos = all_pos[0]
+                break
             random.shuffle(all_pos)
             # pos = random.shuffle(obj2.all_pos)
             for try_pos in all_pos:

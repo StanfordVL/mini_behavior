@@ -1,6 +1,9 @@
 from gym_minigrid.window import *
 import matplotlib.gridspec as gridspec
 
+import matplotlib
+matplotlib.rcParams['figure.dpi'] = 500
+
 
 class Window(Window):
     """

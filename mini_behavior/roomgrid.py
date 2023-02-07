@@ -340,7 +340,7 @@ class RoomGrid(MiniBehaviorEnv):
             i = self._rand_int(0, self.num_cols)
         if j is None:
             j = self._rand_int(0, self.num_rows)
-
+        
         room = self.room_grid[j][i]
 
         # Find a position that is not right in front of an object

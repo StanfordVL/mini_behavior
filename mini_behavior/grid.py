@@ -112,6 +112,7 @@ class BehaviorGrid(Grid):
     def get_all_objs(self, i, j):
         cell = self.get(i, j)
         objs = [] if cell.objs is None else cell.objs
+        # print(f"Processing {len(objs)}")
         return [obj for obj in objs if obj is not None and not isinstance(obj, FurnitureObj)]
 
     def get_all_items(self, i, j):

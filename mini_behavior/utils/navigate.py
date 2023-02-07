@@ -33,8 +33,11 @@ def astar(maze, start, end):
     open_list.append(start_node)
 
     # Loop until you find the end
+    print("Beginning search")
+    step = 1
     while len(open_list) > 0:
-
+        # print("Step: {}. Open list len: {}".format(step, len(open_list)))
+        step += 1
         # Get the current AStar_node
         current_node = open_list[0]
         current_index = 0
@@ -49,6 +52,7 @@ def astar(maze, start, end):
 
         # Found the goal
         if np.all(current_node.position == end_node.position):
+            print("Found.")
             path = []
             current = current_node
             while current is not None:
@@ -85,13 +89,13 @@ def astar(maze, start, end):
             for closed_child in closed_list:
                 if np.all(child.position == closed_child.position):
                     continue
-
+  
             # Create the f, g, and h values
             child.g = current_node.g + 1
             child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
             child.f = child.g + child.h
 
-            # Child is already in the open list
+            # Child is alreadyprint(path, maze) in the open list
             for open_node in open_list:
                 if np.all(child.position == open_node.position) and child.g > open_node.g:
                     continue
@@ -125,12 +129,16 @@ def get_actions(agent_dir, path):
     return steps
 
 
-def navigate_between_rooms(start_pos, end_pos, start_room, end_room, maze):
+def navigate_between_rooms(start_pos, end_pos, start_room, end_room, maze, length_only=False):
+    print(f"Planning from {start_pos} to {end_pos}, rooms {start_room.name} to {end_room.name}")
     path = []
     doors = []
     last_pos = start_pos
 
-    if end_room in start_room.neighbors:
+    room_names = [start_room.name, end_room.name]
+    traveling_living_to_bathroom = 'living_room' in room_names and 'bathroom' in room_names
+    if end_room in start_room.neighbors and not traveling_living_to_bathroom:
+        print("from neighbors")
         doors = [start_room.doors[start_room.neighbors.index(end_room)]]
     elif end_room != start_room:
         if start_room.name == 'bathroom':
@@ -151,9 +159,25 @@ def navigate_between_rooms(start_pos, end_pos, start_room, end_room, maze):
             if end_room.name == 'bathroom':
                 doors.append(end_room.doors[2])
 
-    for door in doors:
-        path += astar(maze, last_pos, door.cur_pos)
-        last_pos = door.cur_pos
+    path_length = 0
 
-    path += astar(maze, last_pos, end_pos)
-    return path
+    if length_only:
+        manhattan_dist = lambda x : (abs(x[0][0] - x[1][0]) + abs(x[0][1] - abs(x[1][1])))
+        if len(doors) > 0:
+            # curr pos to first door
+            print(f"Sub problem: {last_pos} to {doors[0].cur_pos}")
+            path_length += len(astar(maze, last_pos, doors[0].cur_pos))
+            last_pos = doors[0].cur_pos
+            for door in doors[1:]:
+                path_length += manhattan_dist([last_pos, door.cur_pos])
+                last_pos = door.cur_pos
+            print(f"Sub problem: {last_pos} to {end_pos}")
+            path_length += len(astar(maze, last_pos, end_pos))
+        return path_length
+    else:
+        for door in doors:
+            path += astar(maze, last_pos, door.cur_pos)
+            last_pos = door.cur_pos
+
+        path += astar(maze, last_pos, end_pos)
+        return path
