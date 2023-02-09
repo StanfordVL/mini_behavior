@@ -31,9 +31,8 @@ def astar(maze, start, end):
 
     # Add the start AStar_node
     open_list.append(start_node)
-
+    
     # Loop until you find the end
-    print("Beginning search")
     step = 1
     while len(open_list) > 0:
         # print("Step: {}. Open list len: {}".format(step, len(open_list)))
@@ -48,11 +47,9 @@ def astar(maze, start, end):
 
         # Pop current off open list, add to closed list
         open_list.pop(current_index)
-        closed_list.append(current_node)
 
         # Found the goal
         if np.all(current_node.position == end_node.position):
-            print("Found.")
             path = []
             current = current_node
             while current is not None:
@@ -84,24 +81,34 @@ def astar(maze, start, end):
 
         # Loop through children
         for child in children:
-
-            # Child is on the closed list
-            for closed_child in closed_list:
-                if np.all(child.position == closed_child.position):
-                    continue
   
             # Create the f, g, and h values
             child.g = current_node.g + 1
             child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
             child.f = child.g + child.h
-
+            flag = 0
             # Child is alreadyprint(path, maze) in the open list
             for open_node in open_list:
-                if np.all(child.position == open_node.position) and child.g > open_node.g:
-                    continue
+                if np.all(child.position == open_node.position) and child.f > open_node.f:
+                    flag = 1
+                    break 
+
+            if flag == 1:
+                continue
+
+            # Child is on the closed list
+            for closed_child in closed_list:
+                if np.all(child.position == closed_child.position) and child.f > closed_child.f:
+                    flag = 1 
+            
+            if flag == 1:
+                continue
 
             # Add the child to the open list
             open_list.append(child)
+
+        closed_list.append(current_node)
+    raise ValueError(f"No Path Found from {start} to {end}")
 
 
 def get_actions(agent_dir, path):
@@ -138,16 +145,17 @@ def navigate_between_rooms(start_pos, end_pos, start_room, end_room, maze, lengt
     room_names = [start_room.name, end_room.name]
     traveling_living_to_bathroom = 'living_room' in room_names and 'bathroom' in room_names
     if end_room in start_room.neighbors and not traveling_living_to_bathroom:
-        print("from neighbors")
         doors = [start_room.doors[start_room.neighbors.index(end_room)]]
-    elif end_room != start_room:
+    elif end_room != start_room:   
         if start_room.name == 'bathroom':
             # going to either kitchen or living room
-            doors = [start_room.doors[0], start_room.doors[1]]
+            bedroom = start_room.neighbors[2]
+            doors = [start_room.doors[2], bedroom.doors[1]]
             if end_room.name == 'living_room':
-                doors.append(end_room.doors[2])
+                doors.append(end_room.doors[2]) # kitchen to living room
         elif start_room.name == 'bedroom':
             # must be going to living room
+            # print("Bedroom doors:", start_room.doors)
             doors = [start_room.doors[1], end_room.doors[2]]
         elif start_room.name == 'kitchen':
             # must be going to bathroom
@@ -165,13 +173,13 @@ def navigate_between_rooms(start_pos, end_pos, start_room, end_room, maze, lengt
         manhattan_dist = lambda x : (abs(x[0][0] - x[1][0]) + abs(x[0][1] - abs(x[1][1])))
         if len(doors) > 0:
             # curr pos to first door
-            print(f"Sub problem: {last_pos} to {doors[0].cur_pos}")
+            print(f"Sub problem 1: moving from {last_pos} to {doors[0].cur_pos}")
             path_length += len(astar(maze, last_pos, doors[0].cur_pos))
             last_pos = doors[0].cur_pos
             for door in doors[1:]:
-                path_length += manhattan_dist([last_pos, door.cur_pos])
+                path_length += len(astar(maze, last_pos, door.cur_pos)) #manhattan_dist([last_pos, door.cur_pos])
                 last_pos = door.cur_pos
-            print(f"Sub problem: {last_pos} to {end_pos}")
+            print(f"Sub problem 2: moving from {last_pos} to {end_pos}")
             path_length += len(astar(maze, last_pos, end_pos))
         return path_length
     else:
