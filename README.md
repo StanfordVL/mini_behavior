@@ -3,6 +3,7 @@
 
 ### Environment Setup
 * Follow setup instructions from: https://github.com/Farama-Foundation/gym-minigrid.
+   pip install gym-minigrid==1.0.3
 * Downgrade gym to version 0.21.0: pip install gym==0.21.0
 
 ### Run Code 
