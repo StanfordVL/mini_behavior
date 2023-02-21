@@ -1,11 +1,12 @@
 import os
 import numpy as np
-from .minibehavior import BehaviorGrid, MiniBehaviorEnv
-from .register import register
-from .objects import Wall
-from .utils.scene_to_grid import img_to_array
+from mini_behavior.minibehavior import MiniBehaviorEnv
+from mini_behavior.grid import BehaviorGrid
+from mini_behavior.register import register
+from mini_behavior.objects import Wall
+from mini_behavior.utils.scene_to_grid import img_to_array
 
-FLOORPLANS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "", "floorplans")
+FLOORPLANS_DIR = os.path.join(os.path.dirname(os.path.abspath(__name__)), "mini_behavior", "floorplans")
 
 
 def get_floorplan(scene_id) :
@@ -15,6 +16,7 @@ def get_floorplan(scene_id) :
 # generate grid
 class FloorPlanEnv(MiniBehaviorEnv):
     def __init__(self,
+                 img_path=None,
                  mode='human',
                  scene_id='beechwood_0_int',
                  num_objs=None,

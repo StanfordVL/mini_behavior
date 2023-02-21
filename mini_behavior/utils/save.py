@@ -1,6 +1,5 @@
 import os
 import pickle as pkl
-import h5py
 
 
 def all_cur_pos(env):

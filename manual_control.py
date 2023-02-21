@@ -35,7 +35,8 @@ def render_furniture():
         xmin = i * TILE_PIXELS
         xmax = (i + 1) * TILE_PIXELS
 
-        img[ymin:ymax, xmin:xmax, :] = GridDimension.render_agent(img[ymin:ymax, xmin:xmax, :], env.agent_dir)
+        img[ymin:ymax, xmin:xmax, :] = GridDimension.render_agent(
+            img[ymin:ymax, xmin:xmax, :], env.agent_dir)
         img = env.render_furniture_states(img)
 
         window.show_img(img)
@@ -152,9 +153,9 @@ parser.add_argument(
     # default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
     # default='MiniGrid-FloorPlanEnv-16x16-N1-v0'
     # default='MiniGrid-TwoRoomNavigation-8x8-N2-v0'
-    # default='MiniGrid-ThrowLeftoversSceneEnv-0x0-N2-v0'
+    default='MiniGrid-ThrowLeftoversSceneEnv-0x0-N2-v0'
     # default='MiniGrid-ThrowLeftovers-16x16-N2-v1'
-    default='MiniGrid-InstallingAPrinter-16x16-N2-v1'
+    # default='MiniGrid-InstallingAPrinter-16x16-N2-v1'
 )
 parser.add_argument(
     "--seed",
@@ -190,7 +191,6 @@ parser.add_argument(
 args = parser.parse_args()
 
 env = gym.make(args.env)
-
 
 all_steps = {}
 

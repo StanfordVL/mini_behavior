@@ -5,6 +5,7 @@ from .globals import COLOR_TO_IDX, IDX_TO_COLOR, COLORS
 from .load import load_json
 
 
+
 class WorldObj:
     """
     Base class for grid world objects
@@ -22,13 +23,15 @@ class WorldObj:
                  ):
 
         if action_keys is None:
-            object_actions = load_json(os.path.join(os.path.dirname(__file__), 'object_actions.json'))
+            object_actions = load_json(os.path.join(
+                os.path.dirname(__file__), 'object_actions.json'))
             if obj_type in object_actions.keys():
                 action_keys = object_actions[obj_type]
             else:
                 action_keys = []
         if state_keys is None:
-            object_properties = load_json(os.path.join(os.path.dirname(__file__), 'object_properties.json'))
+            object_properties = load_json(os.path.join(
+                os.path.dirname(__file__), 'object_properties.json'))
             if obj_type in object_properties.keys():
                 state_keys = object_properties[obj_type]
             else:
@@ -42,7 +45,8 @@ class WorldObj:
 
         # TODO: change this
         if obj_type in OBJECTS:
-            icon_path = os.path.join(os.path.dirname(__file__), f'../utils/object_icons/{self.type}.jpg')
+            icon_path = os.path.join(os.path.dirname(
+                __file__), f'../utils/object_icons/{self.type}.jpg')
             self.icon = img_to_array(icon_path)
         else:
             self.icon = None
@@ -58,7 +62,8 @@ class WorldObj:
         self.name = name
 
         # Dict of possible states for the object: key=state_name, value=state_class
-        self.states = {key: STATE_FUNC_MAPPING[key](self, key) for key in (DEFAULT_STATES + state_keys)}
+        self.states = {key: STATE_FUNC_MAPPING[key](
+            self, key) for key in (DEFAULT_STATES + state_keys)}
 
         # List of actions agent can perform on the object
         self.actions = DEFAULT_ACTIONS + action_keys
@@ -181,7 +186,7 @@ class WorldObj:
 class FurnitureObj(WorldObj):
     def __init__(self,
                  type,
-                 width, # in cells
+                 width,  # in cells
                  height,
                  dims,
                  color,
@@ -190,7 +195,8 @@ class FurnitureObj(WorldObj):
                  can_overlap=False,
                  can_seebehind=True):
 
-        super().__init__(type, color=color, name=name, can_contain=can_contain, can_overlap=can_overlap, can_seebehind=can_seebehind)
+        super().__init__(type, color=color, name=name, can_contain=can_contain,
+                         can_overlap=can_overlap, can_seebehind=can_seebehind)
         self.width = width
         self.height = height
         self.dims = dims

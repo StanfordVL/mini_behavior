@@ -119,7 +119,8 @@ OBJECT_TO_IDX = {
     "sugar": 92,
     "candle": 93,
     "box": 94,
-    "hardback": 95
+    "hardback": 95,
+    "goal": 96
 }
 
 IDX_TO_OBJECT = dict(zip(OBJECT_TO_IDX.values(), OBJECT_TO_IDX.keys()))
