@@ -2,7 +2,7 @@
 from .objects import *
 from mini_behavior.bddl import ABILITIES
 from gym_minigrid.minigrid import Grid
-
+import cv2
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
 
@@ -281,7 +281,8 @@ class BehaviorGrid(Grid):
         # Highlight the cell if needed
         if highlight:
             highlight_img(img)
-
+        # if len(render_objs) > 1:
+        #     cv2.imwrite('/home/tanmayx/memory_object_search_compress/outputs/env_rollouts/icon.png', img)
         # Downsample the image to perform supersampling/anti-aliasing
         img = downsample(img, subdivs)
 

@@ -137,7 +137,7 @@ def get_actions(agent_dir, path):
 
 
 def navigate_between_rooms(start_pos, end_pos, start_room, end_room, maze, length_only=False):
-    print(f"Planning from {start_pos} to {end_pos}, rooms {start_room.name} to {end_room.name}")
+    # print(f"Planning from {start_pos} to {end_pos}, rooms {start_room.name} to {end_room.name}")
     path = []
     doors = []
     last_pos = start_pos
@@ -173,13 +173,13 @@ def navigate_between_rooms(start_pos, end_pos, start_room, end_room, maze, lengt
         manhattan_dist = lambda x : (abs(x[0][0] - x[1][0]) + abs(x[0][1] - abs(x[1][1])))
         if len(doors) > 0:
             # curr pos to first door
-            print(f"Sub problem 1: moving from {last_pos} to {doors[0].cur_pos}")
+            # print(f"Sub problem 1: moving from {last_pos} to {doors[0].cur_pos}")
             path_length += len(astar(maze, last_pos, doors[0].cur_pos))
             last_pos = doors[0].cur_pos
             for door in doors[1:]:
                 path_length += len(astar(maze, last_pos, door.cur_pos)) #manhattan_dist([last_pos, door.cur_pos])
                 last_pos = door.cur_pos
-            print(f"Sub problem 2: moving from {last_pos} to {end_pos}")
+            # print(f"Sub problem 2: moving from {last_pos} to {end_pos}")
             path_length += len(astar(maze, last_pos, end_pos))
         return path_length
     else:
