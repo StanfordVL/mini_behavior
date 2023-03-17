@@ -1,4 +1,4 @@
-from mini_behavior.mini_behavior.objects import FurnitureObj
+from mini_behavior.objects import FurnitureObj
 import random
 
 
