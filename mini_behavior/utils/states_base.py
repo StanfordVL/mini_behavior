@@ -2,7 +2,7 @@
 
 import os
 from abc import abstractmethod
-from mini_behavior.mini_behavior.rendering import *
+from mini_behavior.rendering import *
 
 class BaseObjectState:
     """

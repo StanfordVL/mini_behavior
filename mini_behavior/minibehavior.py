@@ -8,7 +8,7 @@ from gym_minigrid.minigrid import MiniGridEnv
 # from bddl.actions import ACTION_FUNC_MAPPING
 from .objects import *
 from .grid import BehaviorGrid, is_obj
-from mini_behavior.mini_behavior.window import Window
+from mini_behavior.window import Window
 from .utils.navigate import *
 
 # Size in pixels of a tile in the full-scale human view

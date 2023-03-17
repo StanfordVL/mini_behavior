@@ -1,6 +1,6 @@
 # FROM MINIGRID REPO
-from mini_behavior.mini_behavior.roomgrid import *
-from mini_behavior.mini_behavior.register import register
+from mini_behavior.roomgrid import *
+from mini_behavior.register import register
 
 
 # TODO: use procthor to generate env

@@ -29,4 +29,4 @@
 # from mini_behavior.envs.preparing_salad_floorplan import *
 
 # PSG
-from mini_behavior.mini_behavior.envs.fixed_scene import *
+from mini_behavior.envs.fixed_scene import *
