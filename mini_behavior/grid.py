@@ -257,7 +257,7 @@ class BehaviorGrid(Grid):
         full, half = np.shape(img)[0], int(np.shape(img)[0] / 2)
         y_coords = [(0, half), (0, half), (half, full), (half, full)]
         x_coords = [(0, half), (half, full), (0, half), (half, full)]
-
+        
         for i in range(len(render_objs)):
             obj = render_objs[i]
 
@@ -425,7 +425,7 @@ class BehaviorGrid(Grid):
                 type_idx, color_idx, state = array[i, j]
                 v = WorldObj.decode(type_idx, color_idx, state)
                 grid.set(i, j, v)
-                vis_mask[i, j] = (type_idx != OBJECT_TO_IDX['unseen'])
+                vis_mask[i, j] = (type_idx != OBJECT_TO_IDX['empty'])
 
         return grid, vis_mask
 

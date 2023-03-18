@@ -351,6 +351,11 @@ class RoomGrid(MiniBehaviorEnv):
 
         return self.agent_pos
 
+    def _rand_int(self, low, high):
+        """
+        Generate random integer in [low,high[
+        """
+        return self.np_random.integers(low, high, size=1)[0]
 
     def connect_all(self, door_colors=COLOR_NAMES, max_itrs=5000):
         """

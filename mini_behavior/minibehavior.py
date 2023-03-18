@@ -396,3 +396,17 @@ class MiniBehaviorEnv(MiniGridEnv):
             self.window.show_img(img)
 
         return img
+    
+    def get_RGB_obs(self, tile_size=TILE_PIXELS//2):
+        """
+        Render an agent observation for visualization
+        """
+        grid, vis_mask = self.gen_obs_grid()
+        # Render the whole grid
+        img = grid.render(
+            tile_size,
+            agent_pos=(self.agent_view_size // 2, self.agent_view_size - 1),
+            agent_dir=3,
+            highlight_mask=vis_mask
+        )
+        return img
