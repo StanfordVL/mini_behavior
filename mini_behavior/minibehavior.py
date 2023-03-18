@@ -420,7 +420,8 @@ class MiniBehaviorEnv(MiniGridEnv):
     
     def render_agent_obs(self, tile_size=TILE_PIXELS):
         topX, topY, botX, botY = self.get_view_exts()
-            
+        obs_topX, obs_topY = max(0, topX), max(0, topY)
+        obs_botX, obs_botY = min(topX + self.agent_view_size, self.grid.width), min(topY + self.agent_view_size, self.grid.height)
         # Compute the observed grid size
         width_px = self.agent_view_size * tile_size
         height_px = self.agent_view_size * tile_size
@@ -428,8 +429,8 @@ class MiniBehaviorEnv(MiniGridEnv):
         img = np.zeros(shape=(height_px, width_px, 3), dtype=np.uint8)
         
         # Render the grid
-        for j in range(topY, topY + self.agent_view_size):
-            for i in range(topX, topX + self.agent_view_size):
+        for j in range(obs_topY, obs_botY):
+            for i in range(obs_topX, obs_botX):
                 agent_here = np.array_equal(self.agent_pos, (i, j))
                 ymin = j * tile_size 
                 ymax = (j + 1) * tile_size
