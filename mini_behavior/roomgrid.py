@@ -110,8 +110,6 @@ class RoomGrid(MiniBehaviorEnv):
         height = (room_size - 1) * num_rows + 1
         width = (room_size - 1) * num_cols + 1
 
-        self.mission = ''
-
         super().__init__(
             mode=mode,
             width=width,
@@ -153,13 +151,6 @@ class RoomGrid(MiniBehaviorEnv):
         assert i < self.num_cols
         assert j < self.num_rows
         return self.room_grid[j][i]
-
-    # def reset(self):
-    #     super().reset()
-    #     # for row in self.room_grid:
-    #     #     for room in row:
-    #     #         room.reset()
-    #     return self.gen_obs()
 
     def _gen_grid(self, width, height):
         self.grid = BehaviorGrid(width, height)
@@ -215,9 +206,6 @@ class RoomGrid(MiniBehaviorEnv):
                 if j > 0:
                     room.neighbors[3] = self.room_grid[j-1][i]
                     room.door_pos[3] = room.neighbors[3].door_pos[1]
-
-    def _gen_objs(self):
-        assert False, "_gen_objs needs to be implemented by each environment"
 
     def place_in_room(self, i, j, obj, reject_fn=reject_next_to):
         """

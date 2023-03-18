@@ -6,12 +6,13 @@ from mini_behavior.register import register
 # TODO: use procthor to generate env
 
 class FixedEnv(RoomGrid):
-    def __init__(self, num_objs):
+    def __init__(self, num_objs, **kwargs):
         super().__init__(
             room_size=16,
             num_rows=2,
             num_cols=2,
-            num_objs=num_objs
+            num_objs=num_objs,
+            **kwargs
         )
 
     def _gen_rooms(self, width, height):

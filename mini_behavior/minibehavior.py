@@ -409,6 +409,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         # - an image (partially observable view of the environment)
         # - the agent's direction/orientation (acting as a compass)
         # - an embedding for the mission string (instructions for the agent)
+        # GEN_OBS_2
         obs = {
             'image': image,
             'direction': self.agent_dir,
