@@ -86,6 +86,9 @@ class MiniBehaviorEnv(MiniGridEnv):
 
         self.carrying = set()
         self.path = None
+        
+    def __str__(self):
+        return "MiniBehaviorEnv object. String rep not currently supported."
 
     def add_objs(self, num_objs):
         new_objs = []
