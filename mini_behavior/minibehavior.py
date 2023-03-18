@@ -412,7 +412,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         # GEN_OBS_2
         obs = {
             'image': image,
-            'direction': self.agent_dir,
+            'direction': np.array(self.agent_dir, dtype=np.uint8),
             'mission': self.mission
         }
 
