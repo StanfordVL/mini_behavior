@@ -392,7 +392,6 @@ class MiniBehaviorEnv(MiniGridEnv):
             self.window.set_inventory(self)
 
         if mode == 'human':
-            self.window.set_caption(self.mission)
             self.window.show_img(img)
 
         return img
@@ -401,12 +400,12 @@ class MiniBehaviorEnv(MiniGridEnv):
         """
         Generate the agent's view (partially observable, low-resolution encoding)
         """
-        image = self.render_agent_obs()
+        image = self.render_agent_obs(tile_size=6)
 
         # Observations are dictionaries containing:
         # - an image (partially observable view of the environment)
         # - the agent's direction/orientation (acting as a compass)
-        # - a textual mission string (instructions for the agent)
+        # - an embedding for the mission string (instructions for the agent)
         obs = {
             'image': image,
             'direction': self.agent_dir,
