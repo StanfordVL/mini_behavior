@@ -396,17 +396,56 @@ class MiniBehaviorEnv(MiniGridEnv):
             self.window.show_img(img)
 
         return img
+
+    def gen_obs(self):
+        """
+        Generate the agent's view (partially observable, low-resolution encoding)
+        """
+        image = self.render_agent_obs()
+
+        # Observations are dictionaries containing:
+        # - an image (partially observable view of the environment)
+        # - the agent's direction/orientation (acting as a compass)
+        # - a textual mission string (instructions for the agent)
+        obs = {
+            'image': image,
+            'direction': self.agent_dir,
+            'mission': self.mission
+        }
+
+        return obs
     
-    def get_RGB_obs(self, tile_size=TILE_PIXELS//2):
-        """
-        Render an agent observation for visualization
-        """
-        grid, vis_mask = self.gen_obs_grid()
-        # Render the whole grid
-        img = grid.render(
-            tile_size,
-            agent_pos=(self.agent_view_size // 2, self.agent_view_size - 1),
-            agent_dir=3,
-            highlight_mask=vis_mask
-        )
+    def render_agent_obs(self, tile_size=TILE_PIXELS):
+        topX, topY, botX, botY = self.get_view_exts()
+            
+        # Compute the observed grid size
+        width_px = self.agent_view_size * tile_size
+        height_px = self.agent_view_size * tile_size
+
+        img = np.zeros(shape=(height_px, width_px, 3), dtype=np.uint8)
+        
+        # Render the grid
+        for j in range(topY, topY + self.agent_view_size):
+            for i in range(topX, topX + self.agent_view_size):
+                agent_here = np.array_equal(self.agent_pos, (i, j))
+                ymin = j * tile_size 
+                ymax = (j + 1) * tile_size
+                xmin = i * tile_size
+                xmax = (i + 1) * tile_size
+
+                furniture = self.grid.get_furniture(i, j)
+                objs = self.grid.get_all_objs(i, j)
+                delta_y, delta_x = topY * tile_size, topX * tile_size
+                img_ymin, img_ymax = ymin - delta_y, ymax - delta_y
+                img_xmin, img_xmax = xmin - delta_x, xmax - delta_x
+                
+                img[img_ymin:img_ymax, img_xmin:img_xmax, :] = BehaviorGrid.render_tile(
+                    furniture,
+                    objs,
+                    agent_dir=self.agent_dir if agent_here else None,
+                    highlight=None,
+                    tile_size=tile_size,
+                )
+        # Rotate for agent centric view
+        img = np.rot90(img, self.agent_dir + 1, axes=[0,1])
         return img
