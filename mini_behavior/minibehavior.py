@@ -403,7 +403,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         """
         Generate the agent's view (partially observable, low-resolution encoding)
         """
-        image = self.render_agent_obs(tile_size=6)
+        image = self.render_agent_obs(tile_size=TILE_PIXELS)
 
         # Observations are dictionaries containing:
         # - an image (partially observable view of the environment)
