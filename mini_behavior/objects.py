@@ -146,7 +146,8 @@ class WorldObj:
     def reset(self):
         self.contains = None
         self.cur_pos = None
-
+        if self.icon is not None:
+            self.icon_color = 'white'
         # CHANGE
         for state in self.states.values():
             if state.type == 'absolute':
