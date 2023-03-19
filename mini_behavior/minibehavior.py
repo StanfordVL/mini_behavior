@@ -401,9 +401,14 @@ class MiniBehaviorEnv(MiniGridEnv):
 
     def gen_obs(self):
         """
-        Generate the agent's view (partially observable, low-resolution encoding)
+        Generate the agent's view (partially observable view)
         """
-        image = self.render_agent_obs(tile_size=TILE_PIXELS)
+        if self.encode_obs_im:
+            grid, vis_mask = self.gen_obs_grid()
+            # Encode the partially observable view into a numpy array
+            image = grid.encode(vis_mask)
+        else:
+            image = self.render_agent_obs(tile_size=TILE_PIXELS)
 
         # Observations are dictionaries containing:
         # - an image (partially observable view of the environment)
