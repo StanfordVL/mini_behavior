@@ -17,11 +17,12 @@ def put_ontop(env, obj1, obj2):
             all_pos = obj2.all_pos
             if len(all_pos) == 1:
                 pos = all_pos[0]
+                assert env.grid.is_cell_reachable(*pos), "Only one location to add objs"
                 break
             random.shuffle(all_pos)
             # pos = random.shuffle(obj2.all_pos)
             for try_pos in all_pos:
-                if len(env.grid.get_all_objs(*try_pos)) < 4:
+                if len(env.grid.get_all_objs(*try_pos)) < 4 and env.grid.is_cell_reachable(*try_pos):
                     pos = try_pos
                     break
     else:
@@ -47,7 +48,7 @@ def put_inside(env, obj1, obj2):
             random.shuffle(all_pos)
             # pos = random.shuffle(obj2.all_pos)
             for try_pos in all_pos:
-                if len(env.grid.get_all_objs(*try_pos)) < 4:
+                if len(env.grid.get_all_objs(*try_pos)) < 4 and env.grid.is_cell_reachable(*try_pos):
                     pos = try_pos
                     break
     else:
@@ -73,7 +74,7 @@ def put_under(env, obj1, obj2):
             random.shuffle(all_pos)
             # pos = random.shuffle(obj2.all_pos)
             for try_pos in all_pos:
-                if len(env.grid.get_all_objs(*try_pos)) < 4:
+                if len(env.grid.get_all_objs(*try_pos)) < 4 and env.grid.is_cell_reachable(*try_pos):
                     pos = try_pos
                     break
     else:

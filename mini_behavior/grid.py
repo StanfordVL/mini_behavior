@@ -99,6 +99,20 @@ class BehaviorGrid(Grid):
 
         return maze
 
+    def is_cell_reachable(self, i, j):
+        neighboring_poses = []
+        if i > 0:
+            neighboring_poses.append((i-1,j))
+        if i + 1 < self.width:
+            neighboring_poses.append((i+1,j))
+        if j > 0:
+            neighboring_poses.append((i,j-1))
+        if j + 1 < self.width:
+            neighboring_poses.append((i,j+1))
+        for pose_i, pose_j in neighboring_poses:
+            if self.is_empty(pose_i, pose_j):
+                return True
+        return False
 
     def get_furniture(self, i, j):
         cell = self.get(i,j)
