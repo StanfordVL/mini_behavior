@@ -56,7 +56,7 @@ class Window(Window):
             self.closeup_obj[name] = ax.imshow(np.zeros(shape=(1,1,3)), interpolation='bilinear')
 
         # Show the env name in the window title
-        self.fig.canvas.set_window_title(title)
+        self.fig.canvas.manager.set_window_title(title)
 
         # Turn off x/y axis numbering/ticks
         for i, ax in enumerate(self.fig.axes):
