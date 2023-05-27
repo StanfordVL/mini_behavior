@@ -9,6 +9,10 @@ from mini_bddl.actions import ACTION_FUNC_MAPPING
 from .objects import *
 from .grid import BehaviorGrid, GridDimension, is_obj
 from mini_behavior.window import Window
+from .utils.utils import AttrDict
+from mini_behavior.actions import Pickup, Drop, Toggle, Open, Close
+import numpy as np
+
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
@@ -75,6 +79,8 @@ class MiniBehaviorEnv(MiniGridEnv):
         self.objs = {}
         self.obj_instances = {}
 
+        action_list = ["left", "right", "forward"]
+
         for obj_type in num_objs.keys():
             self.objs[obj_type] = []
             for i in range(num_objs[obj_type]):
@@ -88,6 +94,11 @@ class MiniBehaviorEnv(MiniGridEnv):
                 self.objs[obj_type].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 
+            # create action space for each obj type
+            applicable_actions = obj_instance.actions
+            for action_name in applicable_actions:
+                action_list.append(obj_type + "/" + action_name)
+
         super().__init__(grid_size=grid_size,
                          width=width,
                          height=height,
@@ -98,8 +109,11 @@ class MiniBehaviorEnv(MiniGridEnv):
 
         self.grid = BehaviorGrid(width, height)
 
-        # Action enumeration for this environment, actions are discrete int
-        self.actions = MiniBehaviorEnv.Actions
+        # action list is used to access string by index
+        self.action_list = action_list
+        action_dict = {value: index for index, value in enumerate(action_list)}
+        self.actions = AttrDict(action_dict)
+
         self.action_space = spaces.Discrete(len(self.actions))
 
         self.carrying = set()
@@ -321,7 +335,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         if self.mode == 'human':
             self.last_action = action
         else:
-            self.last_action = self.actions(action)
+            self.last_action = action
 
         self.step_count += 1
         self.action_done = True
@@ -395,17 +409,22 @@ class MiniBehaviorEnv(MiniGridEnv):
                 else:
                     assert False, "unknown action {}".format(action)
             else:
-                # TODO: with agent centric, how does agent choose which obj to do the action on
-                obj_action = self.actions(action).name.split('/') # list: [obj, action]
+                obj_action = self.action_list[action].split('/')  # list: [obj, action]
 
-                # try to perform action
-                obj = self.obj_instances[obj_action[0]]
+                objs = self.objs[obj_action[0]]
                 action_class = ACTION_FUNC_MAPPING[obj_action[1]]
 
-                if action_class(self).can(obj):
-                    action_class(self).do(obj)
-                else:
-                    self.action_done = False
+                self.action_done = False
+                for obj in objs:
+                    if action_class(self).can(obj):
+                        # Drop to a random dimension
+                        if "drop" in obj_action[1]:
+                            drop_dim = obj.available_dims
+                            action_class(self).do(obj, np.random.choice(drop_dim))
+                        else:
+                            action_class(self).do(obj)
+                        self.action_done = True
+                        break
 
         self.update_states()
         reward = self._reward()

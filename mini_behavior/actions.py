@@ -120,6 +120,7 @@ class Drop(BaseAction):
 
         fwd_pos = self.env.front_pos
         dims = self.drop_dims(fwd_pos)
+        obj.available_dims = dims
 
         return dims != []
 
@@ -174,6 +175,8 @@ class DropIn(BaseAction):
 
         fwd_pos = self.env.front_pos
         dims = self.drop_dims(fwd_pos)
+        obj.available_dims = dims
+
         return dims != []
 
     def do(self, obj, dim):
@@ -233,6 +236,12 @@ class Pickup(BaseAction):
 
         # update cur_pos of obj
         obj.update_pos(np.array([-1, -1]))
+
+        # We need to remove "inside"
+        fwd_pos = self.env.front_pos
+        furniture = self.env.grid.get_furniture(*fwd_pos, dim)
+        if furniture is not None:
+            obj.states['inside'].set_value(furniture, False)
 
         # check dependencies
         assert obj.check_abs_state(self.env, 'inhandofrobot')
