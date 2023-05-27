@@ -1,5 +1,5 @@
 from .rendering import *
-from bddl import OBJECT_TO_IDX
+from mini_bddl import OBJECT_TO_IDX
 from .utils.globals import COLOR_TO_IDX, COLORS
 from .utils.objects_base import WorldObj, FurnitureObj
 
