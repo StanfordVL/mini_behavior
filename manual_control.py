@@ -102,7 +102,7 @@ def switch_dim(dim):
     redraw(obs)
 
 
-def key_handler(event):
+def key_handler_cartesian(event):
     print('pressed', event.key)
     if event.key == 'escape':
         window.close()
@@ -145,6 +145,46 @@ def key_handler(event):
         switch_dim(2)
         return
 
+# Todo: add other primitive actions
+def key_handler_primitive(event):
+    print('pressed', event.key)
+    if event.key == 'escape':
+        window.close()
+        return
+    if event.key == 'left':
+        step(env.actions.left)
+        return
+    if event.key == 'right':
+        step(env.actions.right)
+        return
+    if event.key == 'up':
+        step(env.actions.forward)
+        return
+    if event.key == '0':
+        step(env.actions.pickup_0)
+        return
+    if event.key == '1':
+        step(env.actions.pickup_1)
+        return
+    if event.key == '2':
+        step(env.actions.pickup_2)
+        return
+    if event.key == '3':
+        step(env.actions.drop)
+        return
+    if event.key == '4':
+        step(env.actions.toggle)
+        return
+    if event.key == '5':
+        step(env.actions.open)
+        return
+    if event.key == '6':
+        step(env.actions.close)
+        return
+    if event.key == 'pagedown':
+        show_states()
+        return
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -153,9 +193,11 @@ parser.add_argument(
     # default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
     # default='MiniGrid-FloorPlanEnv-16x16-N1-v0'
     # default='MiniGrid-TwoRoomNavigation-8x8-N2-v0'
-    default='MiniGrid-ThrowLeftoversSceneEnv-0x0-N2-v0'
+    # default='MiniGrid-ThrowLeftoversSceneEnv-0x0-N2-v0'
     # default='MiniGrid-ThrowLeftovers-16x16-N2-v1'
     # default='MiniGrid-InstallingAPrinter-16x16-N2-v1'
+    # default='MiniGrid-CleaningACar-16x16-N2-v1'
+    default="MiniGrid-ThawingFrozenFood-16x16-N2-v1"
 )
 parser.add_argument(
     "--seed",
@@ -199,7 +241,10 @@ if args.agent_view:
     env = ImgObsWrapper(env)
 
 window = Window('mini_behavior - ' + args.env)
-window.reg_key_handler(key_handler)
+if env.action_space_type == "cartesian":
+    window.reg_key_handler(key_handler_cartesian)
+elif env.action_space_type == "primitive":
+    window.reg_key_handler(key_handler_primitive)
 
 if args.load is None:
     reset()

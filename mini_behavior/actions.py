@@ -213,6 +213,11 @@ class Pickup(BaseAction):
         if not super().can(obj):
             return False
 
+        # For primitive action type, can only carry one object at a time
+        if len(self.env.carrying) != 0 and self.env.action_space_type == "primitive":
+            assert len(self.env.carrying) == 1
+            return False
+
         # cannot pickup if carrying
         if obj.check_abs_state(self.env, 'inhandofrobot'):
             return False

@@ -17,6 +17,9 @@ import numpy as np
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
 
+# action space type ("primitive" or "cartesian")
+ACTION_SPACE_TYPE = "primitive" # "cartesian" #
+
 
 class MiniBehaviorEnv(MiniGridEnv):
     """
@@ -32,18 +35,19 @@ class MiniBehaviorEnv(MiniGridEnv):
 
     # Enumeration of possible actions
     class Actions(IntEnum):
-        # Turn left, turn right, move forward
         left = 0
         right = 1
         forward = 2
-        pickup = 3
-        drop = 4
-        drop_in = 5
-        toggle = 6
-        open = 7
-        close = 8
-        slice = 9
-        cook = 10
+        pickup_0 = 3
+        pickup_1 = 4
+        pickup_2 = 5
+        drop = 6
+        drop_in = 7
+        toggle = 8
+        open = 9
+        close = 10
+        slice = 11
+        cook = 12
 
     def __init__(
         self,
@@ -58,7 +62,9 @@ class MiniBehaviorEnv(MiniGridEnv):
         agent_view_size=7,
         highlight=True,
         tile_size=TILE_PIXELS,
+        action_space_type=ACTION_SPACE_TYPE,
     ):
+
         self.episode = 0
         self.mode = mode
         self.last_action = None
@@ -109,12 +115,17 @@ class MiniBehaviorEnv(MiniGridEnv):
 
         self.grid = BehaviorGrid(width, height)
 
-        # action list is used to access string by index
-        self.action_list = action_list
-        action_dict = {value: index for index, value in enumerate(action_list)}
-        self.actions = AttrDict(action_dict)
-
-        self.action_space = spaces.Discrete(len(self.actions))
+        self.action_space_type = action_space_type
+        assert self.action_space_type in ["cartesian", "primitive"]
+        if self.action_space_type == "cartesian":
+            # action list is used to access string by index
+            self.action_list = action_list
+            action_dict = {value: index for index, value in enumerate(action_list)}
+            self.actions = AttrDict(action_dict)
+            self.action_space = spaces.Discrete(len(self.actions))
+        else:
+            self.actions = MiniBehaviorEnv.Actions
+            self.action_space = spaces.Discrete(len(self.actions))
 
         self.carrying = set()
 
@@ -332,10 +343,7 @@ class MiniBehaviorEnv(MiniGridEnv):
 
     def step(self, action):
         # keep track of last action
-        if self.mode == 'human':
-            self.last_action = action
-        else:
-            self.last_action = action
+        self.last_action = action
 
         self.step_count += 1
         self.action_done = True
@@ -368,7 +376,7 @@ class MiniBehaviorEnv(MiniGridEnv):
                 self.action_done = False
 
         else:
-            if self.mode == 'human':
+            if self.mode == 'human' and self.action_space_type == "cartesian":
                 self.last_action = None
                 if action == 'choose':
                     choices = self.all_reachable()
@@ -382,10 +390,17 @@ class MiniBehaviorEnv(MiniGridEnv):
                         assert obj is not None, "No object chosen"
 
                         actions = []
-                        for action in self.actions:
-                            action_class = ACTION_FUNC_MAPPING.get(action.name, None)
+                        for action in MiniBehaviorEnv.Actions:
+                            action_name = action.name
+                            # process the pickup action
+                            if "pickup" in action_name:
+                                if action_name == "pickup_0":
+                                    action_name = "pickup"
+                                else:
+                                    continue
+                            action_class = ACTION_FUNC_MAPPING.get(action_name, None)
                             if action_class and action_class(self).can(obj):
-                                actions.append(action.name)
+                                actions.append(action_name)
 
                         if len(actions) == 0:
                             print("No actions available")
@@ -393,7 +408,7 @@ class MiniBehaviorEnv(MiniGridEnv):
                             text = ''.join('{}) {} \n'.format(i, actions[i]) for i in range(len(actions)))
 
                             action = input("Choose one of the following actions: \n{}".format(text))
-                            action = actions[int(action)] # action name
+                            action = actions[int(action)]  # action name
 
                             if action == 'drop' or action == 'drop_in':
                                 dims = ACTION_FUNC_MAPPING[action](self).drop_dims(fwd_pos)
@@ -402,29 +417,65 @@ class MiniBehaviorEnv(MiniGridEnv):
                                 dim = input(f'Choose which dimension to drop the object: \n{text}')
                                 ACTION_FUNC_MAPPING[action](self).do(obj, int(dim))
                             else:
-                                ACTION_FUNC_MAPPING[action](self).do(obj) # perform action
-                            self.last_action = self.actions[action]
+                                ACTION_FUNC_MAPPING[action](self).do(obj)  # perform action
+                            self.last_action = action
 
                 # Done action (not used by default)
                 else:
                     assert False, "unknown action {}".format(action)
             else:
-                obj_action = self.action_list[action].split('/')  # list: [obj, action]
+                if self.action_space_type == "cartesian": 
+                    obj_action = self.action_list[action].split('/')  # list: [obj, action]
+                    objs = self.objs[obj_action[0]]
+                    action_class = ACTION_FUNC_MAPPING[obj_action[1]]
+    
+                    self.action_done = False
+                    for obj in objs:
+                        if action_class(self).can(obj):
+                            # Drop to a random dimension
+                            if "drop" in obj_action[1]:
+                                drop_dim = obj.available_dims
+                                action_class(self).do(obj, np.random.choice(drop_dim))
+                            else:
+                                action_class(self).do(obj)
+                            self.action_done = True
+                            break
+                else:
+                    assert self.action_space_type == "primitive"
+                    action = self.actions(action)
+                    action_name = action.name
+                    if "pickup" in action_name:
+                        action_dim = action_name.split('_')  # list: [action, dim]
+                        action_class = ACTION_FUNC_MAPPING[action_dim[0]]
+                    else:
+                        action_class = ACTION_FUNC_MAPPING[action_name]
+                    self.action_done = False
 
-                objs = self.objs[obj_action[0]]
-                action_class = ACTION_FUNC_MAPPING[obj_action[1]]
-
-                self.action_done = False
-                for obj in objs:
-                    if action_class(self).can(obj):
-                        # Drop to a random dimension
-                        if "drop" in obj_action[1]:
-                            drop_dim = obj.available_dims
-                            action_class(self).do(obj, np.random.choice(drop_dim))
-                        else:
-                            action_class(self).do(obj)
-                        self.action_done = True
-                        break
+                    # Pickup involves certain dimension
+                    if "pickup" in action_name:
+                        for obj in fwd_cell[int(action_dim[1])]:
+                            if is_obj(obj) and action_class(self).can(obj):
+                                action_class(self).do(obj)
+                                self.action_done = True
+                                break
+                    # Drop act on carried object
+                    elif "drop" in action_name:
+                        for obj in self.carrying:
+                            if action_class(self).can(obj):
+                                drop_dim = obj.available_dims
+                                action_class(self).do(obj, np.random.choice(drop_dim))
+                                self.action_done = True
+                                break
+                    # Everything else act on the forward cell
+                    else:
+                        for dim in fwd_cell:
+                            for obj in dim:
+                                if is_obj(obj) and action_class(self).can(obj):
+                                    action_class(self).do(obj)
+                                    self.action_done = True
+                                    break
+                            if self.action_done:
+                                break
 
         self.update_states()
         reward = self._reward()

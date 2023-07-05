@@ -55,7 +55,6 @@ class ThawingFrozenFoodEnv(RoomGrid):
         for obj in self.objs['date'] + self.objs['olive'] + self.objs['fish']:
             assert obj.check_abs_state(self, 'freezable')
 
-
     def _end_conditions(self):
         date = self.objs['date'][0]
         olive = self.objs['olive'][0]
@@ -74,7 +73,7 @@ class ThawingFrozenFoodEnv(RoomGrid):
             if not fish.check_rel_state(self, sink, 'nextto'):
                 return False
 
-        if not olive.check_rel_state(self, sink, 'nexxto'):
+        if not olive.check_rel_state(self, sink, 'nextto'):
             return False
 
         return True
