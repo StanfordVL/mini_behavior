@@ -17,9 +17,6 @@ import numpy as np
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
 
-# action space type ("primitive" or "cartesian")
-ACTION_SPACE_TYPE = "primitive" # "cartesian" #
-
 
 class MiniBehaviorEnv(MiniGridEnv):
     """
@@ -51,7 +48,7 @@ class MiniBehaviorEnv(MiniGridEnv):
 
     def __init__(
         self,
-        mode='not_human',
+        mode='primitive',
         grid_size=None,
         width=None,
         height=None,
@@ -62,11 +59,10 @@ class MiniBehaviorEnv(MiniGridEnv):
         agent_view_size=7,
         highlight=True,
         tile_size=TILE_PIXELS,
-        action_space_type=ACTION_SPACE_TYPE,
     ):
 
         self.episode = 0
-        self.mode = mode
+        self.teleop = False  # True only when set manually
         self.last_action = None
         self.action_done = None
 
@@ -115,9 +111,9 @@ class MiniBehaviorEnv(MiniGridEnv):
 
         self.grid = BehaviorGrid(width, height)
 
-        self.action_space_type = action_space_type
-        assert self.action_space_type in ["cartesian", "primitive"]
-        if self.action_space_type == "cartesian":
+        self.mode = mode
+        assert self.mode in ["cartesian", "primitive"]
+        if self.mode == "cartesian":
             # action list is used to access string by index
             self.action_list = action_list
             action_dict = {value: index for index, value in enumerate(action_list)}
@@ -317,6 +313,9 @@ class MiniBehaviorEnv(MiniGridEnv):
             for pos in obj.all_pos:
                 self.grid.set(*pos, obj, dim)
 
+    def teleop_mode(self):
+        self.teleop = True
+
     def agent_sees(self, x, y):
         """
         Check if a non-empty grid position is visible to the agent
@@ -376,7 +375,7 @@ class MiniBehaviorEnv(MiniGridEnv):
                 self.action_done = False
 
         else:
-            if self.mode == 'human' and self.action_space_type == "cartesian":
+            if self.teleop and self.mode == "cartesian":
                 self.last_action = None
                 if action == 'choose':
                     choices = self.all_reachable()
@@ -424,7 +423,7 @@ class MiniBehaviorEnv(MiniGridEnv):
                 else:
                     assert False, "unknown action {}".format(action)
             else:
-                if self.action_space_type == "cartesian": 
+                if self.mode == "cartesian":
                     obj_action = self.action_list[action].split('/')  # list: [obj, action]
                     objs = self.objs[obj_action[0]]
                     action_class = ACTION_FUNC_MAPPING[obj_action[1]]
@@ -441,7 +440,7 @@ class MiniBehaviorEnv(MiniGridEnv):
                             self.action_done = True
                             break
                 else:
-                    assert self.action_space_type == "primitive"
+                    assert self.mode == "primitive"
                     action = self.actions(action)
                     action_name = action.name
                     if "pickup" in action_name:

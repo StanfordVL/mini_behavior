@@ -11,7 +11,7 @@ class PreparingSaladFloorplanEnv(FloorPlanEnv):
 
     def __init__(
             self,
-            mode='human',
+            mode='cartesian',
             scene_id='rs_int',
             num_objs=None,
             max_steps=1e5,
@@ -139,5 +139,5 @@ register(
 register(
     id='MiniGrid-PreparingSaladFloorplan-16x16-N2-v1',
     entry_point='mini_behavior.envs:PreparingSaladFloorplanEnv',
-    kwargs={'mode': 'human'}
+    kwargs={'mode': 'cartesian'}
 )

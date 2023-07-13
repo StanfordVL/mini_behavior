@@ -18,7 +18,7 @@ class TwoRoomNavigationEnv(RoomGrid):
             self,
             max_steps=1e5,
     ):
-        super().__init__(mode='human',
+        super().__init__(mode='cartesian',
                          num_objs={'ball': 1},
                          room_size=8,
                          num_rows=1,

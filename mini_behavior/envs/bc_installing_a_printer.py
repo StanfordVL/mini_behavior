@@ -26,7 +26,7 @@ class SimpleInstallingAPrinterEnv(InstallingAPrinterEnv):
 
     def __init__(
             self,
-            mode='not_human',
+            mode='primitive',
             room_size=16,
             num_rows=1,
             num_cols=1,
@@ -167,7 +167,7 @@ class SimpleInstallingAPrinterTwoEnv(InstallingAPrinterEnv):
 
     def __init__(
             self,
-            mode='not_human',
+            mode='primitive',
             room_size=17,
             num_rows=1,
             num_cols=1,
@@ -314,7 +314,7 @@ class SimpleInstallingAPrinterFloorplanEnv(FloorPlanEnv):
 
     def __init__(
             self,
-            mode='human',
+            mode='cartesian',
             scene_id='rs_int',
             num_objs=None,
             max_steps=50
@@ -453,7 +453,7 @@ class SimpleInstallingAPrinterDistractEnv(SimpleInstallingAPrinterEnv):
 
     def __init__(
             self,
-            mode='human',
+            mode='cartesian',
             room_size=16,
             num_rows=1,
             num_cols=1,
@@ -486,12 +486,12 @@ class SimpleInstallingAPrinterDistractEnv(SimpleInstallingAPrinterEnv):
 register(
     id='MiniGrid-SimpleInstallingAPrinterDistract-16x16-N2-v0',
     entry_point='mini_behavior.envs:SimpleInstallingAPrinterDistractEnv',
-    kwargs={'mode': 'not_human'}
+    kwargs={'mode': 'primitive'}
 )
 
 
 register(
     id='MiniGrid-SimpleInstallingAPrinterDistract-8x8-N2-v0',
     entry_point='mini_behavior.envs:SimpleInstallingAPrinterDistractEnv',
-    kwargs={'mode': 'not_human', 'room_size': 8}
+    kwargs={'mode': 'primitive', 'room_size': 8}
 )

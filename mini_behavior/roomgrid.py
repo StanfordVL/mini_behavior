@@ -84,7 +84,7 @@ class RoomGrid(MiniBehaviorEnv):
 
     def __init__(
         self,
-        mode='not_human',
+        mode='primitive',
         num_objs=None,
         room_size=10,
         num_rows=2,

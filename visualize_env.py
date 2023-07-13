@@ -79,7 +79,7 @@ for episode in range(args.episodes):
 
         obs, reward, done, info = env.step(action)
 
-        if env.action_space_type == "cartesian":
+        if env.mode == "cartesian":
             print(env.action_list[action])
         else:
             print(env.actions(action).name)

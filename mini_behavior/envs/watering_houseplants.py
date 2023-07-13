@@ -9,7 +9,7 @@ class WateringHouseplantsEnv(RoomGrid):
 
     def __init__(
             self,
-            mode='not_human',
+            mode='primitive',
             room_size=16,
             max_steps=1e5,
     ):
@@ -67,5 +67,5 @@ register(
 register(
     id='MiniGrid-WateringHouseplants-16x16-N2-v1',
     entry_point='mini_behavior.envs:WateringHouseplantsEnv',
-    kwargs={'mode': 'human'}
+    kwargs={'mode': 'cartesian'}
 )

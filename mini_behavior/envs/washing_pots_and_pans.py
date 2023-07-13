@@ -9,7 +9,7 @@ class WashingPotsAndPansEnv(RoomGrid):
 
     def __init__(
             self,
-            mode='not_human',
+            mode='primitive',
             room_size=16,
             num_rows=1,
             num_cols=1,
@@ -91,5 +91,5 @@ register(
 register(
     id='MiniGrid-WashingPotsAndPans-16x16-N2-v1',
     entry_point='mini_behavior.envs:WashingPotsAndPansEnv',
-    kwargs={'mode': 'human'}
+    kwargs={'mode': 'cartesian'}
 )

@@ -30,7 +30,7 @@ class TransitionEnv(RoomGrid):
             objs=None,
             transition_probs=None,
             num_choose=4,
-            mode='not_human',
+            mode='primitive',
             room_size=8,
             num_rows=2,
             num_cols=2,
@@ -139,5 +139,5 @@ register(
 register(
     id='MiniGrid-TransitionEnv-8x8x4-N2-v1',
     entry_point='mini_behavior.envs:TransitionEnv',
-    kwargs={'mode': 'human'}
+    kwargs={'mode': 'cartesian'}
 )

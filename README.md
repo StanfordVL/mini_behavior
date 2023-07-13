@@ -9,6 +9,10 @@
 ### Run Code 
 To run in interactive mode: ./manual_control.py
 
+### Action Space Type
+Mini-BH supports two types of action spaces: cartesian and primitive. Environment names that ends with v0 correspond to 
+primitive actions, while v1 corresponds to cartesian actions.
+
 ### File Descriptions 
 * **gym_minigrid/actions.py**
     * Contains base class for actions 

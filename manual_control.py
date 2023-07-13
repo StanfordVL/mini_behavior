@@ -233,6 +233,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 env = gym.make(args.env)
+env.teleop_mode()
 
 all_steps = {}
 
@@ -241,9 +242,9 @@ if args.agent_view:
     env = ImgObsWrapper(env)
 
 window = Window('mini_behavior - ' + args.env)
-if env.action_space_type == "cartesian":
+if env.mode == "cartesian":
     window.reg_key_handler(key_handler_cartesian)
-elif env.action_space_type == "primitive":
+elif env.mode == "primitive":
     window.reg_key_handler(key_handler_primitive)
 
 if args.load is None:

@@ -214,7 +214,7 @@ class Pickup(BaseAction):
             return False
 
         # For primitive action type, can only carry one object at a time
-        if len(self.env.carrying) != 0 and self.env.action_space_type == "primitive":
+        if len(self.env.carrying) != 0 and self.env.mode == "primitive":
             assert len(self.env.carrying) == 1
             return False
 

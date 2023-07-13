@@ -17,7 +17,7 @@ def get_floorplan(scene_id) :
 class FloorPlanEnv(MiniBehaviorEnv):
     def __init__(self,
                  img_path=None,
-                 mode='human',
+                 mode='cartesian',
                  scene_id='beechwood_0_int',
                  num_objs=None,
                  max_steps=1e5,

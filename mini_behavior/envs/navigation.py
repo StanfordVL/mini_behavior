@@ -9,7 +9,7 @@ class NavigationEnv(RoomGrid):
 
     def __init__(
             self,
-            mode='not_human',
+            mode='primitive',
             room_size=16,
             num_rows=1,
             num_cols=1,
@@ -61,14 +61,14 @@ class NavigationEnv(RoomGrid):
 
 class NavigationEnv16x16_Human(NavigationEnv):
     def __init__(self):
-        super().__init__(mode='human',
+        super().__init__(mode='cartesian',
                          room_size=16,
                          )
 
 
 class NavigationMultiEnv16x16_Human(NavigationEnv):
     def __init__(self):
-        super().__init__(mode='human',
+        super().__init__(mode='cartesian',
                          room_size=16,
                          num_rows=2,
                          num_cols=2
@@ -77,7 +77,7 @@ class NavigationMultiEnv16x16_Human(NavigationEnv):
 
 class NavigationMultiEnv16x16_RL(NavigationEnv):
     def __init__(self):
-        super().__init__(mode='not_human',
+        super().__init__(mode='primitive',
                          room_size=16,
                          num_rows=2,
                          num_cols=2
@@ -85,7 +85,7 @@ class NavigationMultiEnv16x16_RL(NavigationEnv):
 
 class NavigationMultiEnv8x8_Human(NavigationEnv):
     def __init__(self):
-        super().__init__(mode='human',
+        super().__init__(mode='cartesian',
                          room_size=8,
                          num_rows=2,
                          num_cols=2

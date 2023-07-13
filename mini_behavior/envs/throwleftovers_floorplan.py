@@ -10,7 +10,7 @@ class ThrowLeftoversSceneEnv(FloorPlanEnv):
 
     def __init__(
             self,
-            mode='human',
+            mode='cartesian',
             scene_id='rs_int',
             num_objs=None,
             max_steps=1e5,
