@@ -1,9 +1,10 @@
 import argparse
-import numpy
-import mini_behavior
 
-from rl.utils.env import make_env
-from rl.utils.other import seed, device
+import gym
+import numpy
+import random
+import mini_behavior
+import torch
 
 # Parse arguments
 parser = argparse.ArgumentParser()
@@ -13,26 +14,27 @@ parser.add_argument("--seed", type=int, default=20,
                     help="random seed (default: 0)")
 parser.add_argument("--shift", type=int, default=0,
                     help="number of times the environment is reset at the beginning (default: 0)")
-parser.add_argument("--argmax", action="store_true", default=False,
-                    help="select the action with highest probability (default: False)")
 parser.add_argument("--pause", type=float, default=0.1,
                     help="pause duration between two consequent actions of the agent (default: 0.seed 0_2)")
 parser.add_argument("--gif", type=str, default=None,
                     help="store output as gif with the given filename")
 parser.add_argument("--episodes", type=int, default=1000000,
                     help="number of episodes to visualize")
-parser.add_argument("--memory", action="store_true", default=False,
-                    help="add a LSTM to the model")
-parser.add_argument("--text", action="store_true", default=False,
-                    help="add a GRU to the model")
 parser.add_argument("--reset", action="store_true", default=False,
-                    help="Keep resetting")
+                    help="Keep resetting for testing initialization")
 parser.add_argument("--norend", action="store_true", default=False,
                     help="Whether to render")
-parser.add_argument("--scripted", action="store_true", default=False,
-                    help="Whether to used scripted policy")
 
 args = parser.parse_args()
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+def seed(seed):
+    random.seed(seed)
+    numpy.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
 # Set seed for all randomness sources
 seed(args.seed)
@@ -41,8 +43,8 @@ seed(args.seed)
 print(f"Device: {device}\n")
 
 # Load environment
-
-env = make_env(args.env, args.seed)
+env = gym.make(args.env)
+env.seed(args.seed)
 
 for _ in range(args.shift):
     env.reset()
@@ -72,10 +74,7 @@ for episode in range(args.episodes):
         if args.gif:
             frames.append(numpy.moveaxis(env.render("rgb_array"), 2, 0))
 
-        if args.scripted:
-            action = env.generate_action()
-        else:
-            action = env.action_space.sample()
+        action = env.action_space.sample()
 
         obs, reward, done, info = env.step(action)
 
