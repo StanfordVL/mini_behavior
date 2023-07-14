@@ -47,8 +47,7 @@ class SettingUpCandlesEnv(RoomGrid):
         for obj in candle[3:]:
             obj.states['inside'].set_value(box[1], True)
 
-    def _reward(self):
-        return 0
+
 
     def _end_conditions(self):
         candle = self.objs['candle']

@@ -89,8 +89,7 @@ class CleaningUpTheKitchenOnlyEnv(RoomGrid):
 
         return True
 
-    def _reward(self):
-        return 0
+
 
     def _end_conditions(self):
         cabinets = self.objs['cabinet']

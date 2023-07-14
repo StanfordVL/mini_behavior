@@ -63,8 +63,7 @@ class WashingPotsAndPansEnv(RoomGrid):
         self.put_obj(soap, *sink.cur_pos, 0)
         soap.states['inside'].set_value(sink, True)
 
-    def _reward(self):
-        return 0
+
 
     def _end_conditions(self):
         teapots = self.objs['teapot']

@@ -46,8 +46,7 @@ class BoxingBooksUpForStorageEnv(RoomGrid):
         self.put_obj(book[5], *shelf_pos[0], 2)
         self.put_obj(book[6], *shelf_pos[1], 2)
 
-    def _reward(self):
-        return 0
+
 
     def _end_conditions(self):
         book = self.objs['book']

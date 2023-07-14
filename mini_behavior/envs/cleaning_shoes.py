@@ -85,8 +85,7 @@ class CleaningShoesEnv(RoomGrid):
 
         return True
 
-    def _reward(self):
-        return 0
+
 
     def _end_conditions(self):
         shoes = self.objs['shoe']

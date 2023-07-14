@@ -43,8 +43,7 @@ class OpeningPackagesEnv(RoomGrid):
 
         return True
 
-    def _reward(self):
-        return 0
+
 
     def _end_conditions(self):
         for package in self.objs['package']:

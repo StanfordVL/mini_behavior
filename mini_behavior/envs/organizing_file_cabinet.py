@@ -79,8 +79,7 @@ class OrganizingFileCabinetEnv(RoomGrid):
 
         return True
 
-    def _reward(self):
-        return 0
+
 
     def _end_conditions(self):
         chair = self.objs['chair'][0]

@@ -65,8 +65,7 @@ class PreparingSaladEnv(RoomGrid):
         plate[1].states['dustyable'].set_value(False)
         self.put_obj(carving_knife, *cabinet_pos[2], 0)
 
-    def _reward(self):
-        return 0
+
 
     def _end_conditions(self):
         lettuces = self.objs['lettuce']

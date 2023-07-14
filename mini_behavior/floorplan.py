@@ -56,16 +56,9 @@ class FloorPlanEnv(MiniBehaviorEnv):
         assert self._init_conditions(), "Does not satisfy initial conditions"
         self.place_agent()
 
-
     def _gen_objs(self):
         goal = self.objs['goal'][0]
         self.target_pos = self.place_obj(goal)
-
-    def _reward(self):
-        if self._end_conditions():
-            return 1
-        else:
-            return 0
 
     def _end_conditions(self):
         pass

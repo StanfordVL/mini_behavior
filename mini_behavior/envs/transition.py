@@ -125,11 +125,6 @@ class TransitionEnv(RoomGrid):
     def _end_conditions(self):
         return self.step_count == self.max_steps
 
-    def _reward(self):
-        if self._end_conditions():
-            return 1
-        else:
-            return 0
 
 register(
     id='MiniGrid-TransitionEnv-8x8x4-N2-v0',

@@ -41,8 +41,7 @@ class PuttingAwayDishesAfterCleaningEnv(RoomGrid):
         for i in range(8):
             self.put_obj(plate[i], *countertop_pos[i], 1)
 
-    def _reward(self):
-        return 0
+
 
     def _end_conditions(self):
         plate = self.objs['plate']

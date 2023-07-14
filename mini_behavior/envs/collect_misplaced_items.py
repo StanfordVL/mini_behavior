@@ -61,8 +61,7 @@ class CollectMisplacedItemsEnv(RoomGrid):
 
         return True
 
-    def _reward(self):
-        return 0
+
 
     def _end_conditions(self):
         gym_shoe = self.objs['gym_shoe']

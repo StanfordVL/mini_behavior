@@ -483,6 +483,12 @@ class MiniBehaviorEnv(MiniGridEnv):
 
         return obs, reward, done, {}
 
+    def _reward(self):
+        if self._end_conditions():
+            return 1
+        else:
+            return 0
+
     def all_reachable(self):
         return [obj for obj in self.obj_instances.values() if obj.check_abs_state(self, 'inreachofrobot')]
 

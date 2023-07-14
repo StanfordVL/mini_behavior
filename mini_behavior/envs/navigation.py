@@ -52,12 +52,6 @@ class NavigationEnv(RoomGrid):
         else:
             return False
 
-    def _reward(self):
-        if self._end_conditions():
-            return 1
-        else:
-            return 0
-
 
 class NavigationEnv16x16_Human(NavigationEnv):
     def __init__(self):

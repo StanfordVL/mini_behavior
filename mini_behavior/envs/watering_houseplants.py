@@ -44,8 +44,7 @@ class WateringHouseplantsEnv(RoomGrid):
 
         # TODO: agent start in room 2
 
-    def _reward(self):
-        return 0
+
 
     def _end_conditions(self):
         pot_plants = self.objs['pot_plant']

@@ -44,12 +44,6 @@ class TwoRoomNavigationEnv(RoomGrid):
     def _end_conditions(self):
         return False
 
-    def _reward(self):
-        if self._end_conditions():
-            return 1
-        else:
-            return 0
-
 
 register(
     id='MiniGrid-TwoRoomNavigation-8x8-N2-v0',

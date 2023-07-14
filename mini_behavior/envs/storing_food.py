@@ -51,8 +51,7 @@ class StoringFoodEnv(RoomGrid):
         self.put_obj(sugars[0], *countertop_pos[6], 1)
         self.put_obj(sugars[1], *countertop_pos[7], 1)
 
-    def _reward(self):
-        return 0
+
 
     def _end_conditions(self):
         oatmeals = self.objs['oatmeal']

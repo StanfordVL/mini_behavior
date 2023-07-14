@@ -42,8 +42,7 @@ class SortingBooksEnv(RoomGrid):
         self.put_obj(book[1], *table_pos[0], 2)
         self.put_obj(hardback[1], *table_pos[1], 2)
 
-    def _reward(self):
-        return 0
+
 
     def _end_conditions(self):
         book = self.objs['book']
