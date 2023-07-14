@@ -4,10 +4,15 @@
 ### Environment Setup
 * Follow setup instructions from: https://github.com/Farama-Foundation/gym-minigrid.
    pip install gym-minigrid==1.0.3
-* Downgrade gym to version 0.21.0: pip install gym==0.21.0
+* Install gym: pip install gym==0.21.0
 
 ### Run Code 
-To run in interactive mode: ./manual_control.py
+* To run in interactive mode: ./manual_control.py
+* To train a sample RL agent, install stable-baseline3:
+```commandline
+pip install stable-baselines3==1.6.2
+python train_rl_agent.py
+```
 
 ### Action Space Type
 Mini-BH supports two types of action spaces: cartesian and primitive. Environment names that ends with v0 correspond to 

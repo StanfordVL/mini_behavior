@@ -62,13 +62,17 @@ class InstallingAPrinterEnv(RoomGrid):
             return False
 
 
-# non human input env
 register(
     id='MiniGrid-InstallingAPrinter-16x16-N2-v0',
     entry_point='mini_behavior.envs:InstallingAPrinterEnv'
 )
 
-# human input env
+register(
+    id='MiniGrid-InstallingAPrinter-8x8-N2-v0',
+    entry_point='mini_behavior.envs:InstallingAPrinterEnv',
+    kwargs={"room_size": 8, "max_steps": 1000}
+)
+
 register(
     id='MiniGrid-InstallingAPrinter-16x16-N2-v1',
     entry_point='mini_behavior.envs:InstallingAPrinterEnv',
