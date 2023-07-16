@@ -8,7 +8,9 @@ import torch
 
 # Parse arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("--env", default='MiniGrid-CleaningACar-16x16-N2-v0',
+parser.add_argument("--env",
+                    # default='MiniGrid-CleaningACar-16x16-N2-v0',
+                    default="MiniGrid-ThrowingAwayLeftoversFour-8x8-N2-v0",
                     help="name of the environment to be run (REQUIRED)")
 parser.add_argument("--seed", type=int, default=20,
                     help="random seed (default: 0)")

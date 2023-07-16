@@ -49,18 +49,15 @@ def get_step(env):
 
 # save demo_16 as a pkl file
 def save_demo(all_steps, env_name, episode):
-    demo_dir = os.path.join('../../../demos', env_name)
+    demo_dir = os.path.join('./demos', env_name)
     if not os.path.isdir(demo_dir):
-        os.mkdir(demo_dir)
-    demo_dir = os.path.join(demo_dir, str(episode))
-    if not os.path.isdir(demo_dir):
-        os.mkdir(demo_dir)
+        os.makedirs(demo_dir)
     all_files = os.listdir(demo_dir)
     demo_num = len(all_files)
     demo_file = os.path.join(demo_dir, '{}_{}'.format(env_name, demo_num))
     assert not os.path.isfile(demo_file)
 
-    print('saving demo_16 to: {}'.format(demo_file))
+    print('saving demo to: {}'.format(demo_file))
 
     with open(demo_file, 'wb') as f:
         pkl.dump(all_steps, f)

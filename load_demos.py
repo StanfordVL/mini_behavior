@@ -10,8 +10,7 @@ def load_demo(filepath):
         demo = list(demo.values())
         return demo
 
-
-def load_demos(demo_dir='/Users/emilyjin/Code/behavior/mini_behavior/installing_a_printer/demo_16', num_demos=None):
+def load_demos(demo_dir, num_demos=None):
     demo_filenames = list(os.listdir(demo_dir))
     demos = []
     if num_demos is not None:
@@ -75,4 +74,9 @@ def get_nav_action(init_x, init_y, init_dir, front_is_empty, target_x, target_y,
 
     return action_name
 
+
+demo_dir = './demos/MiniGrid-InstallingAPrinter-8x8-N2-v0/'
+demos = load_demos(demo_dir)
+print("successfully loaded demos")
+print(f"demos length: {len(demos)}")
 

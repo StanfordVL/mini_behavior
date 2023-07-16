@@ -25,5 +25,4 @@ from mini_behavior.envs.throwleftovers_floorplan import *
 from mini_behavior.envs.two_room_nav import *
 
 # extra
-from mini_behavior.envs.bc_installing_a_printer import *
 from mini_behavior.envs.preparing_salad_floorplan import *

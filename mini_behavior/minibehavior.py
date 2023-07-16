@@ -35,16 +35,18 @@ class MiniBehaviorEnv(MiniGridEnv):
         left = 0
         right = 1
         forward = 2
-        pickup_0 = 3
-        pickup_1 = 4
-        pickup_2 = 5
-        drop = 6
-        drop_in = 7
-        toggle = 8
-        open = 9
-        close = 10
-        slice = 11
-        cook = 12
+        toggle = 3
+        open = 4
+        close = 5
+        slice = 6
+        cook = 7
+        drop_in = 8
+        pickup_0 = 9
+        pickup_1 = 10
+        pickup_2 = 11
+        drop_0 = 12
+        drop_1 = 13
+        drop_2 = 14
 
     def __init__(
         self,
@@ -417,6 +419,7 @@ class MiniBehaviorEnv(MiniGridEnv):
                                 ACTION_FUNC_MAPPING[action](self).do(obj, int(dim))
                             else:
                                 ACTION_FUNC_MAPPING[action](self).do(obj)  # perform action
+                            # TODO: this may not be right
                             self.last_action = action
 
                 # Done action (not used by default)
@@ -443,7 +446,7 @@ class MiniBehaviorEnv(MiniGridEnv):
                     assert self.mode == "primitive"
                     action = self.actions(action)
                     action_name = action.name
-                    if "pickup" in action_name:
+                    if "pickup" in action_name or "drop" in action_name:
                         action_dim = action_name.split('_')  # list: [action, dim]
                         action_class = ACTION_FUNC_MAPPING[action_dim[0]]
                     else:
@@ -462,8 +465,13 @@ class MiniBehaviorEnv(MiniGridEnv):
                         for obj in self.carrying:
                             if action_class(self).can(obj):
                                 drop_dim = obj.available_dims
-                                action_class(self).do(obj, np.random.choice(drop_dim))
-                                self.action_done = True
+                                if action_dim[1] == "in":
+                                    # For drop_in, we don't care about dimension
+                                    action_class(self).do(obj, np.random.choice(drop_dim))
+                                    self.action_done = True
+                                elif int(action_dim[1]) in drop_dim:
+                                    action_class(self).do(obj, int(action_dim[1]))
+                                    self.action_done = True
                                 break
                     # Everything else act on the forward cell
                     else:

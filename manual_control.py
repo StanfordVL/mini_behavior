@@ -78,13 +78,15 @@ def load():
 
 
 def step(action):
+    prev_obs = env.gen_obs()
     obs, reward, done, info = env.step(action)
 
     print('step=%s, reward=%.2f' % (env.step_count, reward))
 
     if args.save:
-        step_count, step = get_step(env)
-        all_steps[step_count] = step
+        # TODO: what is the get_step doing?
+        # step_count, step = get_step(env)
+        all_steps[env.step_count] = (prev_obs, action)
 
     if done:
         print('done!')
@@ -170,16 +172,31 @@ def key_handler_primitive(event):
         step(env.actions.pickup_2)
         return
     if event.key == '3':
-        step(env.actions.drop)
+        step(env.actions.drop_0)
         return
     if event.key == '4':
-        step(env.actions.toggle)
+        step(env.actions.drop_1)
         return
     if event.key == '5':
+        step(env.actions.drop_2)
+        return
+    if event.key == 't':
+        step(env.actions.toggle)
+        return
+    if event.key == 'o':
         step(env.actions.open)
         return
-    if event.key == '6':
+    if event.key == 'c':
         step(env.actions.close)
+        return
+    if event.key == 'k':
+        step(env.actions.cook)
+        return
+    if event.key == 's':
+        step(env.actions.slice)
+        return
+    if event.key == 'i':
+        step(env.actions.drop_in)
         return
     if event.key == 'pagedown':
         show_states()
@@ -190,14 +207,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--env",
     help="gym environment to load",
-    # default='MiniGrid-ThrowLeftoversFourRooms-8x8-N2-v1'
+    # default='MiniGrid-ThrowingAwayLeftoversFour-8x8-N2-v1'
     # default='MiniGrid-FloorPlanEnv-16x16-N1-v0'
     # default='MiniGrid-TwoRoomNavigation-8x8-N2-v0'
-    # default='MiniGrid-ThrowLeftoversSceneEnv-0x0-N2-v0'
-    # default='MiniGrid-ThrowLeftovers-16x16-N2-v1'
-    # default='MiniGrid-InstallingAPrinter-16x16-N2-v1'
+    default='MiniGrid-InstallingAPrinter-8x8-N2-v0'
     # default='MiniGrid-CleaningACar-16x16-N2-v1'
-    default="MiniGrid-ThawingFrozenFood-16x16-N2-v1"
+    # default="MiniGrid-ThawingFrozenFood-16x16-N2-v0"
 )
 parser.add_argument(
     "--seed",
@@ -234,6 +249,9 @@ args = parser.parse_args()
 
 env = gym.make(args.env)
 env.teleop_mode()
+if args.save:
+    # We do not support save for cartesian action space
+    assert env.mode == "primitive"
 
 all_steps = {}
 

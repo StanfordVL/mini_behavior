@@ -50,8 +50,6 @@ class InstallingAPrinterEnv(RoomGrid):
 
         return True
 
-
-
     def _end_conditions(self):
         printer = self.objs['printer'][0]
         table = self.objs['table'][0]
