@@ -4,7 +4,7 @@
 ### Environment Setup
 * Follow setup instructions from: https://github.com/Farama-Foundation/gym-minigrid.
    pip install gym-minigrid==1.0.3
-* Install gym: pip install gym==0.21.0
+* Install gym: pip install setuptools==65.5.0, pip install gym==0.21.0
 
 ### Run Code 
 * To run in interactive mode: python manual_control.py
