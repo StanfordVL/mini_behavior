@@ -1,4 +1,6 @@
 # MODIFIED FROM MINIGRID REPO
+import numpy as np
+
 from .objects import *
 from mini_bddl import ABILITIES
 from gym_minigrid.minigrid import Grid
@@ -24,6 +26,9 @@ class BehaviorGrid(Grid):
 
         # 3 Grid Dimension classes
         self.grid = [GridDimension(width, height) for i in range(3)]
+
+        # TODO: change this when we change the obj encoding
+        self.pixel_dim = 3 * 6
 
         self.walls = []
 
@@ -105,6 +110,12 @@ class BehaviorGrid(Grid):
         if isinstance(v, FurnitureObj):
             for idx in v.dims:
                 self.grid[idx].set(i, j, v)
+        elif isinstance(v, set):
+            # This means the object is carried by the agent
+            # Not sure how we should handle more than three
+            for idx, obj in enumerate(v):
+                if idx <= 2:
+                    self.grid[idx].set(i, j, obj)
         else:
             self.grid[dim].set(i, j, v)
 
@@ -112,6 +123,12 @@ class BehaviorGrid(Grid):
         assert len(objs) == 3
         for dim in range(3):
             self.grid[dim].set(i, j, objs[dim])
+
+    def set_all_items(self, i, j, objs):
+        assert len(objs) == 3
+        for dim in range(3):
+            for obj in objs[dim]:
+                self.grid[dim].set(i, j, obj)
 
     def horz_wall(self, x, y, length=None, obj_type=Wall):
         if length is None:
@@ -134,8 +151,8 @@ class BehaviorGrid(Grid):
 
         for i in range(self.width):
             for j in range(self.height):
-                v = self.get_all_objs(i, j)
-                grid.set_all_objs(j, grid.height - 1 - i, v)
+                v = self.get(i, j)
+                grid.set_all_items(j, grid.height - 1 - i, v)
 
         return grid
 
@@ -143,7 +160,6 @@ class BehaviorGrid(Grid):
         """
         Get a subset of the grid
         """
-
         grid = BehaviorGrid(width, height)
 
         for j in range(0, height):
@@ -152,8 +168,8 @@ class BehaviorGrid(Grid):
                 y = topY + j
 
                 if 0 <= x < self.width and 0 <= y < self.height:
-                    v = self.get_all_objs(x, y)
-                    grid.set_all_objs(i, j, v)
+                    v = self.get(x, y)
+                    grid.set_all_items(i, j, v)
                 else:
                     grid.set_all_objs(i, j, [Wall()] * 3)
 
@@ -336,15 +352,18 @@ class BehaviorGrid(Grid):
         if vis_mask is None:
             vis_mask = np.ones((self.width, self.height), dtype=bool)
 
-        array = np.zeros((self.width, self.height, 3), dtype='uint8')
+        array = np.zeros((self.width, self.height, self.pixel_dim), dtype='uint8')
 
         for i in range(self.width):
             for j in range(self.height):
                 if vis_mask[i, j]:
-                    v = self.get_all_objs(i, j)
-                    for obj in v:
-                        encoding = obj.encode() if is_obj(obj) else np.array([OBJECT_TO_IDX['empty'], 0, 0])
-                        array[i, j, :] = np.add(array[i, j, :], encoding)
+                    item_list = []
+                    v = self.get(i, j)
+                    for dim in v:
+                        for obj in dim:
+                            encoding = obj.encode() if is_obj(obj) else np.array([OBJECT_TO_IDX['empty'], 0, 0])
+                            item_list.append(encoding)
+                    array[i, j] = np.concatenate(item_list)
 
         return array
 
