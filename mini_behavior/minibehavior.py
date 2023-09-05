@@ -228,6 +228,69 @@ class MiniBehaviorEnv(MiniGridEnv):
         print('no end conditions')
         return False
 
+    def place_obj_pos(self,
+                      obj,
+                      pos,
+                      top=None,
+                      size=None,
+                      reject_fn=None
+                      ):
+        """
+        Place an object at a specific position in the grid
+
+        :param top: top-left position of the rectangle where to place
+        :param size: size of the rectangle where to place
+        :param obj: the object to place
+        :param pos: the top left of the pos we want the object to be placed
+        """
+
+        if top is None:
+            top = (0, 0)
+        else:
+            top = (max(top[0], 0), max(top[1], 0))
+
+        if size is None:
+            size = (self.grid.width, self.grid.height)
+
+        width = 1 if obj is None else obj.width
+        height = 1 if obj is None else obj.height
+
+        valid = True
+
+        if pos[0] < top[0] or pos[0] > min(top[0] + size[0], self.grid.width - width + 1)\
+                or pos[1] < top[1] or pos[1] > min(top[1] + size[1], self.grid.height - height + 1):
+            raise NotImplementedError(f'position {pos} not in grid')
+
+        for dx in range(width):
+            for dy in range(height):
+                x = pos[0] + dx
+                y = pos[1] + dy
+
+                # Don't place the object on top of another object
+                if not self.grid.is_empty(x, y):
+                    valid = False
+                    break
+
+                # Don't place the object where the agent is
+                if np.array_equal((x, y), self.agent_pos):
+                    valid = False
+                    break
+
+                # Check if there is a filtering criterion
+                if reject_fn and reject_fn(self, (x, y)):
+                    valid = False
+                    break
+
+        if not valid:
+            raise ValidationErr(f'failed in place_obj at {pos}')
+
+        self.grid.set(*pos, obj)
+
+        if obj:
+            self.put_obj(obj, *pos)
+
+        return pos
+
     def place_obj(self,
                   obj,
                   top=None,
@@ -277,9 +340,54 @@ class MiniBehaviorEnv(MiniGridEnv):
                     y = pos[1] + dy
 
                     # Don't place the object on top of another object
-                    if not self.grid.is_empty(x, y):
-                        valid = False
-                        break
+                    if obj is not None and obj.name == "door":
+                        left, right, up, down = 0, 0, 0, 0
+                        if (x < self.grid.width-1 and not self.grid.is_empty(x+1, y)) or x == self.grid.width - 1:
+                            right = 1
+                        if (x > 1 and not self.grid.is_empty(x-1, y)) or x == 0:
+                            left = 1
+                        if (y < self.grid.height-1 and not self.grid.is_empty(x, y+1)) or y == self.grid.height - 1:
+                            down = 1
+                        if (y > 1 and not self.grid.is_empty(x, y-1)) or y == 0:
+                            up = 1
+                        if height == 1 and (up or down):
+                            valid = False
+                            break
+                        if width == 1 and (left or right):
+                            valid = False
+                            break
+                    else:
+                        if not self.grid.is_empty(x, y):
+                            valid = False
+                            break
+                    
+                    # Don't place the object next to door
+
+                    if obj is not None and obj.type != "door":
+                        if x < self.grid.width-1:
+                            fur = self.grid.get_furniture(x+1, y)
+                            # print("right", fur)
+                            if fur is not None and fur.type == "door":
+                                valid = False
+                                break
+                        if x > 1:
+                            fur = self.grid.get_furniture(x-1, y)
+                            # print("left", fur)
+                            if fur is not None and fur.type == "door":
+                                valid = False
+                                break
+                        if y < self.grid.height-1:
+                            fur = self.grid.get_furniture(x, y+1)
+                            # print("down", fur)
+                            if fur is not None and fur.type == "door":
+                                valid = False
+                                break
+                        if y > 1:
+                            fur = self.grid.get_furniture(x, y-1)
+                            # print("top", fur)
+                            if fur is not None and fur.type == "door":
+                                valid = False
+                                break
 
                     # Don't place the object where the agent is
                     if np.array_equal((x, y), self.agent_pos):

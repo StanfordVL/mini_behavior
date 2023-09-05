@@ -1,0 +1,60 @@
+{
+    "Grid": 
+    {
+        "mission": "install a printer",
+        "auto": {
+            "room_split_dirs": ["vert", "horz"],
+            "min_room_dim": 1,
+            "max_num_room": 4
+        },
+        "width": 12,
+        "height": 12,
+        "agents":
+        {
+            "pos": null,
+            "dir": null
+        },
+        "rooms":
+        {
+            "num": 2,
+            "initial":
+            [
+                {
+                    "top": null,
+                    "size": null,
+                    "furnitures": 
+                    {
+                        "num": null,
+                        "initial": 
+                        [
+                            {
+                                "type": "printer",
+                                "state": [["toggleable", 0]],
+                                "pos": null,
+                                "objs": null
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "LivingRoom",
+                    "top": null,
+                    "size": null,
+                    "furnitures": 
+                    {
+                        "num": null,
+                        "initial": 
+                        [
+                            {
+                                "type": "table",
+                                "state": null,
+                                "pos": null,
+                                "objs": null
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}

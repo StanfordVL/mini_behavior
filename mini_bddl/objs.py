@@ -6,7 +6,7 @@ OBJECTS = [
     "egg", "electric_refrigerator",
     "fish", "folder", "fork", # "floor",
     "gym_shoe",
-    "hamburger", "hammer", "hardback", "highlighter",
+    "hamburger", "hammer", "hardback",
     "jar", "jewelry", "juice",
     "kettle", "knife",
     "lemon", "lettuce",
@@ -110,7 +110,7 @@ OBJECT_TO_IDX = {
     "vegetable_oil": 83,
     "wall": 84,
     "water": 85,
-    "window ": 86,
+    "window": 86,
     "pot_plant": 87,
     "marker": 88,
     "chair": 89,
@@ -221,3 +221,5 @@ OBJECT_TO_STR = {
     "hardback": "H",
     "candle": "C"
 }
+
+FURNITURE_CANNOT_ON = ['light', 'chair', 'shower', 'bin', 'television']
