@@ -113,6 +113,19 @@ class MiniBehaviorEnv(MiniGridEnv):
 
         self.grid = BehaviorGrid(width, height)
 
+        pixel_dim = self.grid.pixel_dim
+
+        # The observation space is different from mini-grid due to the z dimension
+        self.observation_space = spaces.Box(
+            low=0,
+            high=255,
+            shape=(self.agent_view_size, self.agent_view_size, pixel_dim),
+            dtype='uint8'
+        )
+        self.observation_space = spaces.Dict({
+            'image': self.observation_space
+        })
+
         self.mode = mode
         assert self.mode in ["cartesian", "primitive"]
         if self.mode == "cartesian":
