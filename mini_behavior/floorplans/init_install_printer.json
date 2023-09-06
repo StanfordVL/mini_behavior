@@ -7,8 +7,8 @@
             "min_room_dim": 1,
             "max_num_room": 4
         },
-        "width": 12,
-        "height": 12,
+        "width": 8,
+        "height": 8,
         "agents":
         {
             "pos": null,
@@ -16,7 +16,7 @@
         },
         "rooms":
         {
-            "num": 2,
+            "num": 1,
             "initial":
             [
                 {
@@ -24,7 +24,7 @@
                     "size": null,
                     "furnitures": 
                     {
-                        "num": null,
+                        "num": 2,
                         "initial": 
                         [
                             {
@@ -32,19 +32,7 @@
                                 "state": [["toggleable", 0]],
                                 "pos": null,
                                 "objs": null
-                            }
-                        ]
-                    }
-                },
-                {
-                    "type": "LivingRoom",
-                    "top": null,
-                    "size": null,
-                    "furnitures": 
-                    {
-                        "num": null,
-                        "initial": 
-                        [
+                            },
                             {
                                 "type": "table",
                                 "state": null,
