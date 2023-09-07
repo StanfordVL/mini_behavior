@@ -21,7 +21,7 @@ OBJECTS = [
     "pot_plant", "marker", "chair", "document", "oatmeal", "sugar"
 ]
 
-FURNITURE = ['ashcan', 'bed', 'bin', 'box', 'bucket', 'cabinet', 'chair', 'car', 'countertop', 'electric_refrigerator', 'shelf', 'shower', 'sink', 'sofa', 'stove', 'table']
+FURNITURE = ['ashcan', 'bed', 'bin', 'box', 'bucket', 'cabinet', 'chair', 'car', 'countertop', 'electric_refrigerator', 'shelf', 'shower', 'sink', 'sofa', 'stove', 'table', 'window']
 # Map of object type to integers
 OBJECT_TO_IDX = {
     'unseen': 0,
@@ -222,4 +222,4 @@ OBJECT_TO_STR = {
     "candle": "C"
 }
 
-FURNITURE_CANNOT_ON = ['light', 'chair', 'shower', 'bin', 'television']
+FURNITURE_CANNOT_ON = ['ashcan', 'bed', 'bin', 'chair', 'shower', 'car', 'sink', 'window']

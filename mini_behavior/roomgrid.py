@@ -283,7 +283,7 @@ class RoomGrid(MiniBehaviorEnv):
                     furniture_type = furniture_initial[fur_id]['type']
                 else:
                     furniture_type = self._rand_subset(
-                        OBJECTS, 1)[0]
+                        FURNITURE, 1)[0]
 
                 # generate furniture instance
                 if furniture_type not in self.objs:
@@ -343,8 +343,9 @@ class RoomGrid(MiniBehaviorEnv):
                         if obj_id < len(obj_initial) and obj_initial[obj_id]['type'] is not None:
                             obj_type = obj_initial[obj_id]['type']
                         else:
+                            OBJECT_LIST = [x for x in OBJECTS if x not in FURNITURE]
                             obj_type = self._rand_subset(
-                                OBJECTS, 1)[0]
+                                OBJECT_LIST, 1)[0]
                         if obj_type not in self.objs:
                             self.objs[obj_type] = []
                         obj_name = f'{obj_type}_{len(self.objs[obj_type])}_{fur_instance.name}'
@@ -403,7 +404,7 @@ class RoomGrid(MiniBehaviorEnv):
             for room in self.room_instances:
                 for fur in room.furnitures:
                     self.place_obj(fur, room.top, room.size)
-                    if fur.type not in ['light', 'chair', 'Shower']:
+                    if fur.type not in FURNITURE_CANNOT_ON:
                         fur_pos = self._rand_subset(
                             fur.all_pos, len(fur.objects))
                         for i, obj in enumerate(fur.objects):
@@ -445,8 +446,14 @@ class RoomGrid(MiniBehaviorEnv):
 
     def reset(self):
         super().reset()
-        for room in self.room_instances:
-                room.reset()
+        if self.init_dict:
+            for room in self.room_instances:
+                    room.reset()
+        else:
+            for row in self.room_grid:
+                for room in row:
+                    room.reset()
+                    
         return self.gen_obs()
 
     def _gen_grid(self, width, height):
