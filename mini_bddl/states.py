@@ -55,6 +55,12 @@ ABILITIES = [
     'toggleable',
 ]
 
+FURNATURE_STATES = [
+    'dustyable',
+    'openable',
+    'stainable',
+    'toggleable',
+]
 
 # state (str) to state (function) mapping
 STATE_FUNC_MAPPING = {

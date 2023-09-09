@@ -16,8 +16,8 @@ extras = {"testing": ["pytest==7.0.1"]}
 
 setup(
     name="mini_behavior",
-    author="Farama Foundation",
-    author_email="jkterry@farama.org",
+    author="Stanford & UT Austin",
+    author_email="jiahengh@utexas.edu",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3",
@@ -28,7 +28,7 @@ setup(
     ],
     version="1.1.0",
     keywords="memory, environment, agent, rl, gym",
-    url="https://github.com/Farama-Foundation/gym-minigrid",
+    url="https://github.com/StanfordVL/mini_behavior",
     description="Minimalistic gridworld reinforcement learning environments",
     extras_require=extras,
     packages=["mini_behavior", "mini_behavior.envs"],

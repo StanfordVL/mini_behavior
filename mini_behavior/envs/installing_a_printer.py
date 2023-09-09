@@ -72,6 +72,12 @@ register(
 )
 
 register(
+    id='MiniGrid-InstallingAPrinter-6x6-N2-v0',
+    entry_point='mini_behavior.envs:InstallingAPrinterEnv',
+    kwargs={"room_size": 6, "max_steps": 1000}
+)
+
+register(
     id='MiniGrid-InstallingAPrinter-16x16-N2-v1',
     entry_point='mini_behavior.envs:InstallingAPrinterEnv',
     kwargs={'mode': 'cartesian'}

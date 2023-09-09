@@ -80,12 +80,13 @@ def load():
 def step(action):
     prev_obs = env.gen_obs()
     obs, reward, done, info = env.step(action)
+    # import sys
+    # np.set_printoptions(threshold=sys.maxsize)
+    # print(obs['image'])
 
     print('step=%s, reward=%.2f' % (env.step_count, reward))
 
     if args.save:
-        # TODO: what is the get_step doing?
-        # step_count, step = get_step(env)
         all_steps[env.step_count] = (prev_obs, action)
 
     if done:
