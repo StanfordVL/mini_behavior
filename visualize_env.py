@@ -59,10 +59,12 @@ for _ in range(args.shift):
     env.reset()
 print("Environment loaded\n")
 
+load_model = False
 
-# Load Model
-model = PPO.load("model/ppo", env=env)
-print("model loaded")
+if load_model:
+    # Load Model
+    model = PPO.load("model/ppo", env=env)
+    print("model loaded")
 
 
 if args.gif:
@@ -89,8 +91,10 @@ for episode in range(args.episodes):
             frames.append(numpy.moveaxis(env.render("rgb_array"), 2, 0))
 
         
-        # action = env.action_space.sample()
-        action, _ = model.predict(obs)
+        if load_model:
+            action, _ = model.predict(obs)
+        else:
+            action = env.action_space.sample()
 
         obs, reward, done, info = env.step(action)
 
