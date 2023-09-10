@@ -5,6 +5,11 @@ import numpy
 import random
 import mini_behavior
 import torch
+from stable_baselines3 import PPO
+
+# For RL visualization
+from gym_minigrid.wrappers import ImgObsWrapper
+from mini_behavior.utils.wrappers import MiniBHFullyObsWrapper
 
 # Parse arguments
 parser = argparse.ArgumentParser()
@@ -46,12 +51,19 @@ print(f"Device: {device}\n")
 
 # Load environment
 env = gym.make(args.env)
+env = MiniBHFullyObsWrapper(env)
+env = ImgObsWrapper(env)
 env.seed(args.seed)
 
 for _ in range(args.shift):
     env.reset()
-
 print("Environment loaded\n")
+
+
+# Load Model
+model = PPO.load("model/ppo", env=env)
+print("model loaded")
+
 
 if args.gif:
    from array2gif import write_gif
@@ -76,7 +88,9 @@ for episode in range(args.episodes):
         if args.gif:
             frames.append(numpy.moveaxis(env.render("rgb_array"), 2, 0))
 
-        action = env.action_space.sample()
+        
+        # action = env.action_space.sample()
+        action, _ = model.predict(obs)
 
         obs, reward, done, info = env.step(action)
 

@@ -385,13 +385,18 @@ class BehaviorGrid(Grid):
                         state_dict = None
                     else:
                         fur_n = furniture.type
-                        if fur_n == "wall":
+                        if fur_n == "wall" or fur_n == "door":
                             state_dict = None
                         else:
                             state_dict = self.state_values[furniture]
                     item_list.append(np.array([OBJECT_TO_IDX[fur_n]] +
                                               self.state_dict_encoding(state_dict,
                                                                        FURNATURE_STATES)))
+
+                    # A bit hacky, handle door state
+                    if fur_n == "door":
+                        if not furniture.is_open:
+                            item_list[-1][1] = 1
 
                     objects = self.get_all_objs(i, j)
                     # Next, handle objects
