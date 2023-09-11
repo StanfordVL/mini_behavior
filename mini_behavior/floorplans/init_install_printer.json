@@ -7,8 +7,8 @@
             "min_room_dim": 1,
             "max_num_room": 4
         },
-        "width": 8,
-        "height": 8,
+        "width": 12,
+        "height": 12,
         "agents":
         {
             "pos": null,
@@ -16,12 +16,45 @@
         },
         "rooms":
         {
-            "num": 1,
+            "num": 2,
             "initial":
             [
                 {
-                    "top": null,
-                    "size": null,
+                    "top": [1, 1],
+                    "size": [5, 10],
+                    "furnitures": 
+                    {
+                        "num": 2,
+                        "initial": 
+                        [
+                            {
+                                "type": "printer",
+                                "state": [["toggleable", 0]],
+                                "pos": [2, 2],
+                                "objs": null
+                            },
+                            {
+                                "type": "table",
+                                "state": null,
+                                "pos": null,
+                                "objs": {
+                                    "num": 1,
+                                    "initial": 
+                                    [
+                                        {
+                                            "type": "book",
+                                            "state": [["dustyable", 1]],
+                                            "pos": null
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "top": [7, 1],
+                    "size": [4, 10],
                     "furnitures": 
                     {
                         "num": 2,
@@ -34,7 +67,7 @@
                                 "objs": null
                             },
                             {
-                                "type": "table",
+                                "type": "box",
                                 "state": null,
                                 "pos": null,
                                 "objs": null

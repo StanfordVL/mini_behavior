@@ -144,7 +144,7 @@ class RoomGrid(MiniBehaviorEnv):
         obj_type = "door"
         door_count = 0
         for dir, (x, y), length in self.floor_plan_walls:
-            if door_count >= 3:
+            if door_count >= len(self.room_instances) - 1:
                 break
             if dir == 'horz' and 0 < y < height - 1:
                 # open_status = self._rand_bool()
@@ -152,11 +152,11 @@ class RoomGrid(MiniBehaviorEnv):
                 if obj_type not in self.objs:
                     self.objs[obj_type] = []
                 obj_name = f'{obj_type}_{len(self.objs[obj_type])}'
-                door = Door(is_open=open_status)
+                door = Door(dir, is_open=open_status)
                 self.objs[obj_type].append(door)
                 door.id = len(self.obj_instances) + 1
                 self.obj_instances[obj_name] = door
-                self.place_obj(door, (x, y), (1, length), max_tries=20)
+                self.place_obj(door, (x, y), (length, 1), max_tries=20)
                 door_count += 1
             elif dir == 'vert' and 0 < x < width - 1:
                 # open_status = self._rand_bool()
@@ -164,11 +164,11 @@ class RoomGrid(MiniBehaviorEnv):
                 if obj_type not in self.objs:
                     self.objs[obj_type] = []
                 obj_name = f'{obj_type}_{len(self.objs[obj_type])}'
-                door = Door(is_open=open_status)
+                door = Door(dir, is_open=open_status)
                 self.objs[obj_type].append(door)
                 door.id = len(self.obj_instances) + 1
                 self.obj_instances[obj_name] = door
-                self.place_obj(door, (x, y), (length, 1), max_tries=20)
+                self.place_obj(door, (x, y), (1, length), max_tries=20)
                 # self.grid.set(x, doorIdx, door)
                 door_count += 1
             else:

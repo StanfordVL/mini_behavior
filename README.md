@@ -87,5 +87,67 @@ its  simplicity and efficiency.
     * `id='MiniGrid-IMG_FILENAME-0x0-N1-v0'`
     * `entry_point='gym_minigrid.envs:FloorPlanEnv'`
 
+### Procedural Mini-Behavior Environment Generation
+
+- Add a new json file to mini_behavior/floorplans directory
+- Write environment configuration file with environment components needed for the mission, we allow roughly defined configurations such different random environments can be procedurally generated.
+- An example configuration file `init_install_printer.json` is provided, the configuration file should follow the same format:
+    ```json
+    {
+        "Grid":
+        {
+            "mission": str_mission_name, 
+            "auto": { 
+            "room_split_dirs": ["vert", "horz"], # don't need to change
+            "min_room_dim": 1, # minmum room dimension allowed
+            "max_num_room": 4 # maximum number of room in the env
+            },
+            "width": 8, # grid width
+            "height": 8, # grid height
+        },
+        "agents":
+        {
+            "pos": null, # agent initial position, random generate if null
+            "dir": null # agent initial direction,
+            random generate if null
+        },
+        "rooms":
+        {
+            "num": 1, # number of rooms in the env
+            "initial":
+            [
+                {
+                    "top": null, # top left cell x,y coordinates of the room, [x, y], (exclude the walls)
+                    "size": null, # size of the room, [width, height],(exclude the walls)
+                    "furnitures": 
+                    {
+                        "num": 3, # number of furnitrues
+                        "initial": 
+                        [   
+                            # first furniture description
+                            {
+                                "type": "printer", # type of the furniture
+                                "state": [["toggleable", 0]], # initial state of the furniture [[state, 0/1]], for not specified states for the furniture, random generate 0 or 1
+                                "pos": null, # position of the furniture 
+                                "objs": {
+                                    "num": 1, # number of objects in the furniture
+                                    "initial": 
+                                    [
+                                        {
+                                            "type": "book", # type of the object
+                                            "state": [["dustyable", 1]], # initial state of the furniture [[state, 0/1]], for not specified states for the furniture, random generate 0 or 1
+                                            "pos": null, # initial position of the object
+                                            "objs": null # 
+                                        }
+                                    ]
+                                } # objects on top of the furniture
+                            },
+                            ... # 2 more furniture descriptions, or if less than 2, random generate till 3 rooms
+                        ]
+                    }
+    }
+    ```
+- Call `python auto_control.py --seed 100 --auto_env_config /path/to/config.json`, replace the 100 with different seed number to allow different procedural generations, and replace `/path/to/config.json` with the path to the json file, such as `'mini_behavior/floorplans/init_install_printer.json'`.
+- After calling the command, a random generated grid will show up, when pressing `backspace`, we can regenearte the environment.
 ### References
 TODO: add references 
