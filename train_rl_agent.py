@@ -47,7 +47,7 @@ env = ImgObsWrapper(env)
 
 # Policy training
 model = PPO("CnnPolicy", env, policy_kwargs=policy_kwargs, verbose=1, tensorboard_log="./logs/")
-model.learn(5e6)
+model.learn(1e6)
 
 if not partial_obs:
     model.save("model/ppo_cnn")

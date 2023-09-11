@@ -1,6 +1,7 @@
 # Mini-BEHAVIOR
-###  MiniGrid Implementation of BEHAVIOR Tasks
+###  MiniGrid Implementation of BEHAVIOR Tasks 
 ![Screenshot](img/visualizations.png)
+
 Mini-BEHAVIOR is a simple and easy-to-use high-speed 3D-gridworld environment
 with a high-level action space and a set of implementations of long-horizon, interaction-rich BEHAVIOR tasks.
 Mini-BEHAVIOR includes 20 tasks of varying difficulty, 96 objects, 23 states, and 15 actions. 
@@ -36,6 +37,11 @@ python manual_control.py
 ```
 python train_rl_agent.py
 ```
+* Example trained RL agent:
+<p align="center">
+  <img src="img/printer.gif"/>
+</p>
+
 * To collect human demonstrations, run:
 ```
 python manual_control.py --save true

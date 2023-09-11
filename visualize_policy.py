@@ -14,14 +14,13 @@ from mini_behavior.utils.wrappers import MiniBHFullyObsWrapper
 # Parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--env",
-                    # default='MiniGrid-CleaningACar-16x16-N2-v0',
-                    default="MiniGrid-ThrowingAwayLeftoversFour-8x8-N2-v0",
+                    default="MiniGrid-InstallingAPrinter-6x6-N2-v0",
                     help="name of the environment to be run (REQUIRED)")
 parser.add_argument("--seed", type=int, default=20,
                     help="random seed (default: 0)")
 parser.add_argument("--shift", type=int, default=0,
                     help="number of times the environment is reset at the beginning (default: 0)")
-parser.add_argument("--pause", type=float, default=0.1,
+parser.add_argument("--pause", type=float, default=0.25,
                     help="pause duration between two consequent actions of the agent (default: 0.seed 0_2)")
 parser.add_argument("--gif", type=str, default=None,
                     help="store output as gif with the given filename")
@@ -31,6 +30,10 @@ parser.add_argument("--reset", action="store_true", default=False,
                     help="Keep resetting for testing initialization")
 parser.add_argument("--norend", action="store_true", default=False,
                     help="Whether to render")
+parser.add_argument("--full_obs", action="store_true", default=False,
+                    help="Whether to use fully observable wrapper")
+parser.add_argument("--load_model", default="",
+                    help="Whether to load from")
 
 args = parser.parse_args()
 
@@ -51,7 +54,8 @@ print(f"Device: {device}\n")
 
 # Load environment
 env = gym.make(args.env)
-env = MiniBHFullyObsWrapper(env)
+if args.full_obs:
+    env = MiniBHFullyObsWrapper(env)
 env = ImgObsWrapper(env)
 env.seed(args.seed)
 
@@ -59,11 +63,11 @@ for _ in range(args.shift):
     env.reset()
 print("Environment loaded\n")
 
-load_model = False
+load_model = args.load_model
 
 if load_model:
     # Load Model
-    model = PPO.load("model/ppo", env=env)
+    model = PPO.load(f"model/{load_model}", env=env)
     print("model loaded")
 
 
@@ -102,7 +106,6 @@ for episode in range(args.episodes):
             print(env.action_list[action])
         else:
             print(env.actions(action).name)
-        # print(obs)
 
         print(f"reward: {reward}\n")
 
