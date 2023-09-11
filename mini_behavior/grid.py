@@ -2,7 +2,7 @@
 import numpy as np
 
 from .objects import *
-from mini_bddl import ABILITIES
+from mini_bddl import ABILITIES, FURNATURE_STATES
 from gym_minigrid.minigrid import Grid
 
 # Size in pixels of a tile in the full-scale human view
@@ -27,8 +27,11 @@ class BehaviorGrid(Grid):
         # 3 Grid Dimension classes
         self.grid = [GridDimension(width, height) for i in range(3)]
 
-        # TODO: change this when we change the obj encoding
-        self.pixel_dim = 3 * 6
+        # Parameters related to observation encoding
+        self.null_encoding_value = 0
+        self.furniture_encoding_length = 4
+        self.obj_encoding_length = 8
+        self.pixel_dim = 3 * self.obj_encoding_length + self.furniture_encoding_length + 4
 
         self.walls = []
 
@@ -154,6 +157,8 @@ class BehaviorGrid(Grid):
                 v = self.get(i, j)
                 grid.set_all_items(j, grid.height - 1 - i, v)
 
+        grid.state_values = self.state_values
+
         return grid
 
     def slice(self, topX, topY, width, height):
@@ -172,6 +177,7 @@ class BehaviorGrid(Grid):
                     grid.set_all_items(i, j, v)
                 else:
                     grid.set_all_objs(i, j, [Wall()] * 3)
+        grid.state_values = self.state_values
 
         return grid
 
@@ -344,6 +350,19 @@ class BehaviorGrid(Grid):
 
         return img
 
+    def state_dict_encoding(self, state_dict, state_list):
+        if state_dict is None:
+            return [self.null_encoding_value] * len(state_list)
+        else:
+            states = []
+            for state in state_list:
+                if state in state_dict:
+                    val = state_dict[state]
+                    states.append(val)
+                else:
+                    states.append(self.null_encoding_value)
+            return states
+
     def encode(self, vis_mask=None):
         """
         Produce a compact numpy encoding of the grid
@@ -358,11 +377,35 @@ class BehaviorGrid(Grid):
             for j in range(self.height):
                 if vis_mask[i, j]:
                     item_list = []
-                    v = self.get(i, j)
-                    for dim in v:
-                        for obj in dim:
-                            encoding = obj.encode() if is_obj(obj) else np.array([OBJECT_TO_IDX['empty'], 0, 0])
-                            item_list.append(encoding)
+
+                    # Process furniture first
+                    furniture = self.get_furniture(i, j)
+                    if not is_obj(furniture):
+                        fur_n = 'empty'
+                        state_dict = None
+                    else:
+                        fur_n = furniture.type
+                        if fur_n == "wall":
+                            state_dict = None
+                        else:
+                            state_dict = self.state_values[furniture]
+                    item_list.append(np.array([OBJECT_TO_IDX[fur_n]] +
+                                              self.state_dict_encoding(state_dict,
+                                                                       FURNATURE_STATES)))
+
+                    objects = self.get_all_objs(i, j)
+                    # Next, handle objects
+                    for obj in objects:
+                        if not is_obj(obj):
+                            obj_n = 'empty'
+                            state_dict = None
+                        else:
+                            obj_n = obj.type
+                            state_dict = self.state_values[obj]
+                        item_list.append(np.array([OBJECT_TO_IDX[obj_n]] +
+                                                   self.state_dict_encoding(state_dict,
+                                                                            ABILITIES)))
+
                     array[i, j] = np.concatenate(item_list)
 
         return array

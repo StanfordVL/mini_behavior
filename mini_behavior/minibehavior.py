@@ -207,9 +207,9 @@ class MiniBehaviorEnv(MiniGridEnv):
         # the same seed before calling env.reset()
         self._gen_grid(self.width, self.height)
 
+        self.update_states()
         # generate furniture view
         self.furniture_view = self.grid.render_furniture(tile_size=TILE_PIXELS, obj_instances=self.obj_instances)
-
         # These fields should be defined by _gen_grid
         assert self.agent_pos is not None
         assert self.agent_dir is not None
@@ -220,7 +220,6 @@ class MiniBehaviorEnv(MiniGridEnv):
         # Step count since episode start
         self.step_count = 0
         self.episode += 1
-
         # Return first observation
         obs = self.gen_obs()
         return obs
@@ -498,57 +497,100 @@ class MiniBehaviorEnv(MiniGridEnv):
             else:
                 self.action_done = False
 
+        # Handle manipulation action based on action space type (mode)
         else:
-            if self.teleop and self.mode == "cartesian":
-                self.last_action = None
-                if action == 'choose':
-                    choices = self.all_reachable()
-                    if not choices:
-                        print("No reachable objects")
-                    else:
-                        # get all reachable objects
-                        text = ''.join('{}) {} \n'.format(i, choices[i].name) for i in range(len(choices)))
-                        obj = input("Choose one of the following reachable objects: \n{}".format(text))
-                        obj = choices[int(obj)]
-                        assert obj is not None, "No object chosen"
-
-                        actions = []
-                        for action in MiniBehaviorEnv.Actions:
-                            action_name = action.name
-                            # process the pickup action
-                            if "pickup" in action_name:
-                                if action_name == "pickup_0":
-                                    action_name = "pickup"
-                                else:
-                                    continue
-                            action_class = ACTION_FUNC_MAPPING.get(action_name, None)
-                            if action_class and action_class(self).can(obj):
-                                actions.append(action_name)
-
-                        if len(actions) == 0:
-                            print("No actions available")
-                        else:
-                            text = ''.join('{}) {} \n'.format(i, actions[i]) for i in range(len(actions)))
-
-                            action = input("Choose one of the following actions: \n{}".format(text))
-                            action = actions[int(action)]  # action name
-
-                            if action == 'drop' or action == 'drop_in':
-                                dims = ACTION_FUNC_MAPPING[action](self).drop_dims(fwd_pos)
-                                spots = ['bottom', 'middle', 'top']
-                                text = ''.join(f'{dim}) {spots[dim]} \n' for dim in dims)
-                                dim = input(f'Choose which dimension to drop the object: \n{text}')
-                                ACTION_FUNC_MAPPING[action](self).do(obj, int(dim))
-                            else:
-                                ACTION_FUNC_MAPPING[action](self).do(obj)  # perform action
-                            # TODO: this may not be right
-                            self.last_action = action
-
-                # Done action (not used by default)
+            if self.mode == "primitive":
+                action = self.actions(action)
+                action_name = action.name
+                if "pickup" in action_name or "drop" in action_name:
+                    action_dim = action_name.split('_')  # list: [action, dim]
+                    action_class = ACTION_FUNC_MAPPING[action_dim[0]]
                 else:
-                    assert False, "unknown action {}".format(action)
+                    action_class = ACTION_FUNC_MAPPING[action_name]
+                self.action_done = False
+
+                # Pickup involves certain dimension
+                if "pickup" in action_name:
+                    for obj in fwd_cell[int(action_dim[1])]:
+                        if is_obj(obj) and action_class(self).can(obj):
+                            action_class(self).do(obj)
+                            self.action_done = True
+                            break
+                # Drop act on carried object
+                elif "drop" in action_name:
+                    for obj in self.carrying:
+                        if action_class(self).can(obj):
+                            drop_dim = obj.available_dims
+                            if action_dim[1] == "in":
+                                # For drop_in, we don't care about dimension
+                                action_class(self).do(obj, np.random.choice(drop_dim))
+                                self.action_done = True
+                            elif int(action_dim[1]) in drop_dim:
+                                action_class(self).do(obj, int(action_dim[1]))
+                                self.action_done = True
+                            break
+                # Everything else act on the forward cell
+                else:
+                    for dim in fwd_cell:
+                        for obj in dim:
+                            if is_obj(obj) and action_class(self).can(obj):
+                                action_class(self).do(obj)
+                                self.action_done = True
+                                break
+                        if self.action_done:
+                            break
             else:
-                if self.mode == "cartesian":
+                assert self.mode == "cartesian"
+                # Cartesian teleoperation action space needs special care
+                if self.teleop:
+                    self.last_action = None
+                    if action == 'choose':
+                        choices = self.all_reachable()
+                        if not choices:
+                            print("No reachable objects")
+                        else:
+                            # get all reachable objects
+                            text = ''.join('{}) {} \n'.format(i, choices[i].name) for i in range(len(choices)))
+                            obj = input("Choose one of the following reachable objects: \n{}".format(text))
+                            obj = choices[int(obj)]
+                            assert obj is not None, "No object chosen"
+
+                            actions = []
+                            for action in MiniBehaviorEnv.Actions:
+                                action_name = action.name
+                                # process the pickup action
+                                if "pickup" in action_name:
+                                    if action_name == "pickup_0":
+                                        action_name = "pickup"
+                                    else:
+                                        continue
+                                action_class = ACTION_FUNC_MAPPING.get(action_name, None)
+                                if action_class and action_class(self).can(obj):
+                                    actions.append(action_name)
+
+                            if len(actions) == 0:
+                                print("No actions available")
+                            else:
+                                text = ''.join('{}) {} \n'.format(i, actions[i]) for i in range(len(actions)))
+
+                                action = input("Choose one of the following actions: \n{}".format(text))
+                                action = actions[int(action)]  # action name
+
+                                if action == 'drop' or action == 'drop_in':
+                                    dims = ACTION_FUNC_MAPPING[action](self).drop_dims(fwd_pos)
+                                    spots = ['bottom', 'middle', 'top']
+                                    text = ''.join(f'{dim}) {spots[dim]} \n' for dim in dims)
+                                    dim = input(f'Choose which dimension to drop the object: \n{text}')
+                                    ACTION_FUNC_MAPPING[action](self).do(obj, int(dim))
+                                else:
+                                    ACTION_FUNC_MAPPING[action](self).do(obj)  # perform action
+                                # TODO: this may not be right
+                                self.last_action = action
+
+                    # Done action (not used by default)
+                    else:
+                        assert False, "unknown action {}".format(action)
+                else:
                     obj_action = self.action_list[action].split('/')  # list: [obj, action]
                     objs = self.objs[obj_action[0]]
                     action_class = ACTION_FUNC_MAPPING[obj_action[1]]
@@ -564,47 +606,6 @@ class MiniBehaviorEnv(MiniGridEnv):
                                 action_class(self).do(obj)
                             self.action_done = True
                             break
-                else:
-                    assert self.mode == "primitive"
-                    action = self.actions(action)
-                    action_name = action.name
-                    if "pickup" in action_name or "drop" in action_name:
-                        action_dim = action_name.split('_')  # list: [action, dim]
-                        action_class = ACTION_FUNC_MAPPING[action_dim[0]]
-                    else:
-                        action_class = ACTION_FUNC_MAPPING[action_name]
-                    self.action_done = False
-
-                    # Pickup involves certain dimension
-                    if "pickup" in action_name:
-                        for obj in fwd_cell[int(action_dim[1])]:
-                            if is_obj(obj) and action_class(self).can(obj):
-                                action_class(self).do(obj)
-                                self.action_done = True
-                                break
-                    # Drop act on carried object
-                    elif "drop" in action_name:
-                        for obj in self.carrying:
-                            if action_class(self).can(obj):
-                                drop_dim = obj.available_dims
-                                if action_dim[1] == "in":
-                                    # For drop_in, we don't care about dimension
-                                    action_class(self).do(obj, np.random.choice(drop_dim))
-                                    self.action_done = True
-                                elif int(action_dim[1]) in drop_dim:
-                                    action_class(self).do(obj, int(action_dim[1]))
-                                    self.action_done = True
-                                break
-                    # Everything else act on the forward cell
-                    else:
-                        for dim in fwd_cell:
-                            for obj in dim:
-                                if is_obj(obj) and action_class(self).can(obj):
-                                    action_class(self).do(obj)
-                                    self.action_done = True
-                                    break
-                            if self.action_done:
-                                break
 
         self.update_states()
         reward = self._reward()
@@ -627,7 +628,6 @@ class MiniBehaviorEnv(MiniGridEnv):
             for name, state in obj.states.items():
                 if state.type == 'absolute':
                     state._update(self)
-
         self.grid.state_values = {obj: obj.get_ability_values(self) for obj in self.obj_instances.values()}
 
     def render(self, mode='human', highlight=True, tile_size=TILE_PIXELS):
