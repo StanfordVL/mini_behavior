@@ -58,9 +58,11 @@ class Countertop(FurnitureObj):
 
 
 class Door(FurnitureObj):
-    def __init__(self, is_open=False):
+    def __init__(self, dir=None, width=1, height=1, color='yellow', is_open=False, name='door'):
         self.is_open = is_open
-        super().__init__('door', 1, 1, {0, 1, 2}, 'black', 'door', can_overlap=is_open, can_seebehind=is_open)
+        self.dir = dir
+        super().__init__('door', width, height, {
+            0, 1, 2}, color, name, can_overlap=is_open, can_seebehind=is_open)
 
     def update(self, env):
         self.is_open = self.states['openable'].get_value(env)
@@ -80,19 +82,25 @@ class Door(FurnitureObj):
 
         return OBJECT_TO_IDX[self.type], COLOR_TO_IDX[self.color], state
 
+    def get_state(self):
+        if self.is_open:
+            return True
+        else:
+            return False
+
     def render(self, img):
         c = COLORS[self.color]
 
         if self.is_open:
             fill_coords(img, point_in_rect(0.88, 1.00, 0.00, 1.00), c)
-            fill_coords(img, point_in_rect(0.92, 0.96, 0.04, 0.96), (0,0,0))
+            fill_coords(img, point_in_rect(0.92, 0.96, 0.04, 0.96), (0, 0, 0))
             return
 
         # Door frame and door
         fill_coords(img, point_in_rect(0.00, 1.00, 0.00, 1.00), c)
-        fill_coords(img, point_in_rect(0.04, 0.96, 0.04, 0.96), (0,0,0))
+        fill_coords(img, point_in_rect(0.04, 0.96, 0.04, 0.96), (0, 0, 0))
         fill_coords(img, point_in_rect(0.08, 0.92, 0.08, 0.92), c)
-        fill_coords(img, point_in_rect(0.12, 0.88, 0.12, 0.88), (0,0,0))
+        fill_coords(img, point_in_rect(0.12, 0.88, 0.12, 0.88), (0, 0, 0))
 
         # Draw door handle
         fill_coords(img, point_in_circle(cx=0.75, cy=0.50, r=0.08), c)

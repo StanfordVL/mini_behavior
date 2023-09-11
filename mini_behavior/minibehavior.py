@@ -352,7 +352,7 @@ class MiniBehaviorEnv(MiniGridEnv):
                     x = pos[0] + dx
                     y = pos[1] + dy
 
-                    # Don't place the object on top of another object
+                    # If place door, check if it is blocked by other objects
                     if obj is not None and obj.name == "door":
                         left, right, up, down = 0, 0, 0, 0
                         if (x < self.grid.width-1 and not self.grid.is_empty(x+1, y)) or x == self.grid.width - 1:
@@ -363,12 +363,13 @@ class MiniBehaviorEnv(MiniGridEnv):
                             down = 1
                         if (y > 1 and not self.grid.is_empty(x, y-1)) or y == 0:
                             up = 1
-                        if height == 1 and (up or down):
+                        if obj.dir=='horz' and (up or down):
                             valid = False
                             break
-                        if width == 1 and (left or right):
+                        if obj.dir=='vert' and (left or right):
                             valid = False
                             break
+                    # Don't place the object on top of another object
                     else:
                         if not self.grid.is_empty(x, y):
                             valid = False

@@ -208,6 +208,23 @@ class FurnitureObj(WorldObj):
     def reset(self):
         super().reset()
         self.all_pos = []
+        
+    def render_state(self, img, state):
+        """
+        render object state from icon
+        """
+
+        # print("called render object state from icon")
+        if not state:
+            fill_coords(img, point_in_rect(0, 0.01, 0, 1), [255, 255, 255])
+            fill_coords(img, point_in_rect(0, 1, 0, 0.01), [255, 255, 255])
+            fill_coords(img, point_in_rect(0.99, 1, 0, 1), [255, 255, 255])
+            fill_coords(img, point_in_rect(0, 1, 0.99, 1), [255, 255, 255])
+        else:
+            state_icon_path = os.path.join(os.path.dirname(__file__),
+                                           f'../utils/state_icons/{state}.jpg')
+            state_array = img_to_array(state_icon_path)
+            fill_coords(img, point_in_icon(img, state_array), [255, 255, 255])
 
     def update_pos(self, pos):
         self.cur_pos = pos
