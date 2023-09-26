@@ -1,6 +1,7 @@
 import gym
 from gym_minigrid.wrappers import ImgObsWrapper
 from mini_behavior.utils.wrappers import MiniBHFullyObsWrapper
+from mini_behavior.register import register
 import mini_behavior
 from stable_baselines3 import PPO
 import numpy as np
@@ -8,8 +9,20 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 import torch.nn as nn
 import torch
+import argparse
+import wandb
+from wandb.integration.sb3 import WandbCallback
 
 partial_obs = True
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--task", required=True, help='name of task to train on')
+parser.add_argument("--partial_obs", default=True)
+parser.add_argument("--room_size", type=int, default=10)
+parser.add_argument("--max_steps", type=int, default=1000)
+parser.add_argument("--total_timesteps", type=int, default=1e6)
+parser.add_argument("--policy_type", default="CnnPolicy")
+args = parser.parse_args()
 
 class MinigridFeaturesExtractor(BaseFeaturesExtractor):
     def __init__(self, observation_space: gym.Space, features_dim: int = 512, normalized_image: bool = False) -> None:
@@ -40,16 +53,44 @@ policy_kwargs = dict(
 )
 
 # Env wrapping
-env = gym.make("MiniGrid-InstallingAPrinter-6x6-N2-v0")
-if not partial_obs:
+env_name = f"MiniGrid-{args.task}-{args.room_size}x{args.room_size}-N2-v0"
+
+print(f'register env {args.task}')
+register(
+    id=env_name,
+    entry_point=f'mini_behavior.envs:{args.task}Env',
+    kwargs={"room_size": args.room_size, "max_steps": args.max_steps}
+)
+
+config = {
+    "policy_type": args.policy_type,
+    "total_timesteps": args.total_timesteps,
+    "env_name": env_name,
+}
+
+print('init wandb')
+run = wandb.init(
+    project=env_name,
+    config=config,
+    sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
+    monitor_gym=False,  # auto-upload the videos of agents playing the game
+    save_code=True,  # optional
+)
+
+print('make env')
+env = gym.make(env_name)
+if not args.partial_obs:
     env = MiniBHFullyObsWrapper(env)
 env = ImgObsWrapper(env)
 
+print('begin training')
 # Policy training
-model = PPO("CnnPolicy", env, policy_kwargs=policy_kwargs, verbose=1, tensorboard_log="./logs/")
-model.learn(1e6)
+model = PPO(config["policy_type"], env, policy_kwargs=policy_kwargs, verbose=1, tensorboard_log=f"./runs/{run.id}")
+model.learn(config["total_timesteps"], callback=WandbCallback(model_save_path=f"models/{run.id}"))
 
 if not partial_obs:
-    model.save("model/ppo_cnn")
+    model.save(f"model/ppo_cnn/{env_name}")
 else:
-    model.save("model/ppo_partial")
+    model.save(f"model/ppo_partial/{env_name}")
+
+run.finish()
