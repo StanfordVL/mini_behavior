@@ -13,7 +13,6 @@ import argparse
 import wandb
 from wandb.integration.sb3 import WandbCallback
 
-partial_obs = True
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--task", required=True, help='name of task to train on')
@@ -21,8 +20,10 @@ parser.add_argument("--partial_obs", default=True)
 parser.add_argument("--room_size", type=int, default=10)
 parser.add_argument("--max_steps", type=int, default=1000)
 parser.add_argument("--total_timesteps", type=int, default=1e6)
+parser.add_argument("--dense_reward", action="store_true")
 parser.add_argument("--policy_type", default="CnnPolicy")
 args = parser.parse_args()
+partial_obs = args.partial_obs
 
 class MinigridFeaturesExtractor(BaseFeaturesExtractor):
     def __init__(self, observation_space: gym.Space, features_dim: int = 512, normalized_image: bool = False) -> None:
@@ -56,10 +57,16 @@ policy_kwargs = dict(
 env_name = f"MiniGrid-{args.task}-{args.room_size}x{args.room_size}-N2-v0"
 
 print(f'register env {args.task}')
+
+kwargs = {"room_size": args.room_size, "max_steps": args.max_steps}
+if args.dense_reward:
+    assert args.task in ["PuttingAwayDishesAfterCleaning", "WashingPotsAndPans"]
+    kwargs["dense_reward"] = True
+
 register(
     id=env_name,
     entry_point=f'mini_behavior.envs:{args.task}Env',
-    kwargs={"room_size": args.room_size, "max_steps": args.max_steps}
+    kwargs=kwargs
 )
 
 config = {
@@ -89,8 +96,8 @@ model = PPO(config["policy_type"], env, policy_kwargs=policy_kwargs, verbose=1, 
 model.learn(config["total_timesteps"], callback=WandbCallback(model_save_path=f"models/{run.id}"))
 
 if not partial_obs:
-    model.save(f"model/ppo_cnn/{env_name}")
+    model.save(f"models/ppo_cnn/{env_name}")
 else:
-    model.save(f"model/ppo_partial/{env_name}")
+    model.save(f"models/ppo_cnn_partial/{env_name}")
 
 run.finish()

@@ -96,6 +96,7 @@ class RoomGrid(MiniBehaviorEnv):
         agent_view_size=7,
         highlight=True,
         init_dict=None,
+        dense_reward=False,
     ):
         if init_dict:
             self.init_dict = init_dict
@@ -127,7 +128,8 @@ class RoomGrid(MiniBehaviorEnv):
             see_through_walls=see_through_walls,
             seed=seed,
             agent_view_size=agent_view_size,
-            highlight=highlight
+            highlight=highlight,
+            dense_reward=dense_reward,
         )
     
     def add_walls(self, width, height):

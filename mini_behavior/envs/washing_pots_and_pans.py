@@ -4,7 +4,7 @@ from mini_behavior.register import register
 
 class WashingPotsAndPansEnv(RoomGrid):
     """
-    Environment in which the agent is instructed to clean a car
+    Environment in which the agent is instructed to wash pots and pans
     """
 
     def __init__(
@@ -14,6 +14,7 @@ class WashingPotsAndPansEnv(RoomGrid):
             num_rows=1,
             num_cols=1,
             max_steps=1e5,
+            dense_reward=False,
     ):
         num_objs = {'teapot': 1, 'kettle': 1, 'pan': 3, 'countertop': 2, 'sink': 1, 'scrub_brush': 1, 'soap': 1, 'cabinet': 2}
 
@@ -24,7 +25,8 @@ class WashingPotsAndPansEnv(RoomGrid):
                          room_size=room_size,
                          num_rows=num_rows,
                          num_cols=num_cols,
-                         max_steps=max_steps
+                         max_steps=max_steps,
+                         dense_reward=dense_reward,
                          )
 
     def _gen_objs(self):
@@ -63,8 +65,6 @@ class WashingPotsAndPansEnv(RoomGrid):
         self.put_obj(soap, *sink.cur_pos, 0)
         soap.states['inside'].set_value(sink, True)
 
-
-
     def _end_conditions(self):
         teapots = self.objs['teapot']
         kettles = self.objs['kettle']
@@ -79,11 +79,38 @@ class WashingPotsAndPansEnv(RoomGrid):
 
         return True
 
+    # This score measures progress towards the goal
+    def get_progress(self):
+        teapots = self.objs['teapot']
+        kettles = self.objs['kettle']
+        pans = self.objs['pan']
+
+        score = 0
+        for obj in pans + kettles + teapots:
+            if not obj.check_abs_state(self, 'stainable'):
+                score += 1
+
+            if obj.inside_of is not None and type(obj.inside_of) == Cabinet:
+                score += 1
+
+        for cab in self.objs['cabinet']:
+            if cab.check_abs_state(self, 'openable'):
+                score += 1
+
+        return score
+
 
 # non human input env
 register(
     id='MiniGrid-WashingPotsAndPans-16x16-N2-v0',
     entry_point='mini_behavior.envs:WashingPotsAndPansEnv'
+)
+
+# non human input env
+register(
+    id='MiniGrid-WashingPotsAndPansDense-10x10-N2-v0',
+    entry_point='mini_behavior.envs:WashingPotsAndPansEnv',
+    kwargs={'room_size': 10, 'max_steps': 1000, 'dense_reward': True}
 )
 
 # human input env

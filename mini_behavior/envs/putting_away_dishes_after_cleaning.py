@@ -4,7 +4,7 @@ from mini_behavior.register import register
 
 class PuttingAwayDishesAfterCleaningEnv(RoomGrid):
     """
-    Environment in which the agent is instructed to clean a car
+    Environment in which the agent is instructed to put away dishes after cleaning
     """
 
     def __init__(
@@ -14,6 +14,7 @@ class PuttingAwayDishesAfterCleaningEnv(RoomGrid):
             num_rows=1,
             num_cols=1,
             max_steps=1e5,
+            dense_reward=False,
     ):
         num_objs = {'plate': 8, 'countertop': 2, 'cabinet': 1}
 
@@ -24,7 +25,8 @@ class PuttingAwayDishesAfterCleaningEnv(RoomGrid):
                          room_size=room_size,
                          num_rows=num_rows,
                          num_cols=num_cols,
-                         max_steps=max_steps
+                         max_steps=max_steps,
+                         dense_reward=dense_reward,
                          )
 
     def _gen_objs(self):
@@ -41,8 +43,6 @@ class PuttingAwayDishesAfterCleaningEnv(RoomGrid):
         for i in range(8):
             self.put_obj(plate[i], *countertop_pos[i], 1)
 
-
-
     def _end_conditions(self):
         plate = self.objs['plate']
         cabinet = self.objs['cabinet'][0]
@@ -53,11 +53,31 @@ class PuttingAwayDishesAfterCleaningEnv(RoomGrid):
 
         return True
 
+    # This score measures progress towards the goal
+    def get_progress(self):
+        plate = self.objs['plate']
+        cabinet = self.objs['cabinet'][0]
+        score = 0
+        for obj in plate:
+            if obj.check_rel_state(self, cabinet, 'inside'):
+                score += 1
+        if cabinet.check_abs_state(self, 'openable'):
+            score += 1
+
+        return score
+
 
 # non human input env
 register(
     id='MiniGrid-PuttingAwayDishesAfterCleaning-16x16-N2-v0',
     entry_point='mini_behavior.envs:PuttingAwayDishesAfterCleaningEnv'
+)
+
+# non human input env
+register(
+    id='MiniGrid-PuttingAwayDishesAfterCleaningDense-10x10-N2-v0',
+    entry_point='mini_behavior.envs:PuttingAwayDishesAfterCleaningEnv',
+    kwargs={'room_size': 10, 'max_steps': 1000, 'dense_reward': True}
 )
 
 # human input env

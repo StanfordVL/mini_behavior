@@ -170,6 +170,9 @@ class WorldObj:
         self.contains = None
         self.cur_pos = None
 
+        # We also need to reset "inside"
+        self.inside_of = None
+
         # CHANGE
         for state in self.states.values():
             if state.type == 'absolute':

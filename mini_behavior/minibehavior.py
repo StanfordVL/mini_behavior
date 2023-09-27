@@ -61,6 +61,7 @@ class MiniBehaviorEnv(MiniGridEnv):
         agent_view_size=7,
         highlight=True,
         tile_size=TILE_PIXELS,
+        dense_reward=False,
     ):
 
         self.episode = 0
@@ -72,6 +73,7 @@ class MiniBehaviorEnv(MiniGridEnv):
 
         self.highlight = highlight
         self.tile_size = tile_size
+        self.dense_reward = dense_reward
 
         # Initialize the RNG
         self.seed(seed=seed)
@@ -220,9 +222,17 @@ class MiniBehaviorEnv(MiniGridEnv):
         # Step count since episode start
         self.step_count = 0
         self.episode += 1
+
+        # For keeping track of dense reward
+        self.previous_progress = self.get_progress()
+
         # Return first observation
         obs = self.gen_obs()
         return obs
+
+    # Each env can implement its own get_progress function
+    def get_progress(self):
+        return 0
 
     def _gen_grid(self, width, height):
         self._gen_objs()
@@ -504,7 +514,10 @@ class MiniBehaviorEnv(MiniGridEnv):
                 action_name = action.name
                 if "pickup" in action_name or "drop" in action_name:
                     action_dim = action_name.split('_')  # list: [action, dim]
-                    action_class = ACTION_FUNC_MAPPING[action_dim[0]]
+                    if action_name == "drop_in":
+                        action_class = ACTION_FUNC_MAPPING["drop_in"]
+                    else:
+                        action_class = ACTION_FUNC_MAPPING[action_dim[0]]
                 else:
                     action_class = ACTION_FUNC_MAPPING[action_name]
                 self.action_done = False
@@ -618,7 +631,14 @@ class MiniBehaviorEnv(MiniGridEnv):
         if self._end_conditions():
             return 1
         else:
-            return 0
+            # Dense rewards are implemented only for washing_pots_and_pans and putting_away_dishes
+            if self.dense_reward:
+                cur_progress = self.get_progress()
+                reward = cur_progress - self.previous_progress
+                self.previous_progress = cur_progress
+                return reward
+            else:
+                return 0
 
     def all_reachable(self):
         return [obj for obj in self.obj_instances.values() if obj.check_abs_state(self, 'inreachofrobot')]
