@@ -50,13 +50,13 @@ class MiniBehaviorEnv(MiniGridEnv):
 
     def __init__(
         self,
-        mode='primitive',
+        mode,
+        width,
+        height,
+        num_objs,
+        max_steps,
         grid_size=None,
-        width=None,
-        height=None,
-        num_objs=None,
-        max_steps=1e5,
-        see_through_walls=False,
+        see_through_walls=True,
         seed=1337,
         agent_view_size=7,
         highlight=True,
@@ -84,6 +84,9 @@ class MiniBehaviorEnv(MiniGridEnv):
 
         self.objs = {}
         self.obj_instances = {}
+
+        # Right now this can only be changed through the wrapper
+        self.use_full_obs = False
 
         action_list = ["left", "right", "forward"]
 
@@ -227,8 +230,22 @@ class MiniBehaviorEnv(MiniGridEnv):
         self.previous_progress = self.get_progress()
 
         # Return first observation
-        obs = self.gen_obs()
+        if self.use_full_obs:
+            obs = self.gen_full_obs()
+        else:
+            obs = self.gen_obs()
         return obs
+
+    def gen_full_obs(self):
+        full_grid = self.grid.encode()
+        # Set the agent state and direction as part of the observation
+        full_grid[self.agent_pos[0]][self.agent_pos[1]][0] = OBJECT_TO_IDX['agent']
+        full_grid[self.agent_pos[0]][self.agent_pos[1]][1] = self.agent_dir
+
+        return {
+            'mission': self.mission,
+            'image': full_grid
+        }
 
     # Each env can implement its own get_progress function
     def get_progress(self):
@@ -623,7 +640,10 @@ class MiniBehaviorEnv(MiniGridEnv):
         self.update_states()
         reward = self._reward()
         done = self._end_conditions() or self.step_count >= self.max_steps
-        obs = self.gen_obs()
+        if self.use_full_obs:
+            obs = self.gen_full_obs()
+        else:
+            obs = self.gen_obs()
 
         return obs, reward, done, {}
 
