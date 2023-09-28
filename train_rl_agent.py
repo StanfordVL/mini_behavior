@@ -19,7 +19,7 @@ parser.add_argument("--task", required=True, help='name of task to train on')
 parser.add_argument("--partial_obs", default=True)
 parser.add_argument("--room_size", type=int, default=10)
 parser.add_argument("--max_steps", type=int, default=1000)
-parser.add_argument("--total_timesteps", type=int, default=1e6)
+parser.add_argument("--total_timesteps", type=int, default=5e6)
 parser.add_argument("--dense_reward", action="store_true")
 parser.add_argument("--policy_type", default="CnnPolicy")
 args = parser.parse_args()
@@ -92,7 +92,7 @@ env = ImgObsWrapper(env)
 
 print('begin training')
 # Policy training
-model = PPO(config["policy_type"], env, policy_kwargs=policy_kwargs, verbose=1, tensorboard_log=f"./runs/{run.id}")
+model = PPO(config["policy_type"], env, n_steps=8000, policy_kwargs=policy_kwargs, verbose=1, tensorboard_log=f"./runs/{run.id}")
 model.learn(config["total_timesteps"], callback=WandbCallback(model_save_path=f"models/{run.id}"))
 
 if not partial_obs:

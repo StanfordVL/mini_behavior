@@ -10,12 +10,16 @@ from stable_baselines3 import PPO
 # For RL visualization
 from gym_minigrid.wrappers import ImgObsWrapper
 from mini_behavior.utils.wrappers import MiniBHFullyObsWrapper
+from mini_behavior.register import register
 
 # Parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--env",
-                    default="MiniGrid-InstallingAPrinter-6x6-N2-v0",
+                    default="InstallingAPrinter",
                     help="name of the environment to be run (REQUIRED)")
+parser.add_argument("--room_size", type=int, default=10)
+parser.add_argument("--max_steps", type=int, default=1000)
+parser.add_argument("--dense_reward", action="store_true")
 parser.add_argument("--seed", type=int, default=20,
                     help="random seed (default: 0)")
 parser.add_argument("--shift", type=int, default=0,
@@ -52,8 +56,25 @@ seed(args.seed)
 # Set device
 print(f"Device: {device}\n")
 
+
+# Env wrapping
+env_name = f"MiniGrid-{args.env}-{args.room_size}x{args.room_size}-N2-v0"
+
+print(f'register env {args.env}')
+
+kwargs = {"room_size": args.room_size, "max_steps": args.max_steps}
+if args.dense_reward:
+    assert args.env in ["PuttingAwayDishesAfterCleaning", "WashingPotsAndPans"]
+    kwargs["dense_reward"] = True
+
+register(
+    id=env_name,
+    entry_point=f'mini_behavior.envs:{args.env}Env',
+    kwargs=kwargs
+)
+
 # Load environment
-env = gym.make(args.env)
+env = gym.make(env_name)
 if args.full_obs:
     env = MiniBHFullyObsWrapper(env)
 env = ImgObsWrapper(env)
@@ -113,6 +134,12 @@ for episode in range(args.episodes):
             print("episode done")
             print(f"reward: {reward}")
             break
+        # import sys
+        # import numpy as np
+        # np.set_printoptions(threshold=sys.maxsize)
+        # print(obs)
+        # import ipdb
+        # ipdb.set_trace()
 
     print("one episode done \n")
 
