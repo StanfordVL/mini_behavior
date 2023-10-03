@@ -33,9 +33,21 @@ pip install -e .
 ```
 python manual_control.py
 ```
+* Key Bindings:
+  - `up`: move forward
+  - `left`: turn left
+  - `right`: turn right
+  - `0, 1, 2`: pick up object at the corresponding dimension
+  - `3, 4, 5`: drop object at the corresponding dimension
+  - `i`: drop in
+  - `t`: toggle
+  - `c`: close
+  - `o`: open
+  - `k`: cook
+  - `s`: slice
 * To train a sample RL agent with stable-baseline3 installed:
 ```
-python train_rl_agent.py
+python train_rl_agent.py --task InstallingAPrinter
 ```
 * Example trained RL agent:
 <p align="center">
@@ -46,7 +58,7 @@ python train_rl_agent.py
 ```
 python manual_control.py --save true
 ```
-* An example code for loading the demos is shown in load_demos.py
+* An example code for loading the demos is shown in scripts/load_demos.py
 
 ### Action Space Type
 Mini-BH supports two types of action spaces: cartesian and primitive. Environment names that ends with v0 correspond to 
@@ -149,5 +161,7 @@ its  simplicity and efficiency.
     ```
 - Call `python auto_control.py --seed 100 --auto_env_config /path/to/config.json`, replace the 100 with different seed number to allow different procedural generations, and replace `/path/to/config.json` with the path to the json file, such as `'mini_behavior/floorplans/init_install_printer.json'`.
 - After calling the command, a random generated grid will show up, when pressing `backspace`, we can regenearte the environment.
-### References
-TODO: add references 
+
+[//]: # (### References)
+
+[//]: # (TODO: add references )

@@ -25,6 +25,7 @@ parser.add_argument("--policy_type", default="CnnPolicy")
 args = parser.parse_args()
 partial_obs = args.partial_obs
 
+
 class MinigridFeaturesExtractor(BaseFeaturesExtractor):
     def __init__(self, observation_space: gym.Space, features_dim: int = 512, normalized_image: bool = False) -> None:
         super().__init__(observation_space, features_dim)
@@ -47,6 +48,7 @@ class MinigridFeaturesExtractor(BaseFeaturesExtractor):
 
     def forward(self, observations: torch.Tensor) -> torch.Tensor:
         return self.linear(self.cnn(observations))
+
 
 policy_kwargs = dict(
     features_extractor_class=MinigridFeaturesExtractor,

@@ -80,9 +80,6 @@ def load():
 def step(action):
     prev_obs = env.gen_obs()
     obs, reward, done, info = env.step(action)
-    # import sys
-    # np.set_printoptions(threshold=sys.maxsize)
-    # print(obs['image'])
 
     print('step=%s, reward=%.2f' % (env.step_count, reward))
 
@@ -148,7 +145,6 @@ def key_handler_cartesian(event):
         switch_dim(2)
         return
 
-# Todo: add other primitive actions
 def key_handler_primitive(event):
     print('pressed', event.key)
     if event.key == 'escape':
@@ -208,12 +204,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--env",
     help="gym environment to load",
-    # default='MiniGrid-ThrowingAwayLeftoversFour-8x8-N2-v1'
-    # default='MiniGrid-FloorPlanEnv-16x16-N1-v0'
-    # default='MiniGrid-TwoRoomNavigation-8x8-N2-v0'
     default='MiniGrid-InstallingAPrinter-8x8-N2-v0'
-    # default='MiniGrid-CleaningACar-16x16-N2-v1'
-    # default="MiniGrid-ThawingFrozenFood-16x16-N2-v0"
 )
 parser.add_argument(
     "--seed",
