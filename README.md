@@ -162,6 +162,12 @@ its  simplicity and efficiency.
 - Call `python auto_control.py --seed 100 --auto_env_config /path/to/config.json`, replace the 100 with different seed number to allow different procedural generations, and replace `/path/to/config.json` with the path to the json file, such as `'mini_behavior/floorplans/init_install_printer.json'`.
 - After calling the command, a random generated grid will show up, when pressing `backspace`, we can regenearte the environment.
 
-[//]: # (### References)
-
-[//]: # (TODO: add references )
+### References
+```
+@article{jin2023minibehavior,
+      title={Mini-BEHAVIOR: A Procedurally Generated Benchmark for Long-horizon Decision-Making in Embodied AI}, 
+      author={Emily Jin and Jiaheng Hu and Zhuoyi Huang and Ruohan Zhang and Jiajun Wu and Li Fei-Fei and Roberto Martín-Martín},
+      year={2023},
+      journal={arXiv preprint 2310.01824},
+}
+```
