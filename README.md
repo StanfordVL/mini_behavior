@@ -166,7 +166,7 @@ its  simplicity and efficiency.
 ```
 @article{jin2023minibehavior,
       title={Mini-BEHAVIOR: A Procedurally Generated Benchmark for Long-horizon Decision-Making in Embodied AI}, 
-      author={Emily Jin and Jiaheng Hu and Zhuoyi Huang and Ruohan Zhang and Jiajun Wu and Li Fei-Fei and Roberto Martín-Martín},
+      author={Emily Jin and Jiaheng Hu and Zhuoyi Huang and Ruohan Zhang and Jiajun Wu and Li Fei-Fei and Roberto Mart{\'i}n-Mart{\'i}n},
       year={2023},
       journal={arXiv preprint 2310.01824},
 }
