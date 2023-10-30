@@ -1,4 +1,6 @@
 # Mini-BEHAVIOR
+Link to paper: https://arxiv.org/abs/2310.01824 
+
 ###  MiniGrid Implementation of BEHAVIOR Tasks 
 ![Screenshot](img/visualizations.png)
 
