@@ -2,7 +2,7 @@
 Link to paper: https://arxiv.org/abs/2310.01824 
 
 ###  MiniGrid Implementation of BEHAVIOR Tasks 
-![Screenshot](img/visualizations.png)
+![Screenshot](img/overview.png)
 
 Mini-BEHAVIOR is a simple and easy-to-use high-speed 3D-gridworld environment
 with a high-level action space and a set of implementations of long-horizon, interaction-rich BEHAVIOR tasks.
