@@ -5,20 +5,6 @@ from mini_behavior.objects import OBJECT_CLASS
 DEFAULT_OBJS = ['countertop', 'plate', 'ashcan', 'hamburger', 'ball', 'apple', 'carton', 'juice']
 
 
-def create_transition_matrices(objs, num_rooms):
-    """
-    return dict transitions, where transitions[obj] is the transition matrix for any obj in objs.
-    the probability of obj going from room i --> j is: transitions[obj][i, j]
-    """
-    transitions = {}
-    for obj in objs:
-        probs = np.random.rand(num_rooms, num_rooms)
-        probs /= np.expand_dims(np.sum(probs, axis=1), 1)
-        transitions[obj] = probs
-
-    return transitions
-
-
 class TransitionEnv(RoomGrid):
     """
     at every episode, randomly sample num_choose objects from given object list
@@ -44,9 +30,11 @@ class TransitionEnv(RoomGrid):
         self.num_choose = num_choose
         self.num_rooms = num_rows * num_cols
 
+        self.seed(seed=seed)
+
         # generate matrix
         if transition_probs is None:
-            self.transition_probs = create_transition_matrices(objs, self.num_rooms)
+            self.transition_probs = self.create_transition_matrices(objs, self.num_rooms)
         else:
             for obj in objs:
                 assert obj in transition_probs.keys(), f'{obj} missing transition matrix'
@@ -54,7 +42,6 @@ class TransitionEnv(RoomGrid):
             self.transition_probs = transition_probs
 
         # randomly pick num_choose objs
-        self.seed(seed=seed)
         chosen_objs = self._rand_subset(objs, num_choose)
 
         # initialize num_objs, key=obj name (str), value=num of the obj (1)
@@ -84,7 +71,25 @@ class TransitionEnv(RoomGrid):
         # initialize num_objs, key=obj name (str), value=num of the obj (1)
         return num_objs
 
-    def reset(self):
+    def create_transition_matrices(self, objs, num_rooms):
+        """
+        return dict transitions, where transitions[obj] is the transition matrix for any obj in objs.
+        the probability of obj going from room i --> j is: transitions[obj][i, j]
+        """
+        transitions = {}
+        for obj in objs:
+            probs = self.np_random.random(size=(num_rooms, num_rooms))
+            probs /= np.expand_dims(np.sum(probs, axis=1), 1)
+            transitions[obj] = probs
+
+        return transitions
+
+    def reset(
+        self,
+        *,
+        seed: Optional[int] = None,
+        options: Optional[Dict[str, Any]] = None,
+    ) -> Tuple[ObsType, Dict[str, Any]]:
         num_objs = self.choose_objs()
 
         self.objs = {}
@@ -97,7 +102,7 @@ class TransitionEnv(RoomGrid):
                 self.objs[obj].append(obj_instance)
                 self.obj_instances[obj_name] = obj_instance
 
-        super().reset()
+        return super().reset(seed=seed, options=options)
 
     def _gen_objs(self):
         # randomly place objs on the grid
@@ -112,15 +117,16 @@ class TransitionEnv(RoomGrid):
             if obj.type != 'door':
                 cur_room = self.room_num_from_pos(*obj.cur_pos) # int
                 probs = self.transition_probs[obj.get_class()][cur_room]
-                new_room = np.random.choice(self.num_rooms, 1, p=probs)[0] # int
+                new_room = self.np_random.choice(self.num_rooms, 1, p=probs)[0] # int
                 room_idx = self.room_idx_from_num(new_room) # tuple
                 self.grid.remove(*obj.cur_pos, obj) # remove obj from grid
                 self.place_in_room(*room_idx, obj) # add obj to grid
 
         obs = self.gen_obs()
         reward = self._reward()
-        done = self._end_conditions()
-        return obs, reward, done, {}
+        terminated = self._end_conditions()
+        truncated = self.step_count >= self.max_steps
+        return obs, reward, terminated, truncated, {}
 
     def _end_conditions(self):
         return self.step_count == self.max_steps

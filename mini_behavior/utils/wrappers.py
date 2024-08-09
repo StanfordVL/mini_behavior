@@ -1,5 +1,5 @@
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 from mini_bddl import OBJECT_TO_IDX
 
 

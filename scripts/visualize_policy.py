@@ -1,6 +1,6 @@
 import argparse
 
-import gym
+import gymnasium as gym
 import numpy
 import random
 import mini_behavior
@@ -8,7 +8,7 @@ import torch
 from stable_baselines3 import PPO
 
 # For RL visualization
-from gym_minigrid.wrappers import ImgObsWrapper
+from minigrid.wrappers import ImgObsWrapper
 from mini_behavior.utils.wrappers import MiniBHFullyObsWrapper
 from mini_behavior.register import register
 
