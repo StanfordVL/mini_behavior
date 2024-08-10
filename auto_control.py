@@ -15,7 +15,8 @@ show_furniture = False
 
 def redraw(img):
     if not args.agent_view:
-        img = env.render('rgb_array', tile_size=args.tile_size)
+        env.set_render_mode('rgb_array')
+        img = env.render()
 
     window.no_closeup()
     window.set_inventory(env)
@@ -80,7 +81,7 @@ def load():
 
 def step(action):
     prev_obs = env.gen_obs()
-    obs, reward, done, info = env.step(action)
+    obs, reward, done, truncated, info = env.step(action)
 
     print('step=%s, reward=%.2f' % (env.step_count, reward))
 

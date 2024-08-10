@@ -693,14 +693,11 @@ class MiniBehaviorEnv(MiniGridEnv):
     def set_render_mode(self, mode):
         self.render_mode = mode
 
-    def render(self, mode='human', highlight=True, tile_size=TILE_PIXELS):
+    def render(self):
         """
         Render the whole-grid human view
         """
-        self.render_mode = mode
-        self.highlight = highlight
-        self.tile_size = tile_size
-
+        mode = self.render_mode
         if mode == "human" and not self.window:
             self.window = Window("mini_behavior")
             self.window.show(block=False)
