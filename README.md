@@ -12,7 +12,7 @@ The actions include 3 for navigation (forward, turn left, turn right) and 12 for
 The tasks are instantiated in simulated household environments.
 
 ### Updates
-[8/10/20214] 
+[8/10/2024] 
 - Mini-BEHAVIOR now supports gymnasium API at the [gymnasium](https://github.com/StanfordVL/mini_behavior/tree/gymnasium) branch. 
 
 ### Environment Setup
