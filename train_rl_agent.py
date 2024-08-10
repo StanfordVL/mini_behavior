@@ -1,5 +1,5 @@
-import gym
-from gym_minigrid.wrappers import ImgObsWrapper
+import gymnasium as gym
+from minigrid.wrappers import ImgObsWrapper
 from mini_behavior.utils.wrappers import MiniBHFullyObsWrapper
 from mini_behavior.register import register
 import mini_behavior

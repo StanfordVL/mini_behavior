@@ -1,6 +1,6 @@
 import argparse
 
-import gym
+import gymnasium as gym
 import numpy
 import random
 import mini_behavior
@@ -8,7 +8,7 @@ import torch
 from stable_baselines3 import PPO
 
 # For RL visualization
-from gym_minigrid.wrappers import ImgObsWrapper
+from minigrid.wrappers import ImgObsWrapper
 from mini_behavior.utils.wrappers import MiniBHFullyObsWrapper
 from mini_behavior.register import register
 
@@ -97,8 +97,9 @@ if args.gif:
    frames = []
 
 if not args.norend:
+    env.set_render_mode("human")
     # Create a window to view the environment
-    env.render('human')
+    env.render()
 
 for episode in range(args.episodes):
     obs = env.reset()
@@ -106,14 +107,15 @@ for episode in range(args.episodes):
     # To test reset
     if args.reset:
         while True:
-            env.render('human')
+            env.render()
             obs = env.reset()
 
     while True:
         if not args.norend:
-            env.render('human')
+            env.render()
         if args.gif:
-            frames.append(numpy.moveaxis(env.render("rgb_array"), 2, 0))
+            env.set_render_mode("rgb_array")
+            frames.append(numpy.moveaxis(env.render(), 2, 0))
 
         
         if load_model:
@@ -121,7 +123,7 @@ for episode in range(args.episodes):
         else:
             action = env.action_space.sample()
 
-        obs, reward, done, info = env.step(action)
+        obs, reward, done, truncated, info = env.step(action)
 
         if env.mode == "cartesian":
             print(env.action_list[action])

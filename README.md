@@ -12,19 +12,18 @@ The actions include 3 for navigation (forward, turn left, turn right) and 12 for
 The tasks are instantiated in simulated household environments.
 
 ### Environment Setup
-* Install gym-mingrid v1.0.3: 
+* Install gym-mingrid v1.2.2 (just for visualization): 
 ```
-pip install gym-minigrid==1.0.3
+pip install gym-minigrid==1.2.2
 ```
-* Install gym v0.21.0: 
+* Install gymnasium, minigrid: 
 ```
-pip install setuptools==66.0.0
-pip install wheel==0.38.4
-pip install gym==0.21.0
+pip install gymnasium==0.29.1
+pip install minigrid==2.3.1
 ```
 * (Optional) Install stable-baselines3: 
 ```
-pip install stable-baselines3==1.6.2
+pip install stable-baselines3==2.3.2
 ```
 * Install mini-behavior: 
 ```

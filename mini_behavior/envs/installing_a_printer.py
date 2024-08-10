@@ -1,7 +1,7 @@
 from mini_behavior.roomgrid import *
 from mini_behavior.register import register
 from enum import IntEnum
-from gym import spaces
+from gymnasium import spaces
 
 
 class InstallingAPrinterEnv(RoomGrid):

@@ -4,7 +4,6 @@ from mini_behavior.roomgrid import *
 from mini_behavior.register import register
 from mini_behavior.objects import *
 import copy
-import random
 
 
 class AutoGenerateEnv(RoomGrid):
@@ -126,17 +125,17 @@ class AutoGenerateEnv(RoomGrid):
 
             self.place_obj(lights[-1], kitchen_top, kitchen_size)
 
-            countertop_pos = random.sample(countertop.all_pos, 6)
+            countertop_pos = self._rand_subset(countertop.all_pos, 6)
             self.put_obj(lettuce[0], *countertop_pos[0])
             self.put_obj(lettuce[1], *countertop_pos[1])
             self.put_obj(apple[0], *countertop_pos[2])
             self.put_obj(apple[1], *countertop_pos[3])
 
-            fridge_pos = random.sample(electric_refrigerator.all_pos, 2)
+            fridge_pos = self._rand_subset(electric_refrigerator.all_pos, 2)
             self.put_obj(tomato[0], *fridge_pos[0])
             self.put_obj(tomato[1], *fridge_pos[1])
 
-            cabinet_pos = random.sample(cabinet.all_pos, 3)
+            cabinet_pos = self._rand_subset(cabinet.all_pos, 3)
             self.put_obj(plate[0], *cabinet_pos[0])
             plate[0].states['dustyable'].set_value(False)
             self.put_obj(plate[1], *cabinet_pos[1])

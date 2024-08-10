@@ -3,7 +3,7 @@ import numpy as np
 
 from .objects import *
 from mini_bddl import ABILITIES, FURNATURE_STATES
-from gym_minigrid.minigrid import Grid
+from minigrid.core.grid import Grid
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32

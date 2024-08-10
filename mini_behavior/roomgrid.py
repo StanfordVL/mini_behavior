@@ -446,8 +446,13 @@ class RoomGrid(MiniBehaviorEnv):
         assert j < self.num_rows
         return self.room_grid[j][i]
 
-    def reset(self):
-        super().reset()
+    def reset(
+        self,
+        *,
+        seed: Optional[int] = None,
+        options: Optional[Dict[str, Any]] = None,
+    ) -> Tuple[ObsType, Dict[str, Any]]:
+        super().reset(seed=seed, options=options)
         if self.init_dict:
             for room in self.room_instances:
                     room.reset()
@@ -456,7 +461,7 @@ class RoomGrid(MiniBehaviorEnv):
                 for room in row:
                     room.reset()
                     
-        return self.gen_obs()
+        return self.gen_obs(), {}
 
     def _gen_grid(self, width, height):
         if not self.init_dict:

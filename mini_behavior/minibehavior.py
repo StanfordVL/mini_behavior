@@ -3,8 +3,9 @@
 import os
 import pickle as pkl
 from enum import IntEnum
-from gym import spaces
-from gym_minigrid.minigrid import MiniGridEnv
+from gymnasium import spaces
+from minigrid.minigrid_env import MiniGridEnv
+from minigrid.core.mission import MissionSpace
 from mini_bddl.actions import ACTION_FUNC_MAPPING
 from .objects import *
 from .grid import BehaviorGrid, GridDimension, is_obj
@@ -13,6 +14,9 @@ from .utils.utils import AttrDict
 from mini_behavior.actions import Pickup, Drop, Toggle, Open, Close
 import numpy as np
 
+
+from typing import Any, Optional, Dict, Tuple
+from gymnasium.core import Env, ObsType
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
@@ -108,28 +112,30 @@ class MiniBehaviorEnv(MiniGridEnv):
             for action_name in applicable_actions:
                 action_list.append(obj_type + "/" + action_name)
 
-        super().__init__(grid_size=grid_size,
-                         width=width,
-                         height=height,
-                         max_steps=max_steps,
-                         see_through_walls=see_through_walls,
-                         agent_view_size=agent_view_size,
-                         )
+        mission_space = MissionSpace(mission_func=self._gen_mission)
+        super().__init__(
+            grid_size=grid_size,
+            width=width,
+            height=height,
+            max_steps=max_steps,
+            see_through_walls=see_through_walls,
+            agent_view_size=agent_view_size,
+            mission_space=mission_space,
+        )
 
         self.grid = BehaviorGrid(width, height)
 
         pixel_dim = self.grid.pixel_dim
 
         # The observation space is different from mini-grid due to the z dimension
-        self.observation_space = spaces.Box(
+        image_observation_space = spaces.Box(
             low=0,
             high=255,
             shape=(self.agent_view_size, self.agent_view_size, pixel_dim),
             dtype='uint8'
         )
-        self.observation_space = spaces.Dict({
-            'image': self.observation_space
-        })
+        assert isinstance(self.observation_space, spaces.Dict)
+        self.observation_space.spaces['image'] = image_observation_space
 
         self.mode = mode
         assert self.mode in ["cartesian", "primitive"]
@@ -144,6 +150,10 @@ class MiniBehaviorEnv(MiniGridEnv):
             self.action_space = spaces.Discrete(len(self.actions))
 
         self.carrying = set()
+
+    @staticmethod
+    def _gen_mission():
+        return "placeholder mission"
 
     def copy_objs(self):
         from copy import deepcopy
@@ -195,7 +205,16 @@ class MiniBehaviorEnv(MiniGridEnv):
             self.agent_dir = state['agent_dir']
         return self.grid
 
-    def reset(self):
+    def seed(self, seed=None):
+        Env.reset(self, seed=seed)
+
+    def reset(
+        self,
+        *,
+        seed: Optional[int] = None,
+        options: Optional[Dict[str, Any]] = None,
+    ) -> Tuple[ObsType, Dict[str, Any]]:
+        Env.reset(self, seed=seed, options=options)
         # Reinitialize episode-specific variables
         self.agent_pos = (-1, -1)
         self.agent_dir = -1
@@ -234,7 +253,7 @@ class MiniBehaviorEnv(MiniGridEnv):
             obs = self.gen_full_obs()
         else:
             obs = self.gen_obs()
-        return obs
+        return obs, {}
 
     def gen_full_obs(self):
         full_grid = self.grid.encode()
@@ -553,7 +572,7 @@ class MiniBehaviorEnv(MiniGridEnv):
                             drop_dim = obj.available_dims
                             if action_dim[1] == "in":
                                 # For drop_in, we don't care about dimension
-                                action_class(self).do(obj, np.random.choice(drop_dim))
+                                action_class(self).do(obj, self._rand_elem(drop_dim))
                                 self.action_done = True
                             elif int(action_dim[1]) in drop_dim:
                                 action_class(self).do(obj, int(action_dim[1]))
@@ -631,7 +650,7 @@ class MiniBehaviorEnv(MiniGridEnv):
                             # Drop to a random dimension
                             if "drop" in obj_action[1]:
                                 drop_dim = obj.available_dims
-                                action_class(self).do(obj, np.random.choice(drop_dim))
+                                action_class(self).do(obj, self._rand_elem(drop_dim))
                             else:
                                 action_class(self).do(obj)
                             self.action_done = True
@@ -639,13 +658,14 @@ class MiniBehaviorEnv(MiniGridEnv):
 
         self.update_states()
         reward = self._reward()
-        done = self._end_conditions() or self.step_count >= self.max_steps
+        terminated = self._end_conditions()
+        trucated = self.step_count >= self.max_steps
         if self.use_full_obs:
             obs = self.gen_full_obs()
         else:
             obs = self.gen_obs()
 
-        return obs, reward, done, {}
+        return obs, reward, terminated, trucated, {}
 
     def _reward(self):
         if self._end_conditions():
@@ -670,15 +690,21 @@ class MiniBehaviorEnv(MiniGridEnv):
                     state._update(self)
         self.grid.state_values = {obj: obj.get_ability_values(self) for obj in self.obj_instances.values()}
 
-    def render(self, mode='human', highlight=True, tile_size=TILE_PIXELS):
+    def set_render_mode(self, mode):
+        self.render_mode = mode
+
+    def render(self):
         """
         Render the whole-grid human view
         """
+        mode = self.render_mode
         if mode == "human" and not self.window:
             self.window = Window("mini_behavior")
             self.window.show(block=False)
 
-        img = super().render(mode='rgb_array', highlight=highlight, tile_size=tile_size)
+        self.render_mode = 'rgb_array'
+        img = super().render()
+        self.render_mode = mode
 
         if self.render_dim is None:
             img = self.render_furniture_states(img)
