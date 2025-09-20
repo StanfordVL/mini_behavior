@@ -72,7 +72,7 @@ class Cook(BaseAction):
             return False
 
         if find_tool(self.env, self.tools):
-            front_cell = self.env.grid.get_all_items(*self.env.agent_pos)
+            front_cell = self.env.grid.get_all_items(*self.env.front_pos)
             for obj2 in front_cell:
                 if obj2 is not None and obj2.type in self.heat_sources:
                     return obj2.check_abs_state(self.env, 'toggleable')
